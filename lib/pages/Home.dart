@@ -34,7 +34,7 @@ class _HomeState extends State<Home> {
   final List<Map<String, String>> _transactions = [
     {
       'icon': 'lib/pages/assets/Salary.png',
-      'time': '18:27 - April 30',
+      'time': '18:27 - April 300',
       'category': 'Monthly',
       'amount': '\$4,000.00',
     },
