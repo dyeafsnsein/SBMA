@@ -89,149 +89,123 @@ class _HomeState extends State<Home> {
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFF202422),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    // Top Section (36% of screen height)
-                    Expanded(
-                      flex: 36,
-                      child: Container(
-                        color: const Color(0xFF202422),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                screenWidth * 0.06, // 6% of screen width
-                            vertical:
-                                screenHeight * 0.06, // 6% of screen height
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Header(
-                                onNotificationTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => NotificationPage(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              SizedBox(
-                                height: screenHeight * 0.02,
-                              ), // 2% of screen height
-                              BalanceOverview(
-                                totalBalance: 7783.00,
-                                totalExpense: 1187.40,
-                              ),
-                              SizedBox(
-                                height: screenHeight * 0.02,
-                              ), // 2% of screen height
-                              ProgressBar(progress: 0.3, goalAmount: 20000.00),
-                              SizedBox(
-                                height: screenHeight * 0.01,
-                              ), // 1% of screen height
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'lib/pages/assets/Check.png',
-                                    width:
-                                        screenWidth *
-                                        0.03, // 3% of screen width
-                                    height:
-                                        screenWidth *
-                                        0.03, // 3% of screen width
-                                  ),
-                                  SizedBox(
-                                    width: screenWidth * 0.02,
-                                  ), // 2% of screen width
-                                  Text(
-                                    '30% of your expenses, looks good.',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize:
-                                          screenWidth *
-                                          0.04, // 4% of screen width
-                                      color: const Color(0xFFFCFCFC),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Top Section (36% of screen height)
+              Container(
+                height: screenHeight * 0.38,
+                color: const Color(0xFF202422),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.06, // 6% of screen width
+                    vertical: screenHeight * 0.06, // 6% of screen height
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Header(
+                        onNotificationTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NotificationPage(),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    // Bottom Section (64% of screen height)
-                    Expanded(
-                      flex: 64,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1FFF3),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(40),
-                            topRight: Radius.circular(40),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(
-                            screenWidth * 0.05,
-                          ), // 5% of screen width
-                          child: Column(
-                            children: [
-                              GoalOverview(
-                                goalIcon: 'lib/pages/assets/Car.png',
-                                goalText: 'Savings On Goals',
-                                revenueLastWeek: 4000.00,
-                                foodLastWeek: 100.00,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => QuickAnalysis(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              SizedBox(
-                                height: screenHeight * 0.02,
-                              ), // 2% of screen height
-                              PeriodSelector(
-                                periods: _periods,
-                                selectedPeriodIndex: _selectedPeriodIndex,
-                                onPeriodTapped: _onPeriodTapped,
-                              ),
-                              SizedBox(
-                                height: screenHeight * 0.02,
-                              ), // 2% of screen height
-                              Expanded(
-                                child: TransactionList(
-                                  transactions: _transactions,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      SizedBox(
+                        height: screenHeight * 0.02,
+                      ), // 2% of screen height
+                      BalanceOverview(
+                        totalBalance: 7783.00,
+                        totalExpense: 1187.40,
                       ),
-                    ),
-                  ],
-                ),
-                // Bottom Navigation Bar
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: BottomNavBar(
-                    iconPaths: _iconPaths,
-                    selectedIndex: _selectedIndex,
-                    onItemTapped: _onItemTapped,
+                      SizedBox(
+                        height: screenHeight * 0.02,
+                      ), // 2% of screen height
+                      ProgressBar(progress: 0.3, goalAmount: 20000.00),
+                      SizedBox(
+                        height: screenHeight * 0.01,
+                      ), // 1% of screen height
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'lib/pages/assets/Check.png',
+                            width: screenWidth * 0.03, // 3% of screen width
+                            height: screenWidth * 0.03, // 3% of screen width
+                          ),
+                          SizedBox(
+                            width: screenWidth * 0.02,
+                          ), // 2% of screen width
+                          Flexible(
+                            child: Text(
+                              '30% of your expenses, looks good.',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize:
+                                    screenWidth * 0.03, // 4% of screen width
+                                color: const Color(0xFFFCFCFC),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+              // Bottom Section (64% of screen height)
+              Container(
+                height: screenHeight * 0.64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1FFF3),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(
+                    screenWidth * 0.05,
+                  ), // 5% of screen width
+                  child: Column(
+                    children: [
+                      GoalOverview(
+                        goalIcon: 'lib/pages/assets/Car.png',
+                        goalText: 'Savings On Goals',
+                        revenueLastWeek: 4000.00,
+                        foodLastWeek: 100.00,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => QuickAnalysis(),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(
+                        height: screenHeight * 0.02,
+                      ), // 2% of screen height
+                      PeriodSelector(
+                        periods: _periods,
+                        selectedPeriodIndex: _selectedPeriodIndex,
+                        onPeriodTapped: _onPeriodTapped,
+                      ),
+                      SizedBox(
+                        height: screenHeight * 0.02,
+                      ), // 2% of screen height
+                      Expanded(
+                        child: TransactionList(transactions: _transactions),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
