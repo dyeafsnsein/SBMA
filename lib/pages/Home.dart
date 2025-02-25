@@ -78,6 +78,10 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
@@ -85,106 +89,149 @@ class _HomeState extends State<Home> {
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFF202422),
-        body: Stack(
-          children: [
-            Column(
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
               children: [
-                Expanded(
-                  flex: 36,
-                  child: Container(
-                    color: const Color(0xFF202422),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(25, 60, 25, 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Header(onNotificationTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => NotificationPage()),
-                            );
-                          }),
-                          const SizedBox(height: 20),
-                          BalanceOverview(totalBalance: 7783.00, totalExpense: 1187.40),
-                          const SizedBox(height: 20),
-                          ProgressBar(progress: 0.3, goalAmount: 20000.00),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                Column(
+                  children: [
+                    // Top Section (36% of screen height)
+                    Expanded(
+                      flex: 36,
+                      child: Container(
+                        color: const Color(0xFF202422),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                screenWidth * 0.06, // 6% of screen width
+                            vertical:
+                                screenHeight * 0.06, // 6% of screen height
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.asset(
-                                'lib/pages/assets/Check.png',
-                                width: 11,
-                                height: 11,
+                              Header(
+                                onNotificationTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NotificationPage(),
+                                    ),
+                                  );
+                                },
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                '30% of your expenses, looks good.',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 15,
-                                  color: Color(0xFFFCFCFC),
+                              SizedBox(
+                                height: screenHeight * 0.02,
+                              ), // 2% of screen height
+                              BalanceOverview(
+                                totalBalance: 7783.00,
+                                totalExpense: 1187.40,
+                              ),
+                              SizedBox(
+                                height: screenHeight * 0.02,
+                              ), // 2% of screen height
+                              ProgressBar(progress: 0.3, goalAmount: 20000.00),
+                              SizedBox(
+                                height: screenHeight * 0.01,
+                              ), // 1% of screen height
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'lib/pages/assets/Check.png',
+                                    width:
+                                        screenWidth *
+                                        0.03, // 3% of screen width
+                                    height:
+                                        screenWidth *
+                                        0.03, // 3% of screen width
+                                  ),
+                                  SizedBox(
+                                    width: screenWidth * 0.02,
+                                  ), // 2% of screen width
+                                  Text(
+                                    '30% of your expenses, looks good.',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize:
+                                          screenWidth *
+                                          0.04, // 4% of screen width
+                                      color: const Color(0xFFFCFCFC),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Bottom Section (64% of screen height)
+                    Expanded(
+                      flex: 64,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF1FFF3),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(40),
+                            topRight: Radius.circular(40),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(
+                            screenWidth * 0.05,
+                          ), // 5% of screen width
+                          child: Column(
+                            children: [
+                              GoalOverview(
+                                goalIcon: 'lib/pages/assets/Car.png',
+                                goalText: 'Savings On Goals',
+                                revenueLastWeek: 4000.00,
+                                foodLastWeek: 100.00,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => QuickAnalysis(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              SizedBox(
+                                height: screenHeight * 0.02,
+                              ), // 2% of screen height
+                              PeriodSelector(
+                                periods: _periods,
+                                selectedPeriodIndex: _selectedPeriodIndex,
+                                onPeriodTapped: _onPeriodTapped,
+                              ),
+                              SizedBox(
+                                height: screenHeight * 0.02,
+                              ), // 2% of screen height
+                              Expanded(
+                                child: TransactionList(
+                                  transactions: _transactions,
                                 ),
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Expanded(
-                  flex: 84,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1FFF3),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          GoalOverview(
-                            goalIcon: 'lib/pages/assets/Car.png',
-                            goalText: 'Savings On Goals',
-                            revenueLastWeek: 4000.00,
-                            foodLastWeek: 100.00,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => QuickAnalysis()),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          PeriodSelector(
-                            periods: _periods,
-                            selectedPeriodIndex: _selectedPeriodIndex,
-                            onPeriodTapped: _onPeriodTapped,
-                          ),
-                          const SizedBox(height: 20),
-                          Expanded(
-                            child: TransactionList(transactions: _transactions),
-                          ),
-                        ],
-                      ),
-                    ),
+                // Bottom Navigation Bar
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: BottomNavBar(
+                    iconPaths: _iconPaths,
+                    selectedIndex: _selectedIndex,
+                    onItemTapped: _onItemTapped,
                   ),
                 ),
               ],
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: _selectedIndex,
-                onItemTapped: _onItemTapped,
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
