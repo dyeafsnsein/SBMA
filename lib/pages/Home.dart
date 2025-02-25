@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
     },
     {
       'icon': 'lib/pages/assets/Rent.png',
-      'time': '8:30 - April 115',
+      'time': '8:30 - April 1155',
       'category': 'Rent',
       'amount': '-\$874.40',
     },
