@@ -55,6 +55,19 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    final double paddingTop = MediaQuery.of(context).padding.top;
+    final double height = screenSize.height;
+    final double width = screenSize.width;
+
+    // Calculate responsive dimensions
+    final double topSectionHeight = height * 0.32; // 32% of screen height
+    final double bottomSectionHeight = height * 0.68; // 68% of screen height
+    final double horizontalPadding = width * 0.06; // 6% of screen width
+    final double verticalPadding = height * 0.02; // 2% of screen height
+    final double chartHeight = height * 0.25; // 25% of screen height
+    final double spaceBetween = height * 0.02; // 2% of screen height
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
@@ -66,13 +79,19 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
           children: [
             Column(
               children: [
-                Expanded(
-                  flex: 38,
+                SizedBox(
+                  height: topSectionHeight,
                   child: Container(
                     color: const Color(0xFF202422),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(25, 60, 25, 10),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        paddingTop + verticalPadding,
+                        horizontalPadding,
+                        verticalPadding,
+                      ),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           QuickAnalysisHeader(
                             onBackPressed: () => Navigator.pop(context),
@@ -80,13 +99,12 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                               // Handle notification tap
                             },
                           ),
-                          const SizedBox(height: 20),
                           GoalOverview(
                             goalIcon: 'lib/pages/assets/Car.png',
                             goalText: 'Savings On Goals',
                             revenueLastWeek: 4000.00,
                             foodLastWeek: 100.00,
-                            onTap: () {}, // Add tap handler if needed
+                            onTap: () {},
                           ),
                         ],
                       ),
@@ -94,7 +112,6 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                   ),
                 ),
                 Expanded(
-                  flex: 84,
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Color(0xFFF1FFF3),
@@ -104,15 +121,17 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: EdgeInsets.all(horizontalPadding),
                       child: Column(
                         children: [
-                          FlBarChart(
-                            expenses: _expenses,
-                            income: _income,
-                            labels: _chartLabels,
+                          Flexible(
+                            child: FlBarChart(
+                              expenses: _expenses,
+                              income: _income,
+                              labels: _chartLabels,
+                            ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: spaceBetween),
                           Expanded(
                             child: TransactionList(
                               transactions: _transactions,
@@ -125,8 +144,10 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: BottomNavBar(
                 iconPaths: _iconPaths,
                 selectedIndex: _selectedIndex,

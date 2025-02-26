@@ -73,6 +73,8 @@ flutter:
     - lib/pages/assets/Pantry.png
     - lib/pages/assets/Check.png
     - lib/pages/assets/Rent.png
+    - lib/pages/assets/Calendar.png
+    - lib/pages/assets/Search.png
     
 
 

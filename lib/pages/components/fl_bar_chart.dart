@@ -38,28 +38,34 @@ class FlBarChart extends StatelessWidget {
               Row(
                 children: [
                   Container(
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.search, color: Colors.black),
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      iconSize: 18,
+                    child: Center(
+                      child: Image.asset(
+                        'lib/pages/assets/Search.png',
+                        width: 16,
+                        height: 16,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Container(
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.calendar_today, color: Colors.black),
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      iconSize: 18,
+                    child: Center(
+                      child: Image.asset(
+                        'lib/pages/assets/Calendar.png',
+                        width: 16,
+                        height: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -73,6 +79,7 @@ class FlBarChart extends StatelessWidget {
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: 20,
+                minY: 0,
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -104,22 +111,21 @@ class FlBarChart extends StatelessWidget {
                         }
                         return const SizedBox();
                       },
-                      reservedSize: 30,
+                      reservedSize: 22,
                     ),
                   ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
+                      reservedSize: 28,
+                      interval: 5,
                       getTitlesWidget: (value, meta) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: Text(
-                            '${value.toInt()}k',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                            ),
+                        if (value == 0) return const SizedBox();
+                        return Text(
+                          '${value.toInt()}k',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
                           ),
                         );
                       },
@@ -140,13 +146,14 @@ class FlBarChart extends StatelessWidget {
                     color: Colors.white.withOpacity(0.1),
                     strokeWidth: 1,
                   ),
+                  checkToShowHorizontalLine: (value) => value != 0,
                 ),
                 borderData: FlBorderData(
                   show: true,
                   border: const Border(
                     bottom: BorderSide(
                       color: Colors.white,
-                      width: 2,
+                      width: 1,
                     ),
                   ),
                 ),
