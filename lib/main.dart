@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/pages/transaction.dart';
 import 'pages/Home.dart'; // Import the external LaunchPage
 
 void main() {
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
         // Global dark grey background color
         scaffoldBackgroundColor: const Color(0xFF202422),
       ),
-      home: const Transactions(),
+      home: const Home(),
     );
   }
 }

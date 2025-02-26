@@ -5,7 +5,6 @@ import 'components/goal_overview.dart';
 import 'components/fl_bar_chart.dart';
 import 'components/transaction_list.dart';
 import 'components/bottom_nav_bar.dart';
-import 'Home.dart';
 
 class QuickAnalysis extends StatefulWidget {
   const QuickAnalysis({Key? key}) : super(key: key);
@@ -15,8 +14,6 @@ class QuickAnalysis extends StatefulWidget {
 }
 
 class _QuickAnalysisState extends State<QuickAnalysis> {
-  int _selectedIndex = 0;
-
   final List<Map<String, String>> _transactions = [
     {
       'icon': 'lib/pages/assets/Salary.png',
@@ -25,7 +22,6 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
       'category': 'Monthly',
       'amount': '\$4,000.00',
     },
-    // ... other transactions
   ];
 
   final List<String> _iconPaths = [
@@ -40,19 +36,6 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
   final List<double> _income = [6, 8, 12, 6];
   final List<String> _chartLabels = ['1st Week', '2nd Week', '3rd Week', '4th Week'];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Home()),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
@@ -60,13 +43,10 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
     final double height = screenSize.height;
     final double width = screenSize.width;
 
-    // Calculate responsive dimensions
-    final double topSectionHeight = height * 0.32; // 32% of screen height
-    final double bottomSectionHeight = height * 0.68; // 68% of screen height
-    final double horizontalPadding = width * 0.06; // 6% of screen width
-    final double verticalPadding = height * 0.02; // 2% of screen height
-    final double chartHeight = height * 0.25; // 25% of screen height
-    final double spaceBetween = height * 0.02; // 2% of screen height
+    final double topSectionHeight = height * 0.32;
+    final double horizontalPadding = width * 0.06;
+    final double verticalPadding = height * 0.02;
+    final double spaceBetween = height * 0.02;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -95,9 +75,7 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                         children: [
                           QuickAnalysisHeader(
                             onBackPressed: () => Navigator.pop(context),
-                            onNotificationTap: () {
-                              // Handle notification tap
-                            },
+                            onNotificationTap: () {},
                           ),
                           GoalOverview(
                             goalIcon: 'lib/pages/assets/Car.png',
@@ -144,14 +122,11 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                 ),
               ],
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+            Align(
+              alignment: Alignment.bottomCenter,
               child: BottomNavBar(
                 iconPaths: _iconPaths,
-                selectedIndex: _selectedIndex,
-                onItemTapped: _onItemTapped,
+                selectedIndex: 1,
               ),
             ),
           ],

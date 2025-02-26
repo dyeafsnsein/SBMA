@@ -1,16 +1,56 @@
 import 'package:flutter/material.dart';
+import '../Home.dart';  // Update with your app name
+import '../QuickAnalysis.dart';
+import '../transaction.dart';
+// Import other pages you want to navigate to
 
 class BottomNavBar extends StatelessWidget {
   final List<String> iconPaths;
   final int selectedIndex;
-  final ValueChanged<int> onItemTapped;
 
   const BottomNavBar({
     Key? key,
     required this.iconPaths,
     required this.selectedIndex,
-    required this.onItemTapped,
   }) : super(key: key);
+
+  void _handleNavigation(BuildContext context, int index) {
+    if (index == selectedIndex) return; // Prevent navigation if already on the selected page
+
+    // Remove the current page from the stack and push the new one
+    switch (index) {
+      case 0: // Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+        break;
+      case 1: // Analysis
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const QuickAnalysis()),
+        );
+        break;
+      case 2: // Transactions
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Transactions()),
+        );
+        break;
+      case 3: // Categories
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const CategoriesPage()),
+        // );
+        break;
+      case 4: // Profile
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const ProfilePage()),
+        // );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +68,7 @@ class BottomNavBar extends StatelessWidget {
           children: List.generate(iconPaths.length, (index) {
             final isSelected = selectedIndex == index;
             return GestureDetector(
-              onTap: () => onItemTapped(index),
+              onTap: () => _handleNavigation(context, index),
               child: Container(
                 decoration: isSelected
                     ? BoxDecoration(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'components/bottom_nav_bar.dart';
 import 'Home.dart';
 
 class NotificationPage extends StatefulWidget {
@@ -11,42 +12,7 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   final List<Map<String, dynamic>> _notifications = [
-    {
-      'icon': Icons.notifications_outlined,
-      'title': 'Reminder!',
-      'message': 'Set up your automatic savings to meet your savings goal...',
-      'time': '17:00 - April 24',
-    },
-    {
-      'icon': Icons.star_outline,
-      'title': 'New Update',
-      'message': 'Set up your automatic savings to meet your savings goal...',
-      'time': '17:00 - April 24',
-    },
-    {
-      'icon': Icons.attach_money,
-      'title': 'Transactions',
-      'message': 'A new transaction has been registered\nGroceries | Pantry | -\$100,00',
-      'time': '17:00 - April 24',
-    },
-    {
-      'icon': Icons.notifications_outlined,
-      'title': 'Reminder!',
-      'message': 'Set up your automatic savings to meet your savings goal...',
-      'time': '17:00 - April 24',
-    },
-    {
-      'icon': Icons.access_time,
-      'title': 'Expense Record',
-      'message': 'We recommend that you be more attentive to your finances.',
-      'time': '17:00 - April 24',
-    },
-    {
-      'icon': Icons.attach_money,
-      'title': 'Transactions',
-      'message': 'A new transaction has been registered\nFood | Dinner | -\$70,40',
-      'time': '17:00 - April 24',
-    },
+    // ... your notifications data
   ];
 
   final List<String> _iconPaths = [
@@ -56,22 +22,6 @@ class _NotificationPageState extends State<NotificationPage> {
     'lib/pages/assets/Categories.png',
     'lib/pages/assets/Profile.png',
   ];
-
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 0) {
-      // Navigate to Home page when the home button is tapped
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Home()),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,40 +176,9 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(60),
-                  topRight: Radius.circular(60),
-                ),
-                child: Container(
-                  height: 80,
-                  color: const Color(0xFF202422),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(_iconPaths.length, (index) {
-                      final isSelected = _selectedIndex == index;
-                      return GestureDetector(
-                        onTap: () => _onItemTapped(index),
-                        child: Container(
-                          decoration: isSelected
-                              ? BoxDecoration(
-                                  color: Colors.grey[700],
-                                  borderRadius: BorderRadius.circular(20),
-                                )
-                              : null,
-                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-                          child: Image.asset(
-                            _iconPaths[index],
-                            width: 26,
-                            height: 26,
-                            color: isSelected ? Colors.white : const Color.fromARGB(255, 255, 255, 255),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
+              child: BottomNavBar(
+                iconPaths: _iconPaths,
+                selectedIndex: -1, // Set to -1 to show no selection
               ),
             ),
           ],
