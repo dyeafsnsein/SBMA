@@ -62,6 +62,12 @@ class _HomeState extends State<Home> {
       'category': 'Rent',
       'amount': '-\$774.40',
     },
+      {
+      'icon': 'lib/pages/assets/Pantry.png',
+      'time': '17:00 - April 24',
+      'category': 'Pantry',
+      'amount': '-\$100.00',
+    },
   ];
 
   void _onItemTapped(int index) {
