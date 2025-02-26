@@ -34,7 +34,7 @@ class _HomeState extends State<Home> {
   final List<Map<String, String>> _transactions = [
     {
       'icon': 'lib/pages/assets/Salary.png',
-      'time': '18:27 - April 3000',
+      'time': '18:27 - April 30',
       'category': 'Monthly',
       'amount': '\$4,000.00',
     },
@@ -168,7 +168,7 @@ class _HomeState extends State<Home> {
                                       fontFamily: 'Poppins',
                                       fontSize:
                                           screenWidth *
-                                          0.04, // 4% of screen width
+                                          0.037, // 4% of screen width
                                       color: const Color(0xFFFCFCFC),
                                     ),
                                   ),

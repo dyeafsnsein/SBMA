@@ -47,11 +47,7 @@ class BalanceOverview extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          width: 1,
-          height: 42,
-          color: const Color(0xFFFCFCFC),
-        ),
+        Container(width: 1, height: 42, color: const Color(0xFFFCFCFC)),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
