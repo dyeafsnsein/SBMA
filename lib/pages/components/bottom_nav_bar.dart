@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../Home.dart';  // Update with your app name
 import '../QuickAnalysis.dart';
 import '../transaction.dart';
+import '../Analysis.dart';
 // Import other pages you want to navigate to
 
 class BottomNavBar extends StatelessWidget {
@@ -28,7 +29,7 @@ class BottomNavBar extends StatelessWidget {
       case 1: // Analysis
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const QuickAnalysis()),
+          MaterialPageRoute(builder: (context) => const Analysis()),
         );
         break;
       case 2: // Transactions
