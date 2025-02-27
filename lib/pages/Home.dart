@@ -187,9 +187,7 @@ class _HomeState extends State<Home> {
                           ),
                           SizedBox(height: screenHeight * 0.02),
                           Expanded(
-                            child: TransactionList(
-                              transactions: _transactions,
-                            ),
+                            child: TransactionList(transactions: _transactions),
                           ),
                         ],
                       ),
@@ -202,7 +200,7 @@ class _HomeState extends State<Home> {
               alignment: Alignment.bottomCenter,
               child: BottomNavBar(
                 iconPaths: _iconPaths,
-                selectedIndex: 0,
+                selectedIndex: 0, // Home page index
               ),
             ),
           ],

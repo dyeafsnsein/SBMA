@@ -75,6 +75,7 @@ flutter:
     - lib/pages/assets/Rent.png
     - lib/pages/assets/Calendar.png
     - lib/pages/assets/Search.png
+    - lib/pages/assets/Transport.png
     
 
 
