@@ -107,6 +107,19 @@ class _TransactionsState extends State<Transactions> {
       context: context,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: const Color(0xFF202422),
+            colorScheme: ColorScheme.light(
+              primary: const Color(0xFF202422),
+              secondary: const Color(0xFF0D4015),
+            ),
+            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -277,10 +290,21 @@ class _TransactionsState extends State<Transactions> {
                           right: 10,
                           child: GestureDetector(
                             onTap: _pickDateRange,
-                            child: Image.asset(
-                              'lib/pages/assets/Calendar.png',
-                              width: 30,
-                              height: 30,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  'lib/pages/assets/Calendar.png',
+                                  width: 20,
+                                  height: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),
