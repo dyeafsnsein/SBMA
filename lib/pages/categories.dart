@@ -290,10 +290,21 @@ class _TransactionsState extends State<Transactions> {
                           right: 10,
                           child: GestureDetector(
                             onTap: _pickDateRange,
-                            child: Image.asset(
-                              'lib/pages/assets/Calendar.png',
-                              width: 30,
-                              height: 30,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  'lib/pages/assets/Calendar.png',
+                                  width: 20,
+                                  height: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),

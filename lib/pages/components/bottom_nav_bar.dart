@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../Home.dart';  // Update with your app name
+import '../Home.dart';
 import '../QuickAnalysis.dart';
 import '../transaction.dart';
 import '../Analysis.dart';
-// Import other pages you want to navigate to
+import '../categories.dart'; // Import the Categories page
 
 class BottomNavBar extends StatelessWidget {
   final List<String> iconPaths;
@@ -16,7 +16,8 @@ class BottomNavBar extends StatelessWidget {
   }) : super(key: key);
 
   void _handleNavigation(BuildContext context, int index) {
-    if (index == selectedIndex) return; // Prevent navigation if already on the selected page
+    if (index == selectedIndex)
+      return; // Prevent navigation if already on the selected page
 
     // Remove the current page from the stack and push the new one
     switch (index) {
@@ -39,10 +40,10 @@ class BottomNavBar extends StatelessWidget {
         );
         break;
       case 3: // Categories
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const CategoriesPage()),
-        // );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Category()),
+        );
         break;
       case 4: // Profile
         // Navigator.pushReplacement(
@@ -71,18 +72,25 @@ class BottomNavBar extends StatelessWidget {
             return GestureDetector(
               onTap: () => _handleNavigation(context, index),
               child: Container(
-                decoration: isSelected
-                    ? BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: BorderRadius.circular(20),
-                      )
-                    : null,
-                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                decoration:
+                    isSelected
+                        ? BoxDecoration(
+                          color: Colors.grey[700],
+                          borderRadius: BorderRadius.circular(20),
+                        )
+                        : null,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 9,
+                ),
                 child: Image.asset(
                   iconPaths[index],
                   width: 26,
                   height: 26,
-                  color: isSelected ? Colors.white : const Color.fromARGB(255, 255, 255, 255),
+                  color:
+                      isSelected
+                          ? Colors.white
+                          : const Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
             );
