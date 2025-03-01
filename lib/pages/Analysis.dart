@@ -25,9 +25,29 @@ class _AnalysisState extends State<Analysis> {
   final List<String> _periods = ['Daily', 'Weekly', 'Monthly', 'Year'];
   int _selectedPeriodIndex = 0;
 
-  final List<double> _expenses = [5, 3, 4, 2, 6, 3, 4];
-  final List<double> _income = [3, 5, 2, 6, 2, 1, 3];
-  final List<String> _chartLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // Map to store period-specific data with different labels for each period
+  final Map<String, Map<String, dynamic>> _periodData = {
+    'Daily': {
+      'expenses': [5.0, 3.0, 4.0, 2.0, 6.0, 3.0, 4.0],
+      'income': [3.0, 5.0, 2.0, 6.0, 2.0, 1.0, 3.0],
+      'labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    },
+    'Weekly': {
+      'expenses': [8.0, 3.0, 12.0, 9.0],
+      'income': [10.0, 8.0, 12.0, 9.0],
+      'labels': ['1st Week', '2nd Week', '3rd Week', '4th Week'],
+    },
+    'Monthly': {
+      'expenses': [35.0, 38.0, 32.0, 40.0, 42.0, 36.0, 45.0, 39.0, 41.0, 37.0, 43.0, 44.0],
+      'income': [80.0, 85.0, 75.0, 90.0, 82.0, 78.0, 88.0, 79.0, 86.0, 77.0, 89.0, 83.0],
+      'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    },
+    'Year': {
+      'expenses': [400.0, 420.0, 450.0, 480.0],
+      'income': [900.0, 950.0, 1000.0, 1100.0],
+      'labels': ['2020', '2021', '2022', '2023'],
+    },
+  };
 
   final List<Map<String, dynamic>> _targets = [
     {
@@ -173,6 +193,12 @@ class _AnalysisState extends State<Analysis> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Get current period data based on selection
+    String currentPeriod = _periods[_selectedPeriodIndex];
+    List<double> expenses = List<double>.from(_periodData[currentPeriod]!['expenses']);
+    List<double> income = List<double>.from(_periodData[currentPeriod]!['income']);
+    List<String> labels = List<String>.from(_periodData[currentPeriod]!['labels']);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -217,7 +243,7 @@ class _AnalysisState extends State<Analysis> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => NotificationPage()),
+                                MaterialPageRoute(builder: (context) => const NotificationPage()),
                               );
                             },
                             child: Container(
@@ -237,12 +263,12 @@ class _AnalysisState extends State<Analysis> {
                         ],
                       ),
                       SizedBox(height: screenHeight * 0.02),
-                      BalanceOverview(
+                      const BalanceOverview(
                         totalBalance: 7783.00,
                         totalExpense: 1187.40,
                       ),
                       SizedBox(height: screenHeight * 0.02),
-                      ProgressBar(progress: 0.3, goalAmount: 20000.00),
+                      const ProgressBar(progress: 0.3, goalAmount: 20000.00),
                       SizedBox(height: screenHeight * 0.01),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -283,10 +309,11 @@ class _AnalysisState extends State<Analysis> {
                           children: [
                             _buildPeriodSelector(),
                             SizedBox(height: screenHeight * 0.02),
+                            // Pass the dynamic data to FlBarChart based on selected period
                             FlBarChart(
-                              expenses: _expenses,
-                              income: _income,
-                              labels: _chartLabels,
+                              expenses: expenses,
+                              income: income,
+                              labels: labels,
                             ),
                             SizedBox(height: screenHeight * 0.02),
                             Padding(

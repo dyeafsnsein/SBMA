@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/header.dart';
-import 'components/balance_overview.dart';
+
 import 'components/transaction_list.dart';
 import 'components/bottom_nav_bar.dart';
 import 'Notification.dart';
@@ -71,6 +70,30 @@ class _TransactionsState extends State<Transactions> {
           'date': '2023-04-08',
         },
         {
+          'icon': 'lib/pages/assets/Food.png',
+          'time': '19:30 - March 31',
+          'category': 'Dinner',
+          'amount': '-70.40',
+          'title': 'Food',
+          'date': '2023-03-31',
+        },
+                {
+          'icon': 'lib/pages/assets/Food.png',
+          'time': '19:30 - March 31',
+          'category': 'Dinner',
+          'amount': '-70.40',
+          'title': 'Food',
+          'date': '2023-03-31',
+        },
+                    {
+          'icon': 'lib/pages/assets/Food.png',
+          'time': '19:30 - March 31',
+          'category': 'Dinner',
+          'amount': '-70.40',
+          'title': 'Food',
+          'date': '2023-04-31',
+        },
+                    {
           'icon': 'lib/pages/assets/Food.png',
           'time': '19:30 - March 31',
           'category': 'Dinner',
