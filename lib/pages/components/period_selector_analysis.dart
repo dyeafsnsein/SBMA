@@ -14,8 +14,10 @@ class PeriodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: EdgeInsets.all(screenWidth * 0.01),
       decoration: BoxDecoration(
         color: const Color(0xFF202422),
         borderRadius: BorderRadius.circular(30),
@@ -27,7 +29,10 @@ class PeriodSelector extends StatelessWidget {
           return GestureDetector(
             onTap: () => onPeriodChanged(index),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04, 
+                vertical: screenWidth * 0.02
+              ),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : Colors.transparent,
                 borderRadius: BorderRadius.circular(25),
@@ -36,7 +41,7 @@ class PeriodSelector extends StatelessWidget {
                 periods[index],
                 style: TextStyle(
                   color: isSelected ? const Color(0xFF202422) : Colors.white,
-                  fontSize: 14,
+                  fontSize: screenWidth * 0.035,
                   fontWeight: FontWeight.w500,
                 ),
               ),
