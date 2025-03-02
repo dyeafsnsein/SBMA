@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
 
 class BalanceOverview extends StatelessWidget {
   final double totalBalance;
@@ -20,11 +22,11 @@ class BalanceOverview extends StatelessWidget {
           children: [
             Row(
               children: [
-                Image.asset(
-                  'lib/pages/assets/Income.png',
-                  width: 12,
-                  height: 12,
-                ),
+               Icon(
+  CupertinoIcons.arrow_up_left_square,
+  size: 14,
+  color: const Color.fromARGB(255, 255, 255, 255),
+),
                 const SizedBox(width: 8),
                 const Text(
                   'Total Balance',
@@ -53,11 +55,11 @@ class BalanceOverview extends StatelessWidget {
           children: [
             Row(
               children: [
-                Image.asset(
-                  'lib/pages/assets/Expense.png',
-                  width: 12,
-                  height: 12,
-                ),
+Icon(
+  CupertinoIcons.arrow_down_right_square,
+  size: 14,
+  color: const Color.fromARGB(255, 255, 255, 255),
+),
                 const SizedBox(width: 8),
                 const Text(
                   'Total Expense',

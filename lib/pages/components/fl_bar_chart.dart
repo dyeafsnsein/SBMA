@@ -59,6 +59,9 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     // Calculate the maximum value to set appropriate maxY
     double maxValue = 0;
     for (int i = 0; i < widget.expenses.length; i++) {
@@ -79,10 +82,10 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
     else interval = 5;
     
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
         color: const Color(0xFF202422),
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(screenWidth * 0.08),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -97,11 +100,11 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Income & Expenses',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -112,21 +115,23 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                     onTap: () {
                       // Implement search functionality
                     },
+                    screenWidth: screenWidth,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: screenWidth * 0.02),
                   _buildIconButton(
                     icon: 'lib/pages/assets/Calendar.png',
                     onTap: () {
                       // Implement calendar functionality
                     },
+                    screenWidth: screenWidth,
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: screenHeight * 0.01),
           SizedBox(
-            height: 150,
+            height: screenHeight * 0.16,
             child: AnimatedOpacity(
               opacity: _isTransitioning ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 150),
@@ -138,14 +143,17 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
                       tooltipRoundedRadius: 8,
-                      tooltipPadding: const EdgeInsets.all(8),
+                      tooltipPadding: EdgeInsets.all(screenWidth * 0.02),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         String type = rodIndex == 0 ? 'Expense' : 'Income';
                         double value = rod.toY;
                         String displayValue = value >= 1000 ? '${(value/1000).toStringAsFixed(1)}k' : value.toStringAsFixed(0);
                         return BarTooltipItem(
                           '$type: $displayValue',
-                          const TextStyle(color: Colors.white),
+                          TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.03,
+                          ),
                         );
                       },
                     ),
@@ -159,37 +167,37 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                           int index = value.toInt();
                           if (index >= 0 && index < widget.labels.length) {
                             return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
+                              padding: EdgeInsets.only(top: screenHeight * 0.01),
                               child: Text(
                                 widget.labels[index],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: screenWidth * 0.025,
                                 ),
                               ),
                             );
                           }
                           return const SizedBox();
                         },
-                        reservedSize: 22,
+                        reservedSize: screenHeight * 0.03,
                       ),
                     ),
                     leftTitles: AxisTitles(
                       axisNameWidget: const SizedBox(), // Remove axis name
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 28,
+                        reservedSize: screenWidth * 0.07,
                         interval: interval,
                         getTitlesWidget: (value, meta) {
                           if (value == 0) return const SizedBox();
                           String displayValue = value >= 1000 ? '${(value/1000).toStringAsFixed(0)}k' : value.toStringAsFixed(0);
                           return Padding(
-                            padding: const EdgeInsets.only(right: 4),
+                            padding: EdgeInsets.only(right: screenWidth * 0.01),
                             child: Text(
                               displayValue,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: screenWidth * 0.025,
                               ),
                               textAlign: TextAlign.right,
                             ),
@@ -233,7 +241,7 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                           gradient: const LinearGradient(
                             colors: [Colors.redAccent, Colors.red],
                           ),
-                          width: 8,
+                          width: screenWidth * 0.02,
                           borderRadius: BorderRadius.circular(2),
                           backDrawRodData: BackgroundBarChartRodData(
                             show: true,
@@ -246,7 +254,7 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                           gradient: const LinearGradient(
                             colors: [Colors.greenAccent, Colors.green],
                           ),
-                          width: 8,
+                          width: screenWidth * 0.02,
                           borderRadius: BorderRadius.circular(2),
                           backDrawRodData: BackgroundBarChartRodData(
                             show: true,
@@ -255,7 +263,7 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                           ),
                         ),
                       ],
-                      barsSpace: 4,
+                      barsSpace: screenWidth * 0.01,
                     );
                   }).toList(),
                 ),
@@ -264,18 +272,20 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: screenHeight * 0.01),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildLegendItem(
                 color: Colors.red,
                 label: 'Expenses',
+                screenWidth: screenWidth,
               ),
-              const SizedBox(width: 20),
+              SizedBox(width: screenWidth * 0.05),
               _buildLegendItem(
                 color: Colors.green,
                 label: 'Income',
+                screenWidth: screenWidth,
               ),
             ],
           ),
@@ -284,15 +294,19 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildIconButton({required String icon, required VoidCallback onTap}) {
+  Widget _buildIconButton({
+    required String icon, 
+    required VoidCallback onTap,
+    required double screenWidth,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 34,
-        height: 34,
+        width: screenWidth * 0.08,
+        height: screenWidth * 0.08,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(screenWidth * 0.03),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -304,31 +318,35 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
         child: Center(
           child: Image.asset(
             icon,
-            width: 16,
-            height: 16,
+            width: screenWidth * 0.04,
+            height: screenWidth * 0.04,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLegendItem({required Color color, required String label}) {
+  Widget _buildLegendItem({
+    required Color color, 
+    required String label,
+    required double screenWidth,
+  }) {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: screenWidth * 0.03,
+          height: screenWidth * 0.03,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(screenWidth * 0.007),
           ),
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: screenWidth * 0.01),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: screenWidth * 0.03,
           ),
         ),
       ],

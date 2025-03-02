@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../Home.dart';  // Update with your app name
-import '../QuickAnalysis.dart';
 import '../transaction.dart';
 import '../Analysis.dart';
 // Import other pages you want to navigate to

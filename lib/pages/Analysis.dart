@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/balance_overview.dart';
+import 'components/analysis_header.dart';  // Use existing header component
 import 'components/progress_bar.dart';
 import 'components/fl_bar_chart.dart';
 import 'components/bottom_nav_bar.dart';
-import 'components/period_selector_analysis.dart'; // Import the PeriodSelector
+import 'components/period_selector_analysis.dart';
+import 'components/income_expense_summary.dart';  // Should use this component
+import 'components/targets_section.dart';  // Should use this component
 import 'Notification.dart';
 
 class Analysis extends StatefulWidget {
@@ -103,7 +105,6 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
     
     // Get current period data based on selection
     String currentPeriod = _periods[_selectedPeriodIndex];
@@ -122,7 +123,13 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
           children: [
             Column(
               children: [
-                _buildHeader(context, screenWidth, screenHeight),
+                // Use the existing AnalysisHeader component
+                const AnalysisHeader(
+                  totalBalance: 7783.00,
+                  totalExpense: 1187.40,
+                  expensePercentage: 30,
+                  expenseLimit: 20000.00,
+                ),
                 Expanded(
                   child: Container(
                     decoration: const BoxDecoration(
@@ -136,11 +143,10 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
                       key: const PageStorageKey('analysis_scroll'),
                       physics: const BouncingScrollPhysics(),
                       child: Padding(
-                        padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+                        padding: EdgeInsets.all(screenWidth * 0.04),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Use the imported PeriodSelector widget with correct parameter names
                             PeriodSelector(
                               periods: _periods,
                               selectedIndex: _selectedPeriodIndex,
@@ -156,9 +162,14 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
                               ),
                             ),
                             SizedBox(height: screenHeight * 0.02),
-                            _buildIncomeExpenseSummary(screenWidth),
+                            // Use the existing IncomeExpenseSummary component
+                            const IncomeExpenseSummary(
+                              income: 4120.00,
+                              expense: 1187.40,
+                            ),
                             SizedBox(height: screenHeight * 0.03),
-                            _buildTargetsSection(screenWidth, screenHeight),
+                            // Use the existing TargetsSection component
+                            TargetsSection(targets: _targets),
                             SizedBox(height: screenHeight * 0.1),
                           ],
                         ),
@@ -177,245 +188,6 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, double screenWidth, double screenHeight) {
-    return Container(
-      color: const Color(0xFF202422),
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.06,
-        vertical: screenHeight * 0.06,
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: screenWidth * 0.06,
-                ),
-              ),
-              Text(
-                'Analysis',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: screenWidth * 0.06,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationPage()),
-                  );
-                },
-                child: Container(
-                  width: screenWidth * 0.08,
-                  height: screenWidth * 0.08,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF050505),
-                    borderRadius: BorderRadius.circular(screenWidth * 0.04),
-                  ),
-                  child: Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                    size: screenWidth * 0.05,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: screenHeight * 0.02),
-          const BalanceOverview(
-            totalBalance: 7783.00,
-            totalExpense: 1187.40,
-          ),
-          SizedBox(height: screenHeight * 0.02),
-          const ProgressBar(progress: 0.3, goalAmount: 20000.00),
-          SizedBox(height: screenHeight * 0.01),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'lib/pages/assets/Check.png',
-                width: screenWidth * 0.03,
-                height: screenWidth * 0.03,
-              ),
-              SizedBox(width: screenWidth * 0.02),
-              Text(
-                '30% Of Your Expenses, Looks Good.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: screenWidth * 0.035,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIncomeExpenseSummary(double screenWidth) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildIncomeExpense(
-            icon: 'lib/pages/assets/Income.png',
-            title: 'Income',
-            amount: '\$4,120.00',
-            color: const Color(0xFF0D4015),
-            screenWidth: screenWidth,
-          ),
-          _buildIncomeExpense(
-            icon: 'lib/pages/assets/Expense.png',
-            title: 'Expense',
-            amount: '\$1,187.40',
-            color: const Color(0xFF843F3F),
-            screenWidth: screenWidth,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIncomeExpense({
-    required String icon,
-    required String title,
-    required String amount,
-    required Color color,
-    required double screenWidth,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(
-          icon,
-          width: screenWidth * 0.06,
-          height: screenWidth * 0.06,
-          color: color,
-        ),
-        SizedBox(height: screenWidth * 0.01),
-        Text(
-          title,
-          style: TextStyle(
-            color: color,
-            fontSize: screenWidth * 0.035,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Text(
-          amount,
-          style: TextStyle(
-            color: color,
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTargetsSection(double screenWidth, double screenHeight) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'My Targets',
-          style: TextStyle(
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF202422),
-          ),
-        ),
-        SizedBox(height: screenHeight * 0.02),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: _targets.map((target) => _buildTargetItem(
-            name: target['name'],
-            progress: target['progress'],
-            color: target['color'],
-            screenWidth: screenWidth,
-          )).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTargetItem({
-    required String name,
-    required double progress,
-    required Color color,
-    required double screenWidth,
-  }) {
-    return Container(
-      width: screenWidth * 0.4,
-      height: screenWidth * 0.4,
-      decoration: BoxDecoration(
-        color: const Color(0xFF202422),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: progress),
-            duration: const Duration(milliseconds: 1500),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: screenWidth * 0.25,
-                    height: screenWidth * 0.25,
-                    child: CircularProgressIndicator(
-                      value: value,
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                      strokeWidth: 8,
-                    ),
-                  ),
-                  Text(
-                    '${(value * 100).toInt()}%',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: screenWidth * 0.05,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          SizedBox(height: screenWidth * 0.02),
-          Text(
-            name,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: screenWidth * 0.04,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

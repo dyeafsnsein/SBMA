@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class IncomeExpenseSummary extends StatelessWidget {
   final double income;
@@ -20,14 +21,15 @@ class IncomeExpenseSummary extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIncomeExpense(
-            icon: 'lib/pages/assets/Income.png',
+            icon: CupertinoIcons.arrow_up_right_square,
             title: 'Income',
             amount: '\$${income.toStringAsFixed(2)}',
             color: const Color(0xFF0D4015),
             screenWidth: screenWidth,
           ),
+          
           _buildIncomeExpense(
-            icon: 'lib/pages/assets/Expense.png',
+            icon: CupertinoIcons.arrow_down_left_square,
             title: 'Expense',
             amount: '\$${expense.toStringAsFixed(2)}',
             color: const Color(0xFF843F3F),
@@ -39,7 +41,7 @@ class IncomeExpenseSummary extends StatelessWidget {
   }
 
   Widget _buildIncomeExpense({
-    required String icon,
+    required IconData icon,
     required String title,
     required String amount,
     required Color color,
@@ -48,10 +50,9 @@ class IncomeExpenseSummary extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(
+        Icon(
           icon,
-          width: screenWidth * 0.06,
-          height: screenWidth * 0.06,
+          size: screenWidth * 0.08,
           color: color,
         ),
         SizedBox(height: screenWidth * 0.01),

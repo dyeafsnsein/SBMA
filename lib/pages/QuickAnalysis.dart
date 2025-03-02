@@ -32,8 +32,8 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
     'lib/pages/assets/Profile.png',
   ];
 
-  final List<double> _expenses = [6, 10, 20, 7];
-  final List<double> _income = [6, 8, 12, 6];
+  final List<double> _expenses = [6.0, 10.0, 20.0, 7.0];
+  final List<double> _income = [6.0, 8.0, 12.0, 6.0];
   final List<String> _chartLabels = ['1st Week', '2nd Week', '3rd Week', '4th Week'];
 
   @override
@@ -102,7 +102,9 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                       padding: EdgeInsets.all(horizontalPadding),
                       child: Column(
                         children: [
-                          Flexible(
+                          // Fixed height container for the chart instead of Flexible
+                          SizedBox(
+                            height: height * 0.28, // Adjust this value as needed
                             child: FlBarChart(
                               expenses: _expenses,
                               income: _income,
