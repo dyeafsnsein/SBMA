@@ -104,7 +104,6 @@ class _TransactionsState extends State<Transactions> {
                       SizedBox(height: screenHeight * 0.02),
                       BalanceOverview(
                         totalBalance: _totalBalance,
-                        totalIncome: _totalIncome,
                         totalExpense: _totalExpense.abs(),
                       ),
                     ],
