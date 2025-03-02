@@ -110,23 +110,50 @@ class _CategoryState extends State<Category> {
                               ),
                             ],
                           ),
-                          Row(
+                          Stack(
                             children: [
-                              Expanded(
-                                child: LinearProgressIndicator(
-                                  value: 0.3,
-                                  backgroundColor: Colors.black,
-                                  color: const Color(0xFF0D4015),
+                              Container(
+                                height: 27,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(13.5),
                                 ),
                               ),
-                              SizedBox(width: width * 0.02),
-                              Text(
-                                '\$20,000.00',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: width * 0.035,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                              FractionallySizedBox(
+                                widthFactor: 0.3,
+                                child: Container(
+                                  height: 27,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1FFF3),
+                                    borderRadius: BorderRadius.circular(13.5),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: 10,
+                                top: 4.5,
+                                child: Text(
+                                  '30%',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Color(0xFFF1FFF3),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 10,
+                                top: 3.5,
+                                child: Text(
+                                  '\$20,000.00',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ],
