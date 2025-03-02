@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../Search.dart';
 
 class FlBarChart extends StatefulWidget {
   final List<double> expenses;
@@ -113,8 +114,10 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
                   _buildIconButton(
                     icon: 'lib/pages/assets/Search.png',
                     onTap: () {
-                      // Implement search functionality
-                    },
+Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SearchPage()),
+    );                    },
                     screenWidth: screenWidth,
                   ),
                   SizedBox(width: screenWidth * 0.02),

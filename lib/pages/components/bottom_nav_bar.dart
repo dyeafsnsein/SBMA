@@ -34,10 +34,7 @@ class BottomNavBar extends StatelessWidget {
         );
         break;
       case 2: // Transactions
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Transactions()),
-        );
+        
         break;
       case 3: // Categories
         Navigator.pushReplacement(
