@@ -18,7 +18,8 @@ class GoalOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector( // Wrap with GestureDetector
+    return GestureDetector(
+      // Wrap with GestureDetector
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(18.0),
@@ -45,11 +46,7 @@ class GoalOverview extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Image.asset(
-                      goalIcon,
-                      width: 37.57,
-                      height: 21.75,
-                    ),
+                    Image.asset(goalIcon, width: 37.57, height: 21.75),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -64,11 +61,7 @@ class GoalOverview extends StatelessWidget {
                 ),
               ],
             ),
-            Container(
-              width: 1,
-              height: 108,
-              color: const Color(0xFFFCFCFC),
-            ),
+            Container(width: 1, height: 108, color: const Color(0xFFFCFCFC)),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
