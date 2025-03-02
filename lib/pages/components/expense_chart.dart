@@ -83,7 +83,7 @@ class ExpenseChart extends StatelessWidget {
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      String type = rodIndex == 0 ? 'Expense' : 'Income';
+                      String type = rodIndex == 0 ? 'Expense1' : 'Income';
                       return BarTooltipItem(
                         '$type: ${rod.toY}k',
                         const TextStyle(color: Colors.white),
