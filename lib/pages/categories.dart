@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/header.dart'; // Assuming you have a header component
+import 'package:flutter/cupertino.dart';
 import 'components/bottom_nav_bar.dart';
+import 'components/progress_bar.dart';
+import 'components/header.dart';
+import 'Notification.dart';
+import 'newcategory.dart';
 
 class Category extends StatefulWidget {
   const Category({Key? key}) : super(key: key);
@@ -18,6 +22,35 @@ class _CategoryState extends State<Category> {
     'lib/pages/assets/Categories.png',
     'lib/pages/assets/Profile.png',
   ];
+
+  List<Map<String, dynamic>> _categories = [
+    {'icon': CupertinoIcons.heart, 'label': 'Food'},
+    {'icon': CupertinoIcons.car, 'label': 'Transport'},
+    {'icon': CupertinoIcons.heart_circle, 'label': 'Medicine'},
+    {'icon': CupertinoIcons.cart, 'label': 'Groceries'},
+    {'icon': CupertinoIcons.home, 'label': 'Rent'},
+    {'icon': CupertinoIcons.gift, 'label': 'Gifts'},
+    {'icon': CupertinoIcons.money_dollar_circle, 'label': 'Savings'},
+    {'icon': CupertinoIcons.film, 'label': 'Entertainment'},
+    {'icon': CupertinoIcons.plus_circle, 'label': 'More'},
+  ];
+
+  void _showNewCategoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (BuildContext context) => NewCategory(
+            onSave: (String categoryName) {
+              setState(() {
+                _categories.insert(_categories.length - 1, {
+                  'icon': CupertinoIcons.star,
+                  'label': categoryName,
+                });
+              });
+            },
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +109,15 @@ class _CategoryState extends State<Category> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => const NotificationPage(),
+                                    ),
+                                  );
+                                },
                                 child: Container(
                                   width: width * 0.08,
                                   height: width * 0.08,
@@ -110,71 +151,36 @@ class _CategoryState extends State<Category> {
                               ),
                             ],
                           ),
-                          Stack(
-                            children: [
-                              Container(
-                                height: 27,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(13.5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const ProgressBar(
+                                  progress: 0.3,
+                                  goalAmount: 20000.00,
                                 ),
-                              ),
-                              FractionallySizedBox(
-                                widthFactor: 0.3,
-                                child: Container(
-                                  height: 27,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1FFF3),
-                                    borderRadius: BorderRadius.circular(13.5),
-                                  ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_box,
+                                      color: Colors.white,
+                                      size: width * 0.04,
+                                    ),
+                                    SizedBox(width: width * 0.02),
+                                    Text(
+                                      '30% Of Your Expenses, Looks Good.',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: width * 0.035,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Positioned(
-                                left: 10,
-                                top: 4.5,
-                                child: Text(
-                                  '30%',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 10,
-                                top: 3.5,
-                                child: Text(
-                                  '\$20,000.00',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FontStyle.italic,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.check_box,
-                                color: Colors.white,
-                                size: width * 0.04,
-                              ),
-                              SizedBox(width: width * 0.02),
-                              Text(
-                                '30% Of Your Expenses, Looks Good.',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: width * 0.035,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -190,16 +196,66 @@ class _CategoryState extends State<Category> {
                         topRight: Radius.circular(40),
                       ),
                     ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+                      child: GridView.builder(
+                        padding: const EdgeInsets.only(bottom: 80),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20,
+                              childAspectRatio: 0.75,
+                            ),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          return GestureDetector(
+                            onTap:
+                                category['label'] == 'More'
+                                    ? () => _showNewCategoryDialog(context)
+                                    : null,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 90,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF202422),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      category['icon'] as IconData,
+                                      color: Colors.white,
+                                      size: 45,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  category['label']!,
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF202422),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 3, // Assuming Categories is at index 3
-              ),
+              child: BottomNavBar(iconPaths: _iconPaths, selectedIndex: 3),
             ),
           ],
         ),
