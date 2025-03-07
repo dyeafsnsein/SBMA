@@ -13,11 +13,11 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   final List<String> _months = [
@@ -35,14 +35,14 @@ class _CalendarPageState extends State<CalendarPage> {
   // For TransactionList
   final List<Map<String, String>> _transactions = [
     {
-      'icon': 'lib/pages/assets/Pantry.png',
+      'icon': 'lib/assets/Pantry.png',
       'title': 'Groceries',
       'time': '17:00 - April 24',
       'category': 'Pantry',
       'amount': '-\$100,00',
     },
     {
-      'icon': 'lib/pages/assets/Salary.png',
+      'icon': 'lib/assets/Salary.png',
       'title': 'Others',
       'time': '17:00 - April 24',
       'category': 'Payments',

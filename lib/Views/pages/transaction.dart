@@ -15,11 +15,11 @@ class Transactions extends StatefulWidget {
 
 class _TransactionsState extends State<Transactions> {
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   List<Map<String, String>> _transactions = [];
@@ -38,7 +38,7 @@ class _TransactionsState extends State<Transactions> {
     setState(() {
       _transactions = [
         {
-          'icon': 'lib/pages/assets/Salary.png',
+          'icon': 'lib/assets/Salary.png',
           'time': '18:27 - April 30',
           'category': 'Monthly',
           'amount': '4000.00',
@@ -46,7 +46,7 @@ class _TransactionsState extends State<Transactions> {
           'date': '2023-04-30',
         },
         {
-          'icon': 'lib/pages/assets/Pantry.png',
+          'icon': 'lib/assets/Pantry.png',
           'time': '17:00 - April 24',
           'category': 'Pantry',
           'amount': '-100.00',
@@ -54,7 +54,7 @@ class _TransactionsState extends State<Transactions> {
           'date': '2023-04-24',
         },
         {
-          'icon': 'lib/pages/assets/Rent.png',
+          'icon': 'lib/assets/Rent.png',
           'time': '8:30 - April 15',
           'category': 'Rent',
           'amount': '-674.40',
@@ -62,7 +62,7 @@ class _TransactionsState extends State<Transactions> {
           'date': '2023-04-15',
         },
         {
-          'icon': 'lib/pages/assets/Transport.png',
+          'icon': 'lib/assets/Transport.png',
           'time': '7:30 - April 08',
           'category': 'Fuel',
           'amount': '-4.13',
@@ -70,7 +70,7 @@ class _TransactionsState extends State<Transactions> {
           'date': '2023-04-08',
         },
         {
-          'icon': 'lib/pages/assets/Food.png',
+          'icon': 'lib/assets/Food.png',
           'time': '19:30 - March 31',
           'category': 'Dinner',
           'amount': '-70.40',
@@ -308,7 +308,7 @@ class _TransactionsState extends State<Transactions> {
                               ),
                               child: Center(
                                 child: Image.asset(
-                                  'lib/pages/assets/Calendar.png',
+                                  'lib/assets/Calendar.png',
                                   width: 20,
                                   height: 20,
                                   color: Colors.white,

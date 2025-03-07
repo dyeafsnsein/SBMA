@@ -27,11 +27,11 @@ class _SearchPageState extends State<SearchPage> {
   ];
 
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   @override
@@ -235,7 +235,7 @@ class _SearchPageState extends State<SearchPage> {
                                   ),
                                   child: Center(
     child: Image.asset(
-      'lib/pages/assets/Calendar.png',
+      'lib/assets/Calendar.png',
       width: 16,
       height: 16,
     ),),

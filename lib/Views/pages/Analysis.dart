@@ -18,11 +18,11 @@ class Analysis extends StatefulWidget {
 
 class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin {
   final List<String> _iconPaths = const [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   final List<String> _periods = const ['Daily', 'Weekly', 'Monthly', 'Year'];

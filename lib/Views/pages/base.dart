@@ -15,9 +15,9 @@ class _HomeState extends State<Home> {
   final List<String> _iconPaths = [
     'lib/pages/assets/Home.png',
     'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   // Handles icon selection

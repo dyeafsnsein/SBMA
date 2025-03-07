@@ -113,7 +113,7 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
               Row(
                 children: [
                   _buildIconButton(
-                    icon: 'lib/pages/assets/Search.png',
+                    icon: 'lib/assets/Search.png',
                     onTap: () {
 Navigator.push(
       context,
@@ -123,7 +123,7 @@ Navigator.push(
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   _buildIconButton(
-                    icon: 'lib/pages/assets/Calendar.png',
+                    icon: 'lib/assets/Calendar.png',
                     onTap: () {Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CalendarPage()),

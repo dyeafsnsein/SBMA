@@ -21,54 +21,54 @@ class _HomeState extends State<Home> {
   int _selectedPeriodIndex = 2;
 
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   final List<String> _periods = ['Daily', 'Weekly', 'Monthly'];
 
   final List<Map<String, String>> _transactions = [
     {
-      'icon': 'lib/pages/assets/Salary.png',
+      'icon': 'lib/assets/Salary.png',
       'time': '18:27 - April 30',
       'category': 'Monthly',
       'amount': '\$4,000.00',
     },
     {
-      'icon': 'lib/pages/assets/Pantry.png',
+      'icon': 'lib/assets/Pantry.png',
       'time': '17:00 - April 24',
       'category': 'Pantry',
       'amount': '-\$100.00',
     },
     {
-      'icon': 'lib/pages/assets/Rent.png',
+      'icon': 'lib/assets/Rent.png',
       'time': '8:30 - April 15',
       'category': 'Rent',
       'amount': '-\$874.40',
     },
     {
-      'icon': 'lib/pages/assets/Rent.png',
+      'icon': 'lib/assets/Rent.png',
       'time': '9:30 - April 25',
       'category': 'Rent',
       'amount': '-\$774.40',
     },
     {
-      'icon': 'lib/pages/assets/Rent.png',
+      'icon': 'lib/assets/Rent.png',
       'time': '9:30 - April 25',
       'category': 'Rent',
       'amount': '-\$774.40',
     },
     {
-      'icon': 'lib/pages/assets/Pantry.png',
+      'icon': 'lib/assets/Pantry.png',
       'time': '17:00 - April 24',
       'category': 'Pantry',
       'amount': '-\$100.00',
     },
     {
-      'icon': 'lib/pages/assets/Pantry.png',
+      'icon': 'lib/assets/Pantry.png',
       'time': '18:00 - April 24',
       'category': 'Pantry',
       'amount': '-\$100.00',
@@ -131,7 +131,7 @@ class _HomeState extends State<Home> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Image.asset(
-                                'lib/pages/assets/Check.png',
+                                'lib/assets/Check.png',
                                 width: screenWidth * 0.03,
                                 height: screenWidth * 0.03,
                               ),
@@ -166,7 +166,7 @@ class _HomeState extends State<Home> {
                       child: Column(
                         children: [
                           GoalOverview(
-                            goalIcon: 'lib/pages/assets/Car.png',
+                            goalIcon: 'lib/assets/Car.png',
                             goalText: 'Savings On Goals',
                             revenueLastWeek: 4000.00,
                             foodLastWeek: 100.00,

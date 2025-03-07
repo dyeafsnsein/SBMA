@@ -172,7 +172,7 @@ class ForgotPassword extends StatelessWidget {
                                         children: [
                                           IconButton(
                                             icon: Image.asset(
-                                              'lib/pages/assets/Facebook.png',
+                                              'lib/assets/Facebook.png',
                                               width: 32.71,
                                               height: 32.65,
                                             ),
@@ -183,7 +183,7 @@ class ForgotPassword extends StatelessWidget {
                                           const SizedBox(width: 16),
                                           IconButton(
                                             icon: Image.asset(
-                                              'lib/pages/assets/Google.png',
+                                              'lib/assets/Google.png',
                                               width: 32.71,
                                               height: 32.71,
                                             ),

@@ -16,7 +16,7 @@ class QuickAnalysis extends StatefulWidget {
 class _QuickAnalysisState extends State<QuickAnalysis> {
   final List<Map<String, String>> _transactions = [
     {
-      'icon': 'lib/pages/assets/Salary.png',
+      'icon': 'lib/assets/Salary.png',
       'title': 'Salary',
       'time': '18:27 - April 30',
       'category': 'Monthly',
@@ -25,11 +25,11 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
   ];
 
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   final List<double> _expenses = [6.0, 10.0, 20.0, 7.0];
@@ -78,7 +78,7 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                             onNotificationTap: () {},
                           ),
                           GoalOverview(
-                            goalIcon: 'lib/pages/assets/Car.png',
+                            goalIcon: 'lib/assets/Car.png',
                             goalText: 'Savings On Goals',
                             revenueLastWeek: 4000.00,
                             foodLastWeek: 100.00,
