@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../Search.dart';
+import '../calendar.dart';
 
 class FlBarChart extends StatefulWidget {
   final List<double> expenses;
@@ -123,7 +124,10 @@ Navigator.push(
                   SizedBox(width: screenWidth * 0.02),
                   _buildIconButton(
                     icon: 'lib/pages/assets/Calendar.png',
-                    onTap: () {
+                    onTap: () {Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CalendarPage()),
+      );
                       // Implement calendar functionality
                     },
                     screenWidth: screenWidth,
