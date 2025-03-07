@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/transaction_list.dart';
+import 'package:flutter/cupertino.dart';
+import 'components/transaction_list.dart'; // Import the TransactionList component
 import 'components/bottom_nav_bar.dart';
 import 'Notification.dart';
 import 'Home.dart';
@@ -162,9 +163,11 @@ class _TransactionsState extends State<Transactions> {
               children: [
                 Container(
                   color: const Color(0xFF202422),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.06,
-                    vertical: screenHeight * 0.04,
+                  padding: EdgeInsets.fromLTRB(
+                    screenWidth * 0.06,
+                    screenHeight * 0.08,
+                    screenWidth * 0.06,
+                    screenHeight * 0.04,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -225,7 +228,7 @@ class _TransactionsState extends State<Transactions> {
                           ),
                         ],
                       ),
-                      SizedBox(height: screenHeight * 0.02),
+                      SizedBox(height: screenHeight * 0.04),
                       Text(
                         'Total Balance',
                         style: TextStyle(
@@ -248,20 +251,23 @@ class _TransactionsState extends State<Transactions> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildBalanceBox(
-                            title: 'Income',
-                            amount: '\$${_totalIncome.toStringAsFixed(2)}',
-                            color: const Color(0xFF0D4015),
-                            width: screenWidth * 0.4,
-                            icon: 'lib/pages/assets/Income.png',
+                          Flexible(
+                            child: _buildIncomeExpenseBox(
+                              icon: CupertinoIcons.arrow_up_right_square,
+                              title: 'Income',
+                              amount: '\$${_totalIncome.toStringAsFixed(2)}',
+                              color: const Color(0xFF0D4015),
+                            ),
                           ),
-                          _buildBalanceBox(
-                            title: 'Expense',
-                            amount:
-                                '\$${_totalExpense.abs().toStringAsFixed(2)}',
-                            color: const Color(0xFF843F3F),
-                            width: screenWidth * 0.4,
-                            icon: 'lib/pages/assets/Expense.png',
+                          SizedBox(width: 10),
+                          Flexible(
+                            child: _buildIncomeExpenseBox(
+                              icon: CupertinoIcons.arrow_down_left_square,
+                              title: 'Expense',
+                              amount:
+                                  '\$${_totalExpense.abs().toStringAsFixed(2)}',
+                              color: const Color(0xFF843F3F),
+                            ),
                           ),
                         ],
                       ),
@@ -280,12 +286,17 @@ class _TransactionsState extends State<Transactions> {
                     child: Stack(
                       children: [
                         Padding(
-                          padding: EdgeInsets.all(screenWidth * 0.05),
+                          padding: EdgeInsets.only(
+                            top: 60,
+                            left: screenWidth * 0.05,
+                            right: screenWidth * 0.05,
+                            bottom: screenWidth * 0.05,
+                          ),
                           child: TransactionList(transactions: _transactions),
                         ),
                         Positioned(
-                          top: 10,
-                          right: 10,
+                          top: 20,
+                          right: 20,
                           child: GestureDetector(
                             onTap: _pickDateRange,
                             child: Container(
@@ -322,47 +333,39 @@ class _TransactionsState extends State<Transactions> {
     );
   }
 
-  Widget _buildBalanceBox({
+  Widget _buildIncomeExpenseBox({
+    required IconData icon,
     required String title,
     required String amount,
     required Color color,
-    required double width,
-    required String icon,
   }) {
     return Container(
-      width: width,
-      height: 80,
+      width: 171,
+      height: 101,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(icon, width: 24, height: 24, color: color),
-          const SizedBox(width: 8),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-              Text(
-                amount,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
+          Icon(icon, size: 30, color: color),
+          SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),
