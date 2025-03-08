@@ -68,7 +68,7 @@ class GoalOverview extends StatelessWidget {
                 Row(
                   children: [
                     Image.asset(
-                      'lib/pages/assets/Salary.png',
+                      'lib/assets/Salary.png',
                       width: 31,
                       height: 28,
                     ),
@@ -101,7 +101,7 @@ class GoalOverview extends StatelessWidget {
                 Row(
                   children: [
                     Image.asset(
-                      'lib/pages/assets/Food.png',
+                      'lib/assets/Food.png',
                       width: 31,
                       height: 28,
                     ),

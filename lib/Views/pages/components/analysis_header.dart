@@ -90,7 +90,7 @@ class AnalysisHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'lib/pages/assets/Check.png',
+                'lib/assets/Check.png',
                 width: screenWidth * 0.03,
                 height: screenWidth * 0.03,
               ),

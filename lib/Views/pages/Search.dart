@@ -27,11 +27,11 @@ class _SearchPageState extends State<SearchPage> {
   ];
 
   final List<String> _iconPaths = [
-    'lib/pages/assets/Home.png',
-    'lib/pages/assets/Analysis.png',
-    'lib/pages/assets/Transactions.png',
-    'lib/pages/assets/Categories.png',
-    'lib/pages/assets/Profile.png',
+    'lib/assets/Home.png',
+    'lib/assets/Analysis.png',
+    'lib/assets/Transactions.png',
+    'lib/assets/Categories.png',
+    'lib/assets/Profile.png',
   ];
 
   @override
@@ -56,7 +56,7 @@ class _SearchPageState extends State<SearchPage> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.06,
-                    vertical: screenHeight * 0.02,
+                    vertical: screenHeight * 0.04,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -157,7 +157,7 @@ class _SearchPageState extends State<SearchPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE6F9E9),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -181,7 +181,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         
                         // Date
-                        SizedBox(height: screenHeight * 0.02),
+                        SizedBox(height: screenHeight * 0.01),
                         const Text(
                           'Date',
                           style: TextStyle(
@@ -213,7 +213,7 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF202422),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(30),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -227,17 +227,18 @@ class _SearchPageState extends State<SearchPage> {
                                   ),
                                 ),
                                 Container(
-                                  width: 34,
-                                  height: 34,
+                                  width: 30,
+                                  height: 30,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(17),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(
-                                    Icons.calendar_today,
-                                    color: Colors.black,
-                                    size: 18,
-                                  ),
+                                  child: Center(
+    child: Image.asset(
+      'lib/assets/Calendar.png',
+      width: 16,
+      height: 16,
+    ),),
                                 ),
                               ],
                             ),
@@ -255,7 +256,7 @@ class _SearchPageState extends State<SearchPage> {
                             color: Color(0xFF202422),
                           ),
                         ),
-                        SizedBox(height: screenHeight * 0.01),
+                        SizedBox(height: screenHeight * 0.02),
                         Row(
                           children: [
                             _buildRadioOption(
@@ -283,7 +284,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         
                         // Search button
-                        SizedBox(height: screenHeight * 0.04),
+                        SizedBox(height: screenHeight * 0.05),
                         Center(
                           child: SizedBox(
                             width: screenWidth * 0.5,

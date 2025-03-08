@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../Search.dart';
+import '../calendar.dart';
 
 class FlBarChart extends StatefulWidget {
   final List<double> expenses;
@@ -112,7 +113,7 @@ class _FlBarChartState extends State<FlBarChart> with SingleTickerProviderStateM
               Row(
                 children: [
                   _buildIconButton(
-                    icon: 'lib/pages/assets/Search.png',
+                    icon: 'lib/assets/Search.png',
                     onTap: () {
 Navigator.push(
       context,
@@ -122,8 +123,11 @@ Navigator.push(
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   _buildIconButton(
-                    icon: 'lib/pages/assets/Calendar.png',
-                    onTap: () {
+                    icon: 'lib/assets/Calendar.png',
+                    onTap: () {Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CalendarPage()),
+      );
                       // Implement calendar functionality
                     },
                     screenWidth: screenWidth,

@@ -46,7 +46,7 @@ class ExpenseChart extends StatelessWidget {
                     ),
                     child: Center(
                       child: Image.asset(
-                        'lib/pages/assets/Search.png',
+                        'lib/assets/Search.png',
                         width: 16,
                         height: 16,
                       ),
@@ -62,7 +62,7 @@ class ExpenseChart extends StatelessWidget {
                     ),
                     child: Center(
                       child: Image.asset(
-                        'lib/pages/assets/Calendar.png',
+                        'lib/assets/Calendar.png',
                         width: 16,
                         height: 16,
                       ),

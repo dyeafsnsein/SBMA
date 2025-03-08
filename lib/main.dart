@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/Home.dart'; // Import the external LaunchPage
-
+import 'Views/pages/Home.dart';
 void main() {
   runApp(const MyApp());
 }
