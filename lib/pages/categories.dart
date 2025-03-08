@@ -23,8 +23,9 @@ class _CategoryState extends State<Category> {
     'lib/pages/assets/Profile.png',
   ];
 
-  List<Map<String, dynamic>> _categories = [
-    {'icon': CupertinoIcons.heart, 'label': 'Food'},
+  final List<Map<String, dynamic>> _categories = [
+    {'icon': 'lib/pages/assets/Food.png', 'isImage': true, 'label': 'Food'},
+
     {'icon': CupertinoIcons.car, 'label': 'Transport'},
     {'icon': CupertinoIcons.heart_circle, 'label': 'Medicine'},
     {'icon': CupertinoIcons.cart, 'label': 'Groceries'},
