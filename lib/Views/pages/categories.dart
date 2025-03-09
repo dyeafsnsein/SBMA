@@ -22,7 +22,7 @@ class _CategoryState extends State<Category> {
     'lib/assets/Profile.png',
   ];
 
-  List<Map<String, dynamic>> _categories = [
+    List<Map<String, dynamic>> _categories = [
     {'icon': 'lib/assets/Food.png', 'label': 'Food'},
     {'icon': 'lib/assets/Transport.png', 'label': 'Transport'},
     {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},

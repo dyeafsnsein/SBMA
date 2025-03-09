@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Home.dart';  // Update with your app name
+import '../QuickAnalysis.dart';
 import '../transaction.dart';
 import '../Analysis.dart';
 import '../categories.dart'; // Import the Categories page
@@ -33,7 +34,7 @@ class BottomNavBar extends StatelessWidget {
         );
         break;
       case 2: // Transactions
-         Navigator.pushReplacement(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Transactions()),
         );
