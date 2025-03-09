@@ -22,21 +22,11 @@ class _CategoryState extends State<Category> {
     'lib/assets/Profile.png',
   ];
 
-  final List<Map<String, dynamic>> _categories = [
-    {'icon': 'lib/assets/Food.png', 'label': 'Food'},
-    {'icon': 'lib/assets/Car.png', 'label': 'Transport'},
-    {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
-    {'icon': 'lib/assets/Groceries.png', 'label': 'Groceries'},
-    {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
-    {'icon': 'lib/assets/Gift.png', 'label': 'Gift'},
-    {'icon': 'lib/assets/Saving.png', 'label': 'Saving'},
-    {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
-    {'icon': 'lib/assets/More.png', 'label': 'More'},
-    List<Map<String, dynamic>> _categories = [
+  List<Map<String, dynamic>> _categories = [
     {'icon': 'lib/assets/Food.png', 'label': 'Food'},
     {'icon': 'lib/assets/Transport.png', 'label': 'Transport'},
     {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
-    {'icon': 'lib/assets/Pantry.png', 'label': 'Groceries'},
+    {'icon': 'lib/assets/Groceries.png', 'label': 'Groceries'},
     {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
     {'icon': 'lib/assets/Gift.png', 'label': 'Gifts'},
     {'icon': 'lib/assets/Saving.png', 'label': 'Savings'},
@@ -47,17 +37,6 @@ class _CategoryState extends State<Category> {
   void _showNewCategoryDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (BuildContext context) => NewCategory(
-            onSave: (String categoryName) {
-              setState(() {
-                _categories.insert(_categories.length - 1, {
-                  'icon': 'lib/assets/Star.png',
-                  'label': categoryName,
-                });
-              });
-            },
-          ),
       builder: (BuildContext context) => NewCategory(
         onSave: (String categoryName) {
           setState(() {
@@ -146,11 +125,10 @@ class _CategoryState extends State<Category> {
                                     ),
                                   ),
                                   child: Center(
-                                    child: Image.asset(
-                                      'lib/assets/Notification.png',
-                                      width: width * 0.05,
-                                      height: width * 0.05,
+                                    child: Icon(
+                                      Icons.notifications,
                                       color: Colors.white,
+                                      size: width * 0.05,
                                     ),
                                   ),
                                 ),
@@ -182,11 +160,10 @@ class _CategoryState extends State<Category> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Image.asset(
-                                      'lib/assets/Check.png',
-                                      width: width * 0.04,
-                                      height: width * 0.04,
+                                    Icon(
+                                      Icons.check_box,
                                       color: Colors.white,
+                                      size: width * 0.04,
                                     ),
                                     SizedBox(width: width * 0.02),
                                     Text(
@@ -248,17 +225,12 @@ class _CategoryState extends State<Category> {
                                       category['icon'],
                                       width: 45,
                                       height: 45,
-                                      color: Colors.white,
-                                    child: Image.asset(
-                                      category['icon'],
-                                      width: 45,
-                                      height: 45,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  category['label'],
+                                  category['label']!,
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 12,
