@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../Home.dart';  // Update with your app name
-import '../QuickAnalysis.dart';
 import '../transaction.dart';
 import '../Analysis.dart';
 import '../categories.dart'; // Import the Categories page

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'components/bottom_nav_bar.dart';
 import 'components/progress_bar.dart';
 import 'components/header.dart';
@@ -24,31 +23,30 @@ class _CategoryState extends State<Category> {
   ];
 
   List<Map<String, dynamic>> _categories = [
-    {'icon': CupertinoIcons.heart, 'label': 'Food'},
-    {'icon': CupertinoIcons.car, 'label': 'Transport'},
-    {'icon': CupertinoIcons.heart_circle, 'label': 'Medicine'},
-    {'icon': CupertinoIcons.cart, 'label': 'Groceries'},
-    {'icon': CupertinoIcons.home, 'label': 'Rent'},
-    {'icon': CupertinoIcons.gift, 'label': 'Gifts'},
-    {'icon': CupertinoIcons.money_dollar_circle, 'label': 'Savings'},
-    {'icon': CupertinoIcons.film, 'label': 'Entertainment'},
-    {'icon': CupertinoIcons.plus_circle, 'label': 'More'},
+    {'icon': 'lib/assets/Food.png', 'label': 'Food'},
+    {'icon': 'lib/assets/Transport.png', 'label': 'Transport'},
+    {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
+    {'icon': 'lib/assets/Pantry.png', 'label': 'Groceries'},
+    {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
+    {'icon': 'lib/assets/Gift.png', 'label': 'Gifts'},
+    {'icon': 'lib/assets/Saving.png', 'label': 'Savings'},
+    {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
+    {'icon': 'lib/assets/More.png', 'label': 'More'},
   ];
 
   void _showNewCategoryDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (BuildContext context) => NewCategory(
-            onSave: (String categoryName) {
-              setState(() {
-                _categories.insert(_categories.length - 1, {
-                  'icon': CupertinoIcons.star,
-                  'label': categoryName,
-                });
-              });
-            },
-          ),
+      builder: (BuildContext context) => NewCategory(
+        onSave: (String categoryName) {
+          setState(() {
+            _categories.insert(_categories.length - 1, {
+              'icon': 'lib/assets/Star.png',
+              'label': categoryName,
+            });
+          });
+        },
+      ),
     );
   }
 
@@ -113,8 +111,7 @@ class _CategoryState extends State<Category> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder:
-                                          (context) => const NotificationPage(),
+                                      builder: (context) => const NotificationPage(),
                                     ),
                                   );
                                 },
@@ -200,21 +197,19 @@ class _CategoryState extends State<Category> {
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
                       child: GridView.builder(
                         padding: const EdgeInsets.only(bottom: 80),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.75,
+                        ),
                         itemCount: _categories.length,
                         itemBuilder: (context, index) {
                           final category = _categories[index];
                           return GestureDetector(
-                            onTap:
-                                category['label'] == 'More'
-                                    ? () => _showNewCategoryDialog(context)
-                                    : null,
+                            onTap: category['label'] == 'More'
+                                ? () => _showNewCategoryDialog(context)
+                                : null,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -226,10 +221,10 @@ class _CategoryState extends State<Category> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Center(
-                                    child: Icon(
-                                      category['icon'] as IconData,
-                                      color: Colors.white,
-                                      size: 45,
+                                    child: Image.asset(
+                                      category['icon'],
+                                      width: 45,
+                                      height: 45,
                                     ),
                                   ),
                                 ),
