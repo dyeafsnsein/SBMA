@@ -54,7 +54,9 @@ class AnalysisHeader extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotificationPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationPage(),
+                    ),
                   );
                 },
                 child: Container(
