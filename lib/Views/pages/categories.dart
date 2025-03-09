@@ -32,6 +32,16 @@ class _CategoryState extends State<Category> {
     {'icon': 'lib/assets/Saving.png', 'label': 'Saving'},
     {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
     {'icon': 'lib/assets/More.png', 'label': 'More'},
+    List<Map<String, dynamic>> _categories = [
+    {'icon': 'lib/assets/Food.png', 'label': 'Food'},
+    {'icon': 'lib/assets/Transport.png', 'label': 'Transport'},
+    {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
+    {'icon': 'lib/assets/Pantry.png', 'label': 'Groceries'},
+    {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
+    {'icon': 'lib/assets/Gift.png', 'label': 'Gifts'},
+    {'icon': 'lib/assets/Saving.png', 'label': 'Savings'},
+    {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
+    {'icon': 'lib/assets/More.png', 'label': 'More'},
   ];
 
   void _showNewCategoryDialog(BuildContext context) {
@@ -48,6 +58,16 @@ class _CategoryState extends State<Category> {
               });
             },
           ),
+      builder: (BuildContext context) => NewCategory(
+        onSave: (String categoryName) {
+          setState(() {
+            _categories.insert(_categories.length - 1, {
+              'icon': 'lib/assets/Star.png',
+              'label': categoryName,
+            });
+          });
+        },
+      ),
     );
   }
 
@@ -112,8 +132,7 @@ class _CategoryState extends State<Category> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder:
-                                          (context) => const NotificationPage(),
+                                      builder: (context) => const NotificationPage(),
                                     ),
                                   );
                                 },
@@ -201,21 +220,19 @@ class _CategoryState extends State<Category> {
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
                       child: GridView.builder(
                         padding: const EdgeInsets.only(bottom: 80),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.75,
+                        ),
                         itemCount: _categories.length,
                         itemBuilder: (context, index) {
                           final category = _categories[index];
                           return GestureDetector(
-                            onTap:
-                                category['label'] == 'More'
-                                    ? () => _showNewCategoryDialog(context)
-                                    : null,
+                            onTap: category['label'] == 'More'
+                                ? () => _showNewCategoryDialog(context)
+                                : null,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -232,6 +249,10 @@ class _CategoryState extends State<Category> {
                                       width: 45,
                                       height: 45,
                                       color: Colors.white,
+                                    child: Image.asset(
+                                      category['icon'],
+                                      width: 45,
+                                      height: 45,
                                     ),
                                   ),
                                 ),

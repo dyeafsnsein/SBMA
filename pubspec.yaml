@@ -71,6 +71,13 @@ flutter:
     - lib/assets/Notification.png
     - lib/assets/Car.png
     - lib/assets/Food.png
+    - lib/assets/Medicine.png
+    - lib/assets/Gift.png
+    - lib/assets/Categories.png
+    - lib/assets/Saving.png
+    - lib/assets/More.png
+    - lib/assets/Entertainment.png
+
     - lib/assets/Salary.png
     - lib/assets/Pantry.png
     - lib/assets/Check.png
