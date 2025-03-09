@@ -28,8 +28,8 @@ class _CategoryState extends State<Category> {
     {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
     {'icon': 'lib/assets/Groceries.png', 'label': 'Groceries'},
     {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
-    {'icon': 'lib/assets/Gift.png', 'label': 'Gifts'},
-    {'icon': 'lib/assets/Saving.png', 'label': 'Savings'},
+    {'icon': 'lib/assets/Gift.png', 'label': 'Gift'},
+    {'icon': 'lib/assets/Saving.png', 'label': 'Saving'},
     {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
     {'icon': 'lib/assets/More.png', 'label': 'More'},
   ];
