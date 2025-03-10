@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/bottom_nav_bar.dart';
-import 'components/transaction_list.dart';
-import 'components/CalenderPieChart.dart'; // Import the CategoryPieChart
+import '../../../shared_components/bottom_nav_bar.dart';
+import '../../../shared_components/transaction_list.dart';
+import '../../../shared_components/CalenderPieChart.dart'; // Import the CategoryPieChart
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({Key? key}) : super(key: key);

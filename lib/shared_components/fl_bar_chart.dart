@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../Search.dart';
-import '../calendar.dart';
+import '../Screens/search/views/Search.dart';
+import '../Screens/calendar/views/Calendar.dart';
 
 class FlBarChart extends StatefulWidget {
   final List<double> expenses;

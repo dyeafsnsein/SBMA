@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/analysis_header.dart';  // Use existing header component
-import 'components/progress_bar.dart';
-import 'components/fl_bar_chart.dart';
-import 'components/bottom_nav_bar.dart';
+import '../../../shared_components/progress_bar.dart';
+import '../../../shared_components/fl_bar_chart.dart';
+import '../../../shared_components/bottom_nav_bar.dart';
 import 'components/period_selector_analysis.dart';
-import 'components/income_expense_summary.dart';  // Should use this component
+import '../../../shared_components/income_expense_summary.dart';  // Should use this component
 import 'components/targets_section.dart';  // Should use this component
-import 'Notification.dart';
+import '../../notification/views/Notification.dart';
 
 class Analysis extends StatefulWidget {
   const Analysis({Key? key}) : super(key: key);

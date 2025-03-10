@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/header.dart';
-import 'components/balance_overview.dart';
-import 'components/progress_bar.dart';
+import '../../../shared_components/balance_overview.dart';
+import '../../../shared_components/progress_bar.dart';
 import 'components/goal_overview.dart';
 import 'components/period_selector.dart';
-import 'components/transaction_list.dart';
-import 'components/bottom_nav_bar.dart';
-import 'Notification.dart';
-import 'QuickAnalysis.dart';
+import '../../../shared_components/transaction_list.dart';
+import '../../../shared_components/bottom_nav_bar.dart';
+import '../../notification/views/Notification.dart';
+import '../../quick_analysis/views/QuickAnalysis.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);

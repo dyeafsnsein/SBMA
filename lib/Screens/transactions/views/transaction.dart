@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'components/transaction_list.dart'; // Import the TransactionList component
-import 'components/bottom_nav_bar.dart';
-import 'Notification.dart';
-import 'Home.dart';
+import '../../../shared_components/transaction_list.dart'; // Import the TransactionList component
+import '../../../shared_components/bottom_nav_bar.dart';
+import '../../notification/views/Notification.dart';
+import '../../home/views/Home.dart';
 
 class Transactions extends StatefulWidget {
   const Transactions({Key? key}) : super(key: key);

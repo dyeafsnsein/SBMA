@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'NewPassword.dart';
+import '../../password/views/NewPassword.dart';
 import 'SecurityFingerprint.dart';
 
 class SecurityPinWidget extends StatefulWidget {

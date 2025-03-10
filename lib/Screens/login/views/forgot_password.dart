@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'SecurityPin.dart';
+import '../../security/views/SecurityPin.dart';
 
 class ForgotPassword extends StatelessWidget {
   const ForgotPassword({Key? key}) : super(key: key);

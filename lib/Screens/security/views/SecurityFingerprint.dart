@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Home.dart';
+import '../../home/views/Home.dart';
 class SecurityFingerprintWidget extends StatelessWidget {
   const SecurityFingerprintWidget({Key? key}) : super(key: key);
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/quick_analysis_header.dart';
-import 'components/goal_overview.dart';
-import 'components/fl_bar_chart.dart';
-import 'components/transaction_list.dart';
-import 'components/bottom_nav_bar.dart';
+import '../../home/views/components/goal_overview.dart';
+import '../../../shared_components/fl_bar_chart.dart';
+import '../../../shared_components/transaction_list.dart';
+import '../../../shared_components/bottom_nav_bar.dart';
 
 class QuickAnalysis extends StatefulWidget {
   const QuickAnalysis({Key? key}) : super(key: key);

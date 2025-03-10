@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'components/bottom_nav_bar.dart';
-import 'components/progress_bar.dart';
-import 'components/header.dart';
-import 'Notification.dart';
-import 'newcategory.dart';
+import '../../../shared_components/bottom_nav_bar.dart';
+import '../../../shared_components/progress_bar.dart';
+import '../../home/views/components/header.dart';
+import '../../notification/views/Notification.dart';
+import 'components/newcategory.dart';
 
 class Category extends StatefulWidget {
   const Category({Key? key}) : super(key: key);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'signup.dart';
+import '../../signup/views/Signup.dart';
 import 'forgot_password.dart';
-import 'SecurityPin.dart'; // Import the SecurityPinWidget
+import '../../security/views/SecurityPin.dart'; // Import the SecurityPinWidget
 
 
 class Login extends StatefulWidget {

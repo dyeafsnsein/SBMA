@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../Home.dart';  // Update with your app name
-import '../QuickAnalysis.dart';
-import '../transaction.dart';
-import '../Analysis.dart';
-import '../categories.dart'; // Import the Categories page
+import '../Screens/home/views/Home.dart';  // Update with your app name
+import '../Screens/quick_analysis/views/QuickAnalysis.dart';
+import '../Screens/transactions/views/transaction.dart';
+import '../Screens/analysis/views/Analysis.dart';
+import '../Screens/categories/views/categories.dart'; // Import the Categories page
 
 class BottomNavBar extends StatelessWidget {
   final List<String> iconPaths;

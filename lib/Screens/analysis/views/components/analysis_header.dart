@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../Notification.dart';
-import 'balance_overview.dart';
-import 'progress_bar.dart';
+import '../../../notification/views/Notification.dart';
+import '../../../../shared_components/balance_overview.dart';
+import '../../../../shared_components/progress_bar.dart';
 
 class AnalysisHeader extends StatelessWidget {
   final double totalBalance;

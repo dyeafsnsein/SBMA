@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Views/pages/Login.dart';
-import 'package:test_app/Views/pages/Signup.dart';
+import 'package:test_app/Screens/login/views/Login.dart';
+import 'package:test_app/Screens/signup/views/Signup.dart';
 
 
 class LaunchPage extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'PasswordChanged.dart';
+import '../../login/views/PasswordChanged.dart';
 
 class NewPasswordWidget extends StatefulWidget {
   const NewPasswordWidget({Key? key}) : super(key: key);
