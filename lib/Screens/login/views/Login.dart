@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import '../../signup/views/Signup.dart';
 import 'forgot_password.dart';
 import '../../security/views/SecurityPin.dart'; // Import the SecurityPinWidget
+import 'package:auto_route/auto_route.dart';
 
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+@RoutePage()
+class LoginPage extends StatefulWidget {
+
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends State<LoginPage> {
   bool _isPasswordVisible = false;
 
   @override
@@ -141,7 +144,7 @@ class _LoginState extends State<Login> {
                                   onPressed: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const ForgotPassword()),
+                                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
                                     );
                                   },
                                   child: const Text(
@@ -161,7 +164,7 @@ class _LoginState extends State<Login> {
                                     onPressed: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const Signup()),
+                                        MaterialPageRoute(builder: (context) => const SignupPage()),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -234,7 +237,7 @@ class _LoginState extends State<Login> {
                                   onPressed: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const Signup()),
+                                      MaterialPageRoute(builder: (context) => const SignupPage()),
                                     );
                                   },
                                   child: const Text(

@@ -64,7 +64,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   // Navigate to the LoginPage
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  const Login()),
+                    MaterialPageRoute(builder: (context) =>  const LoginPage()),
                   );
                 },
                 onTapCancel: () {
@@ -104,7 +104,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   });
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  const Signup()),
+                    MaterialPageRoute(builder: (context) =>  const SignupPage()),
                   );
                   // Add your signup functionality here
                 },

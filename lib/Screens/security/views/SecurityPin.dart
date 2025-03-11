@@ -84,7 +84,7 @@ class _SecurityPinWidgetState extends State<SecurityPinWidget> {
                               onPressed: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const NewPasswordWidget()),
+                                        MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
                                       );
                                     },
                             style: ElevatedButton.styleFrom(

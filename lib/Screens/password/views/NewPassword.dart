@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../login/views/PasswordChanged.dart';
 
-class NewPasswordWidget extends StatefulWidget {
-  const NewPasswordWidget({Key? key}) : super(key: key);
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({Key? key}) : super(key: key);
 
   @override
   _NewPasswordWidgetState createState() => _NewPasswordWidgetState();
 }
 
-class _NewPasswordWidgetState extends State<NewPasswordWidget> {
+class _NewPasswordWidgetState extends State<ForgotPasswordPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 

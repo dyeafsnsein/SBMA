@@ -94,7 +94,7 @@ class SecurityFingerprintWidget extends StatelessWidget {
                           onPressed: () {
                              Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) =>  Home()),
+                                        MaterialPageRoute(builder: (context) =>  HomePage()),
                                       );
                           },
                           style: ElevatedButton.styleFrom(

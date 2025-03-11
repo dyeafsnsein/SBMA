@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
+import 'package:auto_route/auto_route.dart';
+
+@RoutePage()
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -178,6 +181,9 @@ class _NotificationPageState extends State<NotificationPage> {
               child: BottomNavBar(
                 iconPaths: _iconPaths,
                 selectedIndex: -1, // Set to -1 to show no selection
+                onTap: (index) {
+                  // Handle tap event
+                },
               ),
             ),
           ],

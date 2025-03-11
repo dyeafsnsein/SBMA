@@ -1,90 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:auto_route/auto_route.dart';
 import 'components/header.dart';
 import '../../../shared_components/balance_overview.dart';
 import '../../../shared_components/progress_bar.dart';
 import 'components/goal_overview.dart';
 import 'components/period_selector.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
-import '../../notification/views/Notification.dart';
 import '../../quick_analysis/views/QuickAnalysis.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+@RoutePage()
+class HomePage extends StatefulWidget {
+const HomePage({Key? key}) : super(key: key);
 
-  @override
-  State<Home> createState() => _HomeState();
+@override
+State<HomePage> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
-  int _selectedPeriodIndex = 2;
+class _HomeState extends State<HomePage> {
+int _selectedPeriodIndex = 2;
 
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
 
-  final List<String> _periods = ['Daily', 'Weekly', 'Monthly'];
 
-  final List<Map<String, String>> _transactions = [
-    {
-      'icon': 'lib/assets/Salary.png',
-      'time': '18:27 - April 30',
-      'category': 'Monthly',
-      'amount': '\$4,000.00',
-    },
-    {
-      'icon': 'lib/assets/Pantry.png',
-      'time': '17:00 - April 24',
-      'category': 'Pantry',
-      'amount': '-\$100.00',
-    },
-    {
-      'icon': 'lib/assets/Rent.png',
-      'time': '8:30 - April 15',
-      'category': 'Rent',
-      'amount': '-\$874.40',
-    },
-    {
-      'icon': 'lib/assets/Rent.png',
-      'time': '9:30 - April 25',
-      'category': 'Rent',
-      'amount': '-\$774.40',
-    },
-    {
-      'icon': 'lib/assets/Rent.png',
-      'time': '9:30 - April 25',
-      'category': 'Rent',
-      'amount': '-\$774.40',
-    },
-    {
-      'icon': 'lib/assets/Pantry.png',
-      'time': '17:00 - April 24',
-      'category': 'Pantry',
-      'amount': '-\$100.00',
-    },
-    {
-      'icon': 'lib/assets/Pantry.png',
-      'time': '18:00 - April 24',
-      'category': 'Pantry',
-      'amount': '-\$100.00',
-    },
-  ];
+final List<String> _periods = ['Daily', 'Weekly', 'Monthly'];
 
-  void _onPeriodTapped(int index) {
-    setState(() {
-      _selectedPeriodIndex = index;
-    });
-  }
+final List<Map<String, String>> _transactions = [
+{
+'icon': 'lib/assets/Salary.png',
+'time': '18:27 - April 30',
+'category': 'Monthly',
+'amount': '\$4,000.00',
+},
+{
+'icon': 'lib/assets/Pantry.png',
+'time': '17:00 - April 24',
+'category': 'Pantry',
+'amount': '-\$100.00',
+},
+{
+'icon': 'lib/assets/Rent.png',
+'time': '8:30 - April 15',
+'category': 'Rent',
+'amount': '-\$874.40',
+},
+{
+'icon': 'lib/assets/Rent.png',
+'time': '9:30 - April 25',
+'category': 'Rent',
+'amount': '-\$774.40',
+},
+{
+'icon': 'lib/assets/Rent.png',
+'time': '9:30 - April 25',
+'category': 'Rent',
+'amount': '-\$774.40',
+},
+{
+'icon': 'lib/assets/Pantry.png',
+'time': '17:00 - April 24',
+'category': 'Pantry',
+'amount': '-\$100.00',
+},
+{
+'icon': 'lib/assets/Pantry.png',
+'time': '18:00 - April 24',
+'category': 'Pantry',
+'amount': '-\$100.00',
+},
+];
 
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height ;
-    final screenWidth = MediaQuery.of(context).size.width;
+void _onPeriodTapped(int index) {
+setState(() {
+_selectedPeriodIndex = index;
+});
+}
+
+@override
+Widget build(BuildContext context) {
+final screenHeight = MediaQuery.of(context).size.height;
+final screenWidth = MediaQuery.of(context).size.width;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -111,12 +105,8 @@ class _HomeState extends State<Home> {
                         children: [
                           Header(
                             onNotificationTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NotificationPage(),
-                                ),
-                              );
+                       
+
                             },
                           ),
                           SizedBox(height: screenHeight * 0.02),
@@ -174,7 +164,7 @@ class _HomeState extends State<Home> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => QuickAnalysis(),
+                                  builder: (context) => QuickAnalysisPage(),
                                 ),
                               );
                             },
@@ -196,16 +186,12 @@ class _HomeState extends State<Home> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 0, // Home page index
-              ),
-            ),
+   
           ],
         ),
       ),
     );
-  }
+    }
+
 }
+

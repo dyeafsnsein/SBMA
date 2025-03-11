@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'Screens/home/views/Home.dart';
+import 'Route/app_router.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+  
+  final _appRouter = AppRouter();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Set Poppins as the default font (ensure you’ve added it in pubspec.yaml)
         fontFamily: 'Poppins',
-        // Global dark grey background color
         scaffoldBackgroundColor: const Color(0xFF202422),
       ),
-      home: const Home(),
+      routerConfig: _appRouter.config(),
     );
   }
 }

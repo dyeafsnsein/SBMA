@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../security/views/SecurityPin.dart';
+import 'package:auto_route/auto_route.dart';
 
-class ForgotPassword extends StatelessWidget {
-  const ForgotPassword({Key? key}) : super(key: key);
+@RoutePage()
+class ForgotPasswordPage extends StatelessWidget {
+  const ForgotPasswordPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:auto_route/auto_route.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
 import '../../../shared_components/progress_bar.dart';
-import '../../home/views/components/header.dart';
-import '../../notification/views/Notification.dart';
 import 'components/newcategory.dart';
 
-class Category extends StatefulWidget {
-  const Category({Key? key}) : super(key: key);
+@RoutePage()
+class CategoryPage extends StatefulWidget {
+  const CategoryPage({Key? key}) : super(key: key);
 
   @override
-  State<Category> createState() => _CategoryState();
+  State<CategoryPage> createState() => _CategoryState();
 }
 
-class _CategoryState extends State<Category> {
+class _CategoryState extends State<CategoryPage> {
   final List<String> _iconPaths = [
     'lib/assets/Home.png',
     'lib/assets/Analysis.png',
@@ -90,7 +90,7 @@ class _CategoryState extends State<Category> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap: () => Navigator.pop(context),
+                                onTap: () => context.router.pop(),
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
@@ -108,12 +108,6 @@ class _CategoryState extends State<Category> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const NotificationPage(),
-                                    ),
-                                  );
                                 },
                                 child: Container(
                                   width: width * 0.08,
@@ -250,7 +244,13 @@ class _CategoryState extends State<Category> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: BottomNavBar(iconPaths: _iconPaths, selectedIndex: 3),
+              child: BottomNavBar(
+                iconPaths: _iconPaths,
+                selectedIndex: 3,
+                onTap: (index) {
+                  // This will be handled by the AutoTabsRouter in MainContainer
+                },
+              ),
             ),
           ],
         ),

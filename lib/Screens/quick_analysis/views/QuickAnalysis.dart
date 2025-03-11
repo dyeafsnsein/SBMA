@@ -5,15 +5,17 @@ import '../../home/views/components/goal_overview.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
+import 'package:auto_route/auto_route.dart';
 
-class QuickAnalysis extends StatefulWidget {
-  const QuickAnalysis({Key? key}) : super(key: key);
+@RoutePage()
+class QuickAnalysisPage extends StatefulWidget {
+  const QuickAnalysisPage({Key? key}) : super(key: key);
 
   @override
-  State<QuickAnalysis> createState() => _QuickAnalysisState();
+  State<QuickAnalysisPage> createState() => _QuickAnalysisState();
 }
 
-class _QuickAnalysisState extends State<QuickAnalysis> {
+class _QuickAnalysisState extends State<QuickAnalysisPage> {
   final List<Map<String, String>> _transactions = [
     {
       'icon': 'lib/assets/Salary.png',
@@ -75,7 +77,8 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
                         children: [
                           QuickAnalysisHeader(
                             onBackPressed: () => Navigator.pop(context),
-                            onNotificationTap: () {},
+                            onNotificationTap: () {
+},
                           ),
                           GoalOverview(
                             goalIcon: 'lib/assets/Car.png',
@@ -129,6 +132,9 @@ class _QuickAnalysisState extends State<QuickAnalysis> {
               child: BottomNavBar(
                 iconPaths: _iconPaths,
                 selectedIndex: 1,
+                onTap: (index) {
+                  // Handle the tap event here
+                },
               ),
             ),
           ],

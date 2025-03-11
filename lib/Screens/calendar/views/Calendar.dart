@@ -1,78 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:auto_route/auto_route.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../../shared_components/CalenderPieChart.dart'; // Import the CategoryPieChart
+import '../../../shared_components/CalenderPieChart.dart';
 
+@RoutePage()
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({Key? key}) : super(key: key);
+const CalendarPage({Key? key}) : super(key: key);
 
-  @override
-  State<CalendarPage> createState() => _CalendarPageState();
+@override
+State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+final List<String> _iconPaths = [
+'lib/assets/Home.png',
+'lib/assets/Analysis.png',
+'lib/assets/Transactions.png',
+'lib/assets/Categories.png',
+'lib/assets/Profile.png',
+];
 
-  final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  
-  final List<String> _years = ['2023', '2024', '2025', '2026', '2027'];
-  
-  String _selectedMonth = 'April';
-  String _selectedYear = '2023';
-  int _selectedDay = 24;
-  bool _showSpends = true;
+final List<String> _months = [
+'January', 'February', 'March', 'April', 'May', 'June',
+'July', 'August', 'September', 'October', 'November', 'December'
+];
 
-  // For TransactionList
-  final List<Map<String, String>> _transactions = [
-    {
-      'icon': 'lib/assets/Pantry.png',
-      'title': 'Groceries',
-      'time': '17:00 - April 24',
-      'category': 'Pantry',
-      'amount': '-\$100,00',
-    },
-    {
-      'icon': 'lib/assets/Salary.png',
-      'title': 'Others',
-      'time': '17:00 - April 24',
-      'category': 'Payments',
-      'amount': '\$120,00',
-    },
-  ];
+final List<String> _years = ['2023', '2024', '2025', '2026', '2027'];
 
-  // For CategoryPieChart
-  final List<Map<String, dynamic>> _categories = [
-    {
-      'name': 'Others',
-      'percentage': 79,
-      'color': const Color(0xFF202422),
-    },
-    {
-      'name': 'Groceries',
-      'percentage': 10,
-      'color': const Color(0xFFBBBBBB),
-    },
-    {
-      'name': 'Other',
-      'percentage': 11,
-      'color': const Color(0xFF333333),
-    },
-  ];
+String _selectedMonth = 'March';
+String _selectedYear = '2025';
+int _selectedDay = 11;
+bool _showSpends = true;
 
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+// For TransactionList
+final List<Map<String, String>> _transactions = [
+{
+'icon': 'lib/assets/Pantry.png',
+'title': 'Groceries',
+'time': '17:00 - March 11',
+'category': 'Pantry',
+'amount': '-\$100,00',
+},
+{
+'icon': 'lib/assets/Salary.png',
+'title': 'Others',
+'time': '17:00 - March 11',
+'category': 'Payments',
+'amount': '\$120,00',
+},
+];
+
+// For CategoryPieChart
+final List<Map<String, dynamic>> _categories = [
+{
+'name': 'Others',
+'percentage': 79,
+'color': const Color(0xFF202422),
+},
+{
+'name': 'Groceries',
+'percentage': 10,
+'color': const Color(0xFFBBBBBB),
+},
+{
+'name': 'Other',
+'percentage': 11,
+'color': const Color(0xFF333333),
+},
+];
+
+@override
+Widget build(BuildContext context) {
+final screenHeight = MediaQuery.of(context).size.height;
+final screenWidth = MediaQuery.of(context).size.width;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -243,45 +245,48 @@ class _CalendarPageState extends State<CalendarPage> {
               child: BottomNavBar(
                 iconPaths: _iconPaths,
                 selectedIndex: 1,
+                onTap: (index) {
+                  // This will be handled by the AutoTabsRouter in MainContainer
+                },
               ),
             ),
           ],
         ),
       ),
     );
-  }
+    }
 
-  Widget _buildDropdown(String value, List<String> items, Function(String?) onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: DropdownButton<String>(
-        value: value,
-        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF202422)),
-        underline: const SizedBox(),
-        style: const TextStyle(
-          color: Color(0xFF202422),
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-        onChanged: onChanged,
-        items: items.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-      ),
-    );
-  }
+Widget _buildDropdown(String value, List<String> items, Function(String?) onChanged) {
+return Container(
+padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+decoration: BoxDecoration(
+color: Colors.transparent,
+borderRadius: BorderRadius.circular(10),
+),
+child: DropdownButton<String>(
+value: value,
+icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF202422)),
+underline: const SizedBox(),
+style: const TextStyle(
+color: Color(0xFF202422),
+fontFamily: 'Poppins',
+fontWeight: FontWeight.w600,
+fontSize: 16,
+),
+onChanged: onChanged,
+items: items.map<DropdownMenuItem<String>>((String value) {
+return DropdownMenuItem<String>(
+value: value,
+child: Text(value),
+);
+}).toList(),
+),
+);
+}
 
-  Widget _buildCalendarGrid() {
-    final daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+Widget _buildCalendarGrid() {
+final daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
     return Column(
       children: [
         // Days of week header
@@ -306,7 +311,7 @@ class _CalendarPageState extends State<CalendarPage> {
             crossAxisCount: 7,
             childAspectRatio: 1.0,
           ),
-          itemCount: 31, // April has 30 days, but we'll show 31 for simplicity
+          itemCount: 31, // March has 31 days
           itemBuilder: (context, index) {
             final day = index + 1;
             final isSelected = day == _selectedDay;
@@ -340,5 +345,6 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
       ],
     );
-  }
+    }
+
 }

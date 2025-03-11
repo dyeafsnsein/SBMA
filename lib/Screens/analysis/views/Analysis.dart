@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:auto_route/auto_route.dart';
 import 'components/analysis_header.dart';  // Use existing header component
-import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
 import 'components/period_selector_analysis.dart';
 import '../../../shared_components/income_expense_summary.dart';  // Should use this component
 import 'components/targets_section.dart';  // Should use this component
-import '../../notification/views/Notification.dart';
 
-class Analysis extends StatefulWidget {
-  const Analysis({Key? key}) : super(key: key);
+@RoutePage()
+class AnalysisPage extends StatefulWidget {
+  const AnalysisPage({Key? key}) : super(key: key);
 
   @override
-  State<Analysis> createState() => _AnalysisState();
+  State<AnalysisPage> createState() => _AnalysisState();
 }
 
-class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin {
+class _AnalysisState extends State<AnalysisPage> with SingleTickerProviderStateMixin {
   final List<String> _iconPaths = const [
     'lib/assets/Home.png',
     'lib/assets/Analysis.png',
@@ -184,6 +184,9 @@ class _AnalysisState extends State<Analysis> with SingleTickerProviderStateMixin
               child: BottomNavBar(
                 iconPaths: _iconPaths,
                 selectedIndex: 1,
+                onTap: (index) {
+                  // This will be handled by the AutoTabsRouter in MainContainer
+                },
               ),
             ),
           ],

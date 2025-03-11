@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../shared_components/bottom_nav_bar.dart';
+import 'package:auto_route/auto_route.dart';
+
+@RoutePage()
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -323,6 +326,9 @@ class _SearchPageState extends State<SearchPage> {
             child: BottomNavBar(
               iconPaths: _iconPaths,
               selectedIndex: 1,
+              onTap: (index) {
+                // Handle navigation tap
+              },
             ),
           ),
         ],
