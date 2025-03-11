@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
 import 'components/analysis_header.dart';  // Use existing header component
 import '../../../shared_components/fl_bar_chart.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import 'components/period_selector_analysis.dart';
 import '../../../shared_components/income_expense_summary.dart';  // Should use this component
 import 'components/targets_section.dart';  // Should use this component
@@ -17,13 +16,6 @@ class AnalysisPage extends StatefulWidget {
 }
 
 class _AnalysisState extends State<AnalysisPage> with SingleTickerProviderStateMixin {
-  final List<String> _iconPaths = const [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
 
   final List<String> _periods = const ['Daily', 'Weekly', 'Monthly', 'Year'];
   int _selectedPeriodIndex = 0;
@@ -179,16 +171,7 @@ class _AnalysisState extends State<AnalysisPage> with SingleTickerProviderStateM
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 1,
-                onTap: (index) {
-                  // This will be handled by the AutoTabsRouter in MainContainer
-                },
-              ),
-            ),
+           
           ],
         ),
       ),

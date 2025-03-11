@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import '../../../shared_components/transaction_list.dart'; // Import the TransactionList component
-import '../../../shared_components/bottom_nav_bar.dart';
 import '../../home/views/Home.dart';
 import 'package:auto_route/auto_route.dart';
 
@@ -15,13 +14,7 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsState extends State<TransactionsPage> {
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+
 
   List<Map<String, String>> _transactions = [];
   double _totalBalance = 0.0;
@@ -319,16 +312,7 @@ class _TransactionsState extends State<TransactionsPage> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 2,
-                onTap: (index) {
-                  // Handle the tap event here
-                },
-              ),
-            ),
+          
           ],
         ),
       ),

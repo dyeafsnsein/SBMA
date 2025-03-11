@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/CalenderPieChart.dart';
 
@@ -14,13 +13,7 @@ State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-final List<String> _iconPaths = [
-'lib/assets/Home.png',
-'lib/assets/Analysis.png',
-'lib/assets/Transactions.png',
-'lib/assets/Categories.png',
-'lib/assets/Profile.png',
-];
+
 
 final List<String> _months = [
 'January', 'February', 'March', 'April', 'May', 'June',
@@ -240,16 +233,7 @@ final screenWidth = MediaQuery.of(context).size.width;
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 1,
-                onTap: (index) {
-                  // This will be handled by the AutoTabsRouter in MainContainer
-                },
-              ),
-            ),
+        
           ],
         ),
       ),

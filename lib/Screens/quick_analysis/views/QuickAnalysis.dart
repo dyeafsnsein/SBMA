@@ -4,7 +4,6 @@ import 'components/quick_analysis_header.dart';
 import '../../home/views/components/goal_overview.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -26,13 +25,7 @@ class _QuickAnalysisState extends State<QuickAnalysisPage> {
     },
   ];
 
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+  
 
   final List<double> _expenses = [6.0, 10.0, 20.0, 7.0];
   final List<double> _income = [6.0, 8.0, 12.0, 6.0];
@@ -127,16 +120,7 @@ class _QuickAnalysisState extends State<QuickAnalysisPage> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 1,
-                onTap: (index) {
-                  // Handle the tap event here
-                },
-              ),
-            ),
+           
           ],
         ),
       ),

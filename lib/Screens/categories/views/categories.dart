@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import '../../../shared_components/progress_bar.dart';
 import 'components/newcategory.dart';
 
@@ -14,13 +13,7 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryState extends State<CategoryPage> {
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+  
 
   List<Map<String, dynamic>> _categories = [
     {'icon': 'lib/assets/Food.png', 'label': 'Food'},
@@ -242,16 +235,7 @@ class _CategoryState extends State<CategoryPage> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: 3,
-                onTap: (index) {
-                  // This will be handled by the AutoTabsRouter in MainContainer
-                },
-              ),
-            ),
+    
           ],
         ),
       ),

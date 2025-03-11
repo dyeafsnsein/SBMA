@@ -11,7 +11,7 @@ class MainContainerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutoTabsRouter(
       routes: const [
-        HomeRoute(), // Use the correct route class
+        HomeRoute(),
         AnalysisRoute(),
         TransactionsRoute(),
       ],
@@ -22,17 +22,21 @@ class MainContainerPage extends StatelessWidget {
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
         return Scaffold(
+          extendBody: true, // Important for transparent corners
           body: child,
-          bottomNavigationBar: BottomNavBar(
-            iconPaths: [
-              'lib/assets/Home.png',
-              'lib/assets/Analysis.png',
-              'lib/assets/Transactions.png',
-              'lib/assets/Categories.png',
-              'lib/assets/Profile.png',
-            ],
-            selectedIndex: tabsRouter.activeIndex,
-            onTap: tabsRouter.setActiveIndex,
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.only(bottom: 0, left: 0, right: 0),
+            child: BottomNavBar(
+              iconPaths: [
+                'lib/assets/Home.png',
+                'lib/assets/Analysis.png',
+                'lib/assets/Transactions.png',
+                'lib/assets/Categories.png',
+                'lib/assets/Profile.png',
+              ],
+              selectedIndex: tabsRouter.activeIndex,
+              onTap: tabsRouter.setActiveIndex,
+            ),
           ),
         );
       },

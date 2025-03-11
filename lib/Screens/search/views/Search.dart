@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -29,13 +28,7 @@ class _SearchPageState extends State<SearchPage> {
     'Other'
   ];
 
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+ 
 
   @override
   void dispose() {
@@ -321,16 +314,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: BottomNavBar(
-              iconPaths: _iconPaths,
-              selectedIndex: 1,
-              onTap: (index) {
-                // Handle navigation tap
-              },
-            ),
-          ),
+         
         ],
       ),
     );

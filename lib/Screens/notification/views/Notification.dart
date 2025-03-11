@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../shared_components/bottom_nav_bar.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -17,13 +16,7 @@ class _NotificationPageState extends State<NotificationPage> {
     // ... your notifications data
   ];
 
-  final List<String> _iconPaths = [
-    'lib/assets/Home.png',
-    'lib/assets/Analysis.png',
-    'lib/assets/Transactions.png',
-    'lib/assets/Categories.png',
-    'lib/assets/Profile.png',
-  ];
+  
 
   @override
   Widget build(BuildContext context) {
@@ -176,16 +169,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: BottomNavBar(
-                iconPaths: _iconPaths,
-                selectedIndex: -1, // Set to -1 to show no selection
-                onTap: (index) {
-                  // Handle tap event
-                },
-              ),
-            ),
+           
           ],
         ),
       ),
