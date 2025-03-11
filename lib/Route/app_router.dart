@@ -25,14 +25,17 @@ class AppRouter extends RootStackRouter {
           page: MainContainerRoute.page,
           initial: true,
           children: [
-            AutoRoute(path: 'home', page: HomeRoute.page),
+            AutoRoute(path: 'home', page: HomeRoute.page, initial: true),
             AutoRoute(path: 'analysis', page: AnalysisRoute.page),
             AutoRoute(path: 'transactions', page: TransactionsRoute.page),
+            AutoRoute(path: 'categories', page: CategoryRoute.page),
+            // QuickAnalysis as a child route of MainContainer
+            AutoRoute(path: 'quick-analysis', page: QuickAnalysisRoute.page),
           ],
         ),
         AutoRoute(path: '/login', page: LoginRoute.page),
         AutoRoute(path: '/signup', page: SignupRoute.page),
         AutoRoute(path: '/forgot-password', page: ForgotPasswordRoute.page),
-        AutoRoute(path: '/quick-analysis', page: QuickAnalysisRoute.page),
+        AutoRoute(path: '/notification', page: NotificationRoute.page),
       ];
 }

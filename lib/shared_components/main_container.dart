@@ -14,6 +14,7 @@ class MainContainerPage extends StatelessWidget {
         HomeRoute(),
         AnalysisRoute(),
         TransactionsRoute(),
+        CategoryRoute(),
       ],
       transitionBuilder: (context, child, animation) => FadeTransition(
         opacity: animation,
@@ -21,8 +22,12 @@ class MainContainerPage extends StatelessWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
+        
+        // Check if the current route is QuickAnalysis
+        final isQuickAnalysis = context.router.current.name == 'QuickAnalysisRoute';
+        
         return Scaffold(
-          extendBody: true, // Important for transparent corners
+          extendBody: true,
           body: child,
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.only(bottom: 0, left: 0, right: 0),
@@ -34,8 +39,15 @@ class MainContainerPage extends StatelessWidget {
                 'lib/assets/Categories.png',
                 'lib/assets/Profile.png',
               ],
-              selectedIndex: tabsRouter.activeIndex,
-              onTap: tabsRouter.setActiveIndex,
+              // If we're on QuickAnalysis, don't highlight any tab
+              selectedIndex: isQuickAnalysis ? -1 : tabsRouter.activeIndex,
+              onTap: (index) {
+                if (isQuickAnalysis) {
+                  // If we're on QuickAnalysis, navigate back to the main tab
+                  context.router.navigate(const HomeRoute());
+                }
+                tabsRouter.setActiveIndex(index);
+              },
             ),
           ),
         );

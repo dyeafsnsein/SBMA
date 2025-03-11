@@ -7,7 +7,7 @@ import '../../../shared_components/progress_bar.dart';
 import 'components/goal_overview.dart';
 import 'components/period_selector.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../quick_analysis/views/QuickAnalysis.dart';
+import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
 
 @RoutePage()
 class HomePage extends StatefulWidget {
@@ -160,14 +160,9 @@ final screenWidth = MediaQuery.of(context).size.width;
                             goalText: 'Savings On Goals',
                             revenueLastWeek: 4000.00,
                             foodLastWeek: 100.00,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => QuickAnalysisPage(),
-                                ),
-                              );
-                            },
+                          onTap: () {
+  context.router.push(const QuickAnalysisRoute());
+},
                           ),
                           SizedBox(height: screenHeight * 0.02),
                           PeriodSelector(
