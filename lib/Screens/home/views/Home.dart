@@ -105,6 +105,9 @@ final screenWidth = MediaQuery.of(context).size.width;
                         children: [
                           Header(
                             onNotificationTap: () {
+  context.router.push(const NotificationRoute());
+
+
                        
 
                             },
@@ -160,9 +163,10 @@ final screenWidth = MediaQuery.of(context).size.width;
                             goalText: 'Savings On Goals',
                             revenueLastWeek: 4000.00,
                             foodLastWeek: 100.00,
-                          onTap: () {
+                        onTap: () {
   context.router.push(const QuickAnalysisRoute());
 },
+
                           ),
                           SizedBox(height: screenHeight * 0.02),
                           PeriodSelector(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../notification/views/Notification.dart';
 import '../../../../shared_components/balance_overview.dart';
 import '../../../../shared_components/progress_bar.dart';
-
+import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
+import 'package:auto_route/auto_route.dart';
 class AnalysisHeader extends StatelessWidget {
   final double totalBalance;
   final double totalExpense;
@@ -52,12 +52,7 @@ class AnalysisHeader extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationPage(),
-                    ),
-                  );
+            context.router.push(const NotificationRoute());
                 },
                 child: Container(
                   width: screenWidth * 0.08,

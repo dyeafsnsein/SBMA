@@ -42,7 +42,6 @@ class _NotificationPageState extends State<NotificationPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.pop(context);
                             },
                             child: const Icon(
                               Icons.arrow_back,

@@ -5,6 +5,7 @@ import '../../home/views/components/goal_overview.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import '../../../shared_components/transaction_list.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
 
 @RoutePage()
 class QuickAnalysisPage extends StatefulWidget {
@@ -70,8 +71,8 @@ class _QuickAnalysisState extends State<QuickAnalysisPage> {
                         children: [
                           QuickAnalysisHeader(
                             onBackPressed: () => Navigator.pop(context),
-                            onNotificationTap: () {
-},
+                            onNotificationTap: () {  context.router.push(const NotificationRoute());},
+
                           ),
                           GoalOverview(
                             goalIcon: 'lib/assets/Car.png',

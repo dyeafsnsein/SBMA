@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import '../../../shared_components/transaction_list.dart'; // Import the TransactionList component
 import '../../home/views/Home.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
+
 
 @RoutePage()
 class TransactionsPage extends StatefulWidget {
@@ -194,7 +196,8 @@ class _TransactionsState extends State<TransactionsPage> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {
+                            onTap: () {  context.router.push(const NotificationRoute());
+
 
                             },
                             child: Container(

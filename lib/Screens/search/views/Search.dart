@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
+
 
 @RoutePage()
 
@@ -73,17 +75,22 @@ class _SearchPageState extends State<SearchPage> {
                           color: Colors.white,
                         ),
                       ),
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: const Icon(
-                          Icons.notifications,
-                          color: Colors.white,
-                          size: 18,
+                      GestureDetector(
+                        onTap: () {
+                          context.router.push(const NotificationRoute());
+                        },
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: const Icon(
+                            Icons.notifications,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ],
