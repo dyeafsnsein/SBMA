@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
-
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
 
@@ -15,8 +14,6 @@ class _NotificationPageState extends State<NotificationPage> {
   final List<Map<String, dynamic>> _notifications = [
     // ... your notifications data
   ];
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +39,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
+                              Navigator.pop(context);
                             },
                             child: const Icon(
                               Icons.arrow_back,
@@ -168,7 +166,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 ),
               ],
             ),
-           
           ],
         ),
       ),
