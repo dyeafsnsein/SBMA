@@ -33,14 +33,14 @@ class AnalysisHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(
-                onTap: () => context.router.pop(),
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: screenWidth * 0.06,
-                ),
-              ),
+            GestureDetector(
+  onTap: () => AutoRouter.of(context).pop(),
+  child: Icon(
+    Icons.arrow_back,
+    color: Colors.white,
+    size: screenWidth * 0.06,
+  ),
+),
               Text(
                 'Analysis',
                 style: TextStyle(

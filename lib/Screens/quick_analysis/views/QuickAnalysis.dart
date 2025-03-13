@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/quick_analysis_header.dart';
-import '../../home/views/components/goal_overview.dart';
+import '../../../shared_components/goal_overview.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import '../../../shared_components/transaction_list.dart';
 import 'package:auto_route/auto_route.dart';
