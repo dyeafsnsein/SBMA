@@ -20,20 +20,24 @@ class IncomeExpenseSummary extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildIncomeExpense(
-            icon: CupertinoIcons.arrow_up_right_square,
-            title: 'Income',
-            amount: '\$${income.toStringAsFixed(2)}',
-            color: const Color(0xFF0D4015),
-            screenWidth: screenWidth,
+          Flexible(
+            child: _buildIncomeExpense(
+              icon: CupertinoIcons.arrow_up_right_square,
+              title: 'Income',
+              amount: '\$${income.toStringAsFixed(2)}',
+              color: const Color(0xFF0D4015),
+              screenWidth: screenWidth,
+            ),
           ),
-          
-          _buildIncomeExpense(
-            icon: CupertinoIcons.arrow_down_left_square,
-            title: 'Expense',
-            amount: '\$${expense.toStringAsFixed(2)}',
-            color: const Color(0xFF843F3F),
-            screenWidth: screenWidth,
+          SizedBox(width: screenWidth * 0.05),
+          Flexible(
+            child: _buildIncomeExpense(
+              icon: CupertinoIcons.arrow_down_left_square,
+              title: 'Expense',
+              amount: '\$${expense.toStringAsFixed(2)}',
+              color: const Color(0xFF843F3F),
+              screenWidth: screenWidth,
+            ),
           ),
         ],
       ),
@@ -47,32 +51,40 @@ class IncomeExpenseSummary extends StatelessWidget {
     required Color color,
     required double screenWidth,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          size: screenWidth * 0.08,
-          color: color,
-        ),
-        SizedBox(height: screenWidth * 0.01),
-        Text(
-          title,
-          style: TextStyle(
+    return Container(
+      width: 200,
+      height: 101,
+      decoration: BoxDecoration(
+        color: Colors.white, // Set background color to white
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: screenWidth * 0.08,
             color: color,
-            fontSize: screenWidth * 0.035,
-            fontWeight: FontWeight.w500,
           ),
-        ),
-        Text(
-          amount,
-          style: TextStyle(
-            color: color,
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.w800,
+          SizedBox(height: screenWidth * 0.01),
+          Text(
+            title,
+            style: TextStyle(
+              color: color,
+              fontSize: screenWidth * 0.035,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+          Text(
+            amount,
+            style: TextStyle(
+              color: color,
+              fontSize: screenWidth * 0.045,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
