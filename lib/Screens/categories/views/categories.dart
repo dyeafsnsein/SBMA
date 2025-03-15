@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../../shared_components/progress_bar.dart';
 import 'components/newcategory.dart';
-import '../../home/views/home.dart';
-import '../../categoryTemplate/views/categoryTemplate.dart';
+
+import '../../../Route/app_router.dart';
 @RoutePage()
 class CategoryPage extends StatefulWidget {
   const CategoryPage({Key? key}) : super(key: key);
@@ -26,22 +26,22 @@ class _CategoryState extends State<CategoryPage> {
   void _showNewCategoryDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (BuildContext context) => NewCategory(
-            onSave: (String categoryName) {
-              setState(() {
-                _categories.add({
-                  'label': categoryName,
-                  'icon': 'lib/assets/More.png',
-                });
-              });
-            },
-          ),
+      builder: (BuildContext context) => NewCategory(
+        onSave: (String categoryName) {
+          setState(() {
+            _categories.add({
+              'label': categoryName,
+              'icon': 'lib/assets/More.png',
+            });
+          });
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final tabsRouter = AutoTabsRouter.of(context);
     final Size screenSize = MediaQuery.of(context).size;
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
@@ -80,7 +80,7 @@ class _CategoryState extends State<CategoryPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap: () => context.router.pop(),
+                                onTap: () => tabsRouter.setActiveIndex(0),
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
@@ -98,7 +98,7 @@ class _CategoryState extends State<CategoryPage> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  // Navigate to notifications page
+                                  context.router.push(const NotificationRoute());
                                 },
                                 child: Container(
                                   width: width * 0.08,
@@ -180,81 +180,74 @@ class _CategoryState extends State<CategoryPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child:
-                          _categories.isEmpty
-                              ? const Center(
-                                child: Text('No categories available'),
-                              )
-                              : GridView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding: const EdgeInsets.only(
-                                  top: 20,
-                                  bottom: 80,
-                                ),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      crossAxisSpacing: 20,
-                                      mainAxisSpacing: 20,
-                                      childAspectRatio: 0.75,
-                                    ),
-                                itemCount: _categories.length,
-                                itemBuilder: (context, index) {
-                                  final category = _categories[index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      if (category['label'] == 'More') {
-                                        _showNewCategoryDialog(context);
-                                      } else {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => CategoryTemplatePage(
-                                                  categoryName:
-                                                      category['label'] ?? '',
-                                                  categoryIcon:
-                                                      category['icon'] ?? '',
-                                                ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 90,
-                                          height: 90,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF202422),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              category['icon'] ?? '',
-                                              width: 45,
-                                              height: 45,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          category['label'] ?? '',
-                                          style: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF202422),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                      child: _categories.isEmpty
+                          ? const Center(
+                              child: Text('No categories available'),
+                            )
+                          : GridView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.only(
+                                top: 20,
+                                bottom: 80,
                               ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20,
+                                childAspectRatio: 0.75,
+                              ),
+                              itemCount: _categories.length,
+                              itemBuilder: (context, index) {
+                                final category = _categories[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (category['label'] == 'More') {
+                                      _showNewCategoryDialog(context);
+                                    } else {
+                                      context.router.push(
+                                        CategoryTemplateRoute(
+                                          categoryName: category['label'] ?? '',
+                                          categoryIcon: category['icon'] ?? '',
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 90,
+                                        height: 90,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF202422),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Image.asset(
+                                            category['icon'] ?? '',
+                                            width: 45,
+                                            height: 45,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        category['label'] ?? '',
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF202422),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ),
                 ),

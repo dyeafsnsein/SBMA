@@ -19,6 +19,7 @@ class TransactionsPage extends StatelessWidget {
       create: (_) => TransactionController(TransactionModel()),
       child: Consumer<TransactionController>(
         builder: (context, controller, child) {
+          final tabsRouter = AutoTabsRouter.of(context);
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
 
@@ -49,7 +50,7 @@ class TransactionsPage extends StatelessWidget {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.pop(context); // Navigate back to the previous page
+                                    tabsRouter.setActiveIndex(0); // Navigate back to the previous tab
                                   },
                                   child: Icon(
                                     Icons.arrow_back,
