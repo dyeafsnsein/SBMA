@@ -9,6 +9,7 @@ import '../../../shared_components/income_expense_summary.dart';  // Should use 
 import 'components/targets_section.dart';  // Should use this component
 import '../../../Controllers/analysis_controller.dart';
 import '../../../Models/analysis_model.dart';
+import '../../../Route/app_router.dart';
 
 @RoutePage()
 class AnalysisPage extends StatefulWidget {
@@ -47,6 +48,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
         builder: (context, controller, child) {
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
+          final tabsRouter = AutoTabsRouter.of(context);
 
           // Get current period data based on selection
           String currentPeriod = controller.periods[controller.selectedPeriodIndex];
@@ -66,11 +68,15 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                   Column(
                     children: [
                       // Use the existing AnalysisHeader component
-                      const AnalysisHeader(
+                      AnalysisHeader(
                         totalBalance: 7783.00,
                         totalExpense: 1187.40,
                         expensePercentage: 30,
                         expenseLimit: 20000.00,
+                        onBackPressed: () => tabsRouter.setActiveIndex(0), // Navigate back to the Home tab
+                        onNotificationTap: () {
+                          context.router.push(const NotificationRoute());
+                        },
                       ),
                       Expanded(
                         child: Container(

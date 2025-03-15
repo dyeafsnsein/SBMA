@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart'; // Ensure this import is included
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
 import '../Screens/transactions/views/transaction.dart';
@@ -10,7 +11,8 @@ import '../Screens/quick_analysis/views/QuickAnalysis.dart';
 import '../Screens/calendar/views/Calendar.dart';
 import '../Screens/notification/views/Notification.dart';
 import '../Screens/search/views/Search.dart';
-import '../shared_components/main_container.dart';
+import '../Screens/categoryTemplate/views/categoryTemplate.dart';
+import '../shared_components/main_container.dart'; // Import the CategoryTemplatePage
 
 part 'app_router.gr.dart';
 
@@ -33,10 +35,11 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: 'quick-analysis', page: QuickAnalysisRoute.page),
       ],
     ),
-        AutoRoute(path: '/quick-analysis', page: QuickAnalysisRoute.page),
+    AutoRoute(path: '/quick-analysis', page: QuickAnalysisRoute.page),
     AutoRoute(path: '/login', page: LoginRoute.page),
     AutoRoute(path: '/signup', page: SignupRoute.page),
     AutoRoute(path: '/forgot-password', page: ForgotPasswordRoute.page),
     AutoRoute(path: '/notification', page: NotificationRoute.page),
+    AutoRoute(path: '/category-template', page: CategoryTemplateRoute.page), // Add the CategoryTemplatePage route
   ];
 }

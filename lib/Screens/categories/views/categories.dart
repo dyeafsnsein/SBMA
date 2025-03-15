@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../../shared_components/progress_bar.dart';
 import 'components/newcategory.dart';
-
+import '../../home/views/home.dart';
+import '../../categoryTemplate/views/categoryTemplate.dart';
 @RoutePage()
 class CategoryPage extends StatefulWidget {
   const CategoryPage({Key? key}) : super(key: key);
@@ -13,33 +14,29 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryState extends State<CategoryPage> {
-  
-
-  List<Map<String, dynamic>> _categories = [
-    {'icon': 'lib/assets/Food.png', 'label': 'Food'},
-    {'icon': 'lib/assets/Transport.png', 'label': 'Transport'},
-    {'icon': 'lib/assets/Medicine.png', 'label': 'Medicine'},
-    {'icon': 'lib/assets/Groceries.png', 'label': 'Groceries'},
-    {'icon': 'lib/assets/Rent.png', 'label': 'Rent'},
-    {'icon': 'lib/assets/Gift.png', 'label': 'Gifts'},
-    {'icon': 'lib/assets/Saving.png', 'label': 'Savings'},
-    {'icon': 'lib/assets/Entertainment.png', 'label': 'Entertainment'},
-    {'icon': 'lib/assets/More.png', 'label': 'More'},
+  final List<Map<String, String>> _categories = [
+    {'label': 'Food', 'icon': 'lib/assets/Food.png'},
+    {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
+    {'label': 'Shopping', 'icon': 'lib/assets/Shopping.png'},
+    {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
+    {'label': 'Bills', 'icon': 'lib/assets/Bills.png'},
+    {'label': 'More', 'icon': 'lib/assets/More.png'},
   ];
 
   void _showNewCategoryDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) => NewCategory(
-        onSave: (String categoryName) {
-          setState(() {
-            _categories.insert(_categories.length - 1, {
-              'icon': 'lib/assets/Star.png',
-              'label': categoryName,
-            });
-          });
-        },
-      ),
+      builder:
+          (BuildContext context) => NewCategory(
+            onSave: (String categoryName) {
+              setState(() {
+                _categories.add({
+                  'label': categoryName,
+                  'icon': 'lib/assets/More.png',
+                });
+              });
+            },
+          ),
     );
   }
 
@@ -101,6 +98,7 @@ class _CategoryState extends State<CategoryPage> {
                               ),
                               GestureDetector(
                                 onTap: () {
+                                  // Navigate to notifications page
                                 },
                                 child: Container(
                                   width: width * 0.08,
@@ -182,60 +180,86 @@ class _CategoryState extends State<CategoryPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child: GridView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 0.75,
-                        ),
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final category = _categories[index];
-                          return GestureDetector(
-                            onTap: category['label'] == 'More'
-                                ? () => _showNewCategoryDialog(context)
-                                : null,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF202422),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      category['icon'],
-                                      width: 45,
-                                      height: 45,
+                      child:
+                          _categories.isEmpty
+                              ? const Center(
+                                child: Text('No categories available'),
+                              )
+                              : GridView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.only(
+                                  top: 20,
+                                  bottom: 80,
+                                ),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 20,
+                                      mainAxisSpacing: 20,
+                                      childAspectRatio: 0.75,
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  category['label']!,
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF202422),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                                itemCount: _categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = _categories[index];
+                                  return GestureDetector(
+                                    onTap: () {
+                                      if (category['label'] == 'More') {
+                                        _showNewCategoryDialog(context);
+                                      } else {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CategoryTemplatePage(
+                                                  categoryName:
+                                                      category['label'] ?? '',
+                                                  categoryIcon:
+                                                      category['icon'] ?? '',
+                                                ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 90,
+                                          height: 90,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF202422),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              category['icon'] ?? '',
+                                              width: 45,
+                                              height: 45,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          category['label'] ?? '',
+                                          style: const TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF202422),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                     ),
                   ),
                 ),
               ],
             ),
-    
           ],
         ),
       ),

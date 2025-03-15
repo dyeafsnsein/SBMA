@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../../../shared_components/transaction_list.dart'; // Import the TransactionList component
-import '../../home/views/Home.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../../route/app_router.dart'; // Adjust the import path as necessary
 import '../../../Controllers/transaction_controller.dart';
@@ -50,12 +49,7 @@ class TransactionsPage extends StatelessWidget {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const HomePage(),
-                                      ),
-                                    );
+                                    Navigator.pop(context); // Navigate back to the previous page
                                   },
                                   child: Icon(
                                     Icons.arrow_back,

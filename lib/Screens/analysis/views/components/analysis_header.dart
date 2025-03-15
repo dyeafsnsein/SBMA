@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../shared_components/balance_overview.dart';
 import '../../../../shared_components/progress_bar.dart';
-import 'package:test_app/route/app_router.dart'; // Adjust the import path as necessary
-import 'package:auto_route/auto_route.dart';
+
 class AnalysisHeader extends StatelessWidget {
   final double totalBalance;
   final double totalExpense;
   final int expensePercentage;
   final double expenseLimit;
+  final VoidCallback onBackPressed;
+  final VoidCallback onNotificationTap;
 
   const AnalysisHeader({
     Key? key,
@@ -15,6 +16,8 @@ class AnalysisHeader extends StatelessWidget {
     required this.totalExpense,
     required this.expensePercentage,
     required this.expenseLimit,
+    required this.onBackPressed,
+    required this.onNotificationTap,
   }) : super(key: key);
 
   @override
@@ -33,14 +36,14 @@ class AnalysisHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-            GestureDetector(
-  onTap: () => AutoRouter.of(context).pop(),
-  child: Icon(
-    Icons.arrow_back,
-    color: Colors.white,
-    size: screenWidth * 0.06,
-  ),
-),
+              GestureDetector(
+                onTap: onBackPressed, // Correctly assign the onBackPressed callback
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: screenWidth * 0.06,
+                ),
+              ),
               Text(
                 'Analysis',
                 style: TextStyle(
@@ -51,9 +54,7 @@ class AnalysisHeader extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () {
-            context.router.push(const NotificationRoute());
-                },
+                onTap: onNotificationTap,
                 child: Container(
                   width: screenWidth * 0.08,
                   height: screenWidth * 0.08,

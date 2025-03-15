@@ -59,6 +59,69 @@ class CategoryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CategoryTemplatePage]
+class CategoryTemplateRoute extends PageRouteInfo<CategoryTemplateRouteArgs> {
+  CategoryTemplateRoute({
+    Key? key,
+    required String categoryName,
+    required String categoryIcon,
+    List<PageRouteInfo>? children,
+  }) : super(
+         CategoryTemplateRoute.name,
+         args: CategoryTemplateRouteArgs(
+           key: key,
+           categoryName: categoryName,
+           categoryIcon: categoryIcon,
+         ),
+         rawPathParams: {
+           'categoryName': categoryName,
+           'categoryIcon': categoryIcon,
+         },
+         initialChildren: children,
+       );
+
+  static const String name = 'CategoryTemplateRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<CategoryTemplateRouteArgs>(
+        orElse:
+            () => CategoryTemplateRouteArgs(
+              categoryName: pathParams.getString('categoryName'),
+              categoryIcon: pathParams.getString('categoryIcon'),
+            ),
+      );
+      return CategoryTemplatePage(
+        key: args.key,
+        categoryName: args.categoryName,
+        categoryIcon: args.categoryIcon,
+      );
+    },
+  );
+}
+
+class CategoryTemplateRouteArgs {
+  const CategoryTemplateRouteArgs({
+    this.key,
+    required this.categoryName,
+    required this.categoryIcon,
+  });
+
+  final Key? key;
+
+  final String categoryName;
+
+  final String categoryIcon;
+
+  @override
+  String toString() {
+    return 'CategoryTemplateRouteArgs{key: $key, categoryName: $categoryName, categoryIcon: $categoryIcon}';
+  }
+}
+
+/// generated route for
 /// [ForgotPasswordPage]
 class ForgotPasswordRoute extends PageRouteInfo<void> {
   const ForgotPasswordRoute({List<PageRouteInfo>? children})
