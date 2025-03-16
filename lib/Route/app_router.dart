@@ -11,6 +11,7 @@ import '../Screens/categoryTemplate/views/categoryTemplate.dart';
 import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
+import '../Screens/profile/views/profile.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -65,7 +66,7 @@ final router = GoRouter(
         ),
         
         // Categories section and its sub-routes
-    GoRoute(
+        GoRoute(
           path: '/categories',
           builder: (context, state) => const CategoryPage(),
           routes: [
@@ -77,6 +78,12 @@ final router = GoRouter(
               ),
             ),
           ],
+        ),
+
+        // Profile section
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfilePage(),
         ),
       ],
     ),

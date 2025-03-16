@@ -38,6 +38,7 @@ class MainContainerPage extends StatelessWidget {
       [r'^/analysis'], // Analysis routes
       [r'^/transactions'], // Transaction routes
       [r'^/categories'], // Category routes
+      [r'^/profile'], // Profile routes
     ];
     
     // Find matching pattern index
@@ -57,6 +58,7 @@ class MainContainerPage extends StatelessWidget {
       '/analysis',
       '/transactions', 
       '/categories',
+      '/profile',
     ];
 
     if (index >= 0 && index < routes.length) {

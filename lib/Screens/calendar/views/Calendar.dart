@@ -5,6 +5,7 @@ import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/CalenderPieChart.dart';
 import '../../../Controllers/calendar_controller.dart';
 import '../../../Models/calendar_model.dart';
+import 'package:go_router/go_router.dart';
 
 class CalendarPage extends StatelessWidget {
   const CalendarPage({Key? key}) : super(key: key);
@@ -25,160 +26,160 @@ class CalendarPage extends StatelessWidget {
             ),
             child: Scaffold(
               backgroundColor: const Color(0xFF202422),
-              body: Stack(
+              body: Column(
                 children: [
-                  Column(
-                    children: [
-                      // Header
-                      SafeArea(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.06,
-                            vertical: screenHeight * 0.06,
+                  // Header
+                  SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.06,
+                        vertical: screenHeight * 0.01,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () => context.pop(),
+                            child: Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                              size: screenWidth * 0.06,
+                            ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Text(
+                            'Calendar',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: screenWidth * 0.05,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => context.push('/notification'),
+                            child: Container(
+                              width: screenWidth * 0.08,
+                              height: screenWidth * 0.08,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF050505),
+                                borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                              ),
+                              child: Icon(
+                                Icons.notifications,
+                                color: Colors.white,
+                                size: screenWidth * 0.05,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Main content
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1FFF3),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Padding(
+                          padding: EdgeInsets.all(screenWidth * 0.04),
+                          child: Column(
                             children: [
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: const Icon(
-                                  Icons.arrow_back,
-                                  color: Colors.white,
-                                ),
+                              // Month and Year selectors
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _buildDropdown(controller.selectedMonth, controller.months, (value) {
+                                    controller.setSelectedMonth(value!);
+                                  }),
+                                  _buildDropdown(controller.selectedYear, controller.years, (value) {
+                                    controller.setSelectedYear(value!);
+                                  }),
+                                ],
                               ),
-                              const Text(
-                                'Calendar',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
+                              SizedBox(height: screenHeight * 0.01),
+                              
+                              // Calendar grid
+                              _buildCalendarGrid(controller, screenHeight, screenWidth),
+                              
+                              // Tabs
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildTab(
+                                      title: 'Spends',
+                                      isSelected: controller.showSpends,
+                                      onTap: () => controller.toggleShowSpends(true),
+                                      screenHeight: screenHeight,
+                                    ),
+                                  ),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: _buildTab(
+                                      title: 'Categories',
+                                      isSelected: !controller.showSpends,
+                                      onTap: () => controller.toggleShowSpends(false),
+                                      screenHeight: screenHeight,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: const Icon(
-                                  Icons.notifications,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
+                              SizedBox(height: screenHeight * 0.02),
+                              
+                              // Content container
+                              SizedBox(
+                                height: screenHeight * 0.4,
+                                child: controller.showSpends 
+                                  ? TransactionList(transactions: controller.transactions)
+                                  : CategoryPieChart(categories: controller.categories),
                               ),
+                              SizedBox(height: screenHeight * 0.1),
                             ],
                           ),
                         ),
                       ),
-                      
-                      // Main content
-                      Expanded(
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF1FFF3),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(screenWidth * 0.04),
-                            child: Column(
-                              children: [
-                                // Month and Year selectors
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildDropdown(controller.selectedMonth, controller.months, (value) {
-                                      controller.setSelectedMonth(value!);
-                                    }),
-                                    _buildDropdown(controller.selectedYear, controller.years, (value) {
-                                      controller.setSelectedYear(value!);
-                                    }),
-                                  ],
-                                ),
-                                SizedBox(height: screenHeight * 0.02),
-                                
-                                // Calendar grid
-                                _buildCalendarGrid(controller),
-                                SizedBox(height: screenHeight * 0.02),
-                                
-                                // Tabs
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          controller.toggleShowSpends(true);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          decoration: BoxDecoration(
-                                            color: controller.showSpends ? const Color(0xFF202422) : Colors.grey.shade300,
-                                            borderRadius: BorderRadius.circular(25),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'Spends',
-                                              style: TextStyle(
-                                                color: controller.showSpends ? Colors.white : Colors.black,
-                                                fontFamily: 'Poppins',
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          controller.toggleShowSpends(false);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          decoration: BoxDecoration(
-                                            color: !controller.showSpends ? const Color(0xFF202422) : Colors.grey.shade300,
-                                            borderRadius: BorderRadius.circular(25),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'Categories',
-                                              style: TextStyle(
-                                                color: !controller.showSpends ? Colors.white : Colors.black,
-                                                fontFamily: 'Poppins',
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: screenHeight * 0.02),
-                                
-                                // Conditional rendering based on selected tab
-                                Expanded(
-                                  child: controller.showSpends 
-                                    ? TransactionList(transactions: controller.transactions)
-                                    : CategoryPieChart(categories: controller.categories),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTab({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required double screenHeight,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF202422) : Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.black,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -211,54 +212,56 @@ class CalendarPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCalendarGrid(CalendarController controller) {
+  Widget _buildCalendarGrid(CalendarController controller, double screenHeight, double screenWidth) {
     final daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return Column(
       children: [
-        // Days of week header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: daysOfWeek.map((day) => Text(
             day,
-            style: const TextStyle(
-              color: Color(0xFF202422),
+            style: TextStyle(
+              color: const Color(0xFF202422),
               fontFamily: 'Poppins',
-              fontSize: 14,
+              fontSize: screenWidth * 0.035,
             ),
           )).toList(),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: screenHeight * 0.01),
         
-        // Calendar grid
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
             childAspectRatio: 1.0,
+            crossAxisSpacing: screenWidth * 0.01,
+            mainAxisSpacing: screenWidth * 0.01,
           ),
-          itemCount: 31, // March has 31 days
+          itemCount: 31,
           itemBuilder: (context, index) {
             final day = index + 1;
             final isSelected = day == controller.selectedDay;
             
             return GestureDetector(
-              onTap: () {
-                controller.setSelectedDay(day);
-              },
+              onTap: () => controller.setSelectedDay(day),
               child: Container(
-                margin: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: isSelected ? const Color.fromARGB(255, 93, 208, 250) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                  color: isSelected 
+                    ? const Color.fromARGB(255, 93, 208, 250) 
+                    : Colors.transparent,
                 ),
                 child: Center(
                   child: Text(
                     day.toString(),
                     style: TextStyle(
-                      color: isSelected ? Colors.white : const Color.fromARGB(255, 93, 208, 250),
+                      color: isSelected 
+                        ? Colors.white 
+                        : const Color.fromARGB(255, 93, 208, 250),
                       fontFamily: 'Poppins',
+                      fontSize: screenWidth * 0.035,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),

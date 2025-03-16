@@ -95,6 +95,13 @@ flutter:
     - lib/assets/Saving.png
     - lib/assets/Entertainment.png
     - lib/assets/More.png
+    - lib/assets/Security.png
+    - lib/assets/Logout.png
+    - lib/assets/Profile.png
+    - lib/assets/Settings.png
+    - lib/assets/Help.png
+    - lib/assets/profile_image.png
+
     
 
         
