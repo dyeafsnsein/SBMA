@@ -126,7 +126,7 @@ class ProfilePage extends StatelessWidget {
                               _buildProfileOption(
                                 iconPath: 'lib/assets/Profile.png',
                                 title: 'Edit Profile',
-                                onTap: () {},
+                                onTap: () {context.push('/profile/edit-profile');},
                                 screenWidth: screenWidth,
                               ),
                               _buildProfileOption(

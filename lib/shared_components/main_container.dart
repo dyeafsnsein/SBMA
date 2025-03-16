@@ -39,6 +39,8 @@ class MainContainerPage extends StatelessWidget {
       [r'^/transactions'], // Transaction routes
       [r'^/categories'], // Category routes
       [r'^/profile'], // Profile routes
+      [r'^/profile', r'^/profile/edit-profile'], // Profile routes with edit profile
+
     ];
     
     // Find matching pattern index

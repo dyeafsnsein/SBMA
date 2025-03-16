@@ -12,6 +12,7 @@ import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
+import '../Screens/profile/views/editprofile.dart'; // Corrected file name
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -80,10 +81,16 @@ final router = GoRouter(
           ],
         ),
 
-        // Profile section
+        // Profile section and its sub-routes
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfilePage(),
+          routes: [
+            GoRoute(
+              path: 'edit-profile',
+              builder: (context, state) => const EditProfilePage(),
+            ),
+          ],
         ),
       ],
     ),

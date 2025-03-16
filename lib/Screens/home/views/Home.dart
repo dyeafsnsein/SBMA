@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:go_router/go_router.dart';
 import 'components/header.dart';
 import '../../../shared_components/balance_overview.dart';
@@ -9,11 +8,9 @@ import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/goal_overview.dart';
 import 'components/period_selector.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../../Route/app_router.dart';
 import '../../../Controllers/home_controller.dart';
 import '../../../Models/home_model.dart';
 
-@RoutePage()
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
