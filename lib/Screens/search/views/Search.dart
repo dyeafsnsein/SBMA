@@ -9,7 +9,6 @@ import 'components/CategoriesDropdown.dart';
 import 'components/DatePicker.dart';
 import 'components/ReportOptions.dart';
 
-@RoutePage()
 class SearchPage extends StatelessWidget {
   const SearchPage({Key? key}) : super(key: key);
 
@@ -56,7 +55,7 @@ class SearchPage extends StatelessWidget {
                             ),
                             GestureDetector(
                               onTap: () {
-                                context.router.push(const NotificationRoute());
+                               
                               },
                               child: Container(
                                 width: 30,

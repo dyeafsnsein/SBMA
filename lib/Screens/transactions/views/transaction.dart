@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import '../../../shared_components/transaction_list.dart'; // Import the TransactionList component
-import 'package:auto_route/auto_route.dart';
-import '../../../route/app_router.dart'; // Adjust the import path as necessary
+import 'package:go_router/go_router.dart';
+import '../../../shared_components/transaction_list.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../Models/transaction_model.dart';
 import '../../../shared_components/income_expense_summary.dart';
 
-@RoutePage()
 class TransactionsPage extends StatelessWidget {
   const TransactionsPage({Key? key}) : super(key: key);
 
@@ -19,7 +17,6 @@ class TransactionsPage extends StatelessWidget {
       create: (_) => TransactionController(TransactionModel()),
       child: Consumer<TransactionController>(
         builder: (context, controller, child) {
-          final tabsRouter = AutoTabsRouter.of(context);
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
 
@@ -49,9 +46,7 @@ class TransactionsPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: () {
-                                    tabsRouter.setActiveIndex(0); // Navigate back to the previous tab
-                                  },
+                                  onTap: () => context.go('/'),
                                   child: Icon(
                                     Icons.arrow_back,
                                     color: Colors.white,
@@ -68,9 +63,7 @@ class TransactionsPage extends StatelessWidget {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                    context.router.push(const NotificationRoute());
-                                  },
+                                  onTap: () => context.push('/notification'),
                                   child: Container(
                                     width: screenWidth * 0.08,
                                     height: screenWidth * 0.08,
@@ -91,6 +84,7 @@ class TransactionsPage extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            // ...rest of your existing UI code remains the same
                             SizedBox(height: screenHeight * 0.04),
                             Text(
                               'Total Balance',

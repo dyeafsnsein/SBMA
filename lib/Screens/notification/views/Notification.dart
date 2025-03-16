@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../../Controllers/notification_controller.dart';
 import '../../../Models/notification_model.dart';
 
-@RoutePage()
 class NotificationPage extends StatelessWidget {
   const NotificationPage({Key? key}) : super(key: key);
 
@@ -36,9 +35,7 @@ class NotificationPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
+                                  onTap: () => context.pop(),  // Updated navigation
                                   child: const Icon(
                                     Icons.arrow_back,
                                     color: Colors.white,

@@ -58,7 +58,7 @@ class QuickAnalysisPage extends StatelessWidget {
                                 QuickAnalysisHeader(
                                   onBackPressed: () => Navigator.pop(context),
                                   onNotificationTap: () {
-                                    context.router.push(const NotificationRoute());
+                                    
                                   },
                                 ),
                                 GoalOverview(

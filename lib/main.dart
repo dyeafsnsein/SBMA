@@ -2,23 +2,20 @@ import 'package:flutter/material.dart';
 import 'Route/app_router.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-  
-  final _appRouter = AppRouter();
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+      title: 'Your App',
       theme: ThemeData(
-        fontFamily: 'Poppins',
-        scaffoldBackgroundColor: const Color(0xFF202422),
+        // your theme data
       ),
-      routerConfig: _appRouter.config(),
     );
   }
 }

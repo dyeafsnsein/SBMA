@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:provider/provider.dart';
-import 'components/analysis_header.dart';  // Use existing header component
+import 'package:go_router/go_router.dart';
+import 'components/analysis_header.dart';
 import '../../../shared_components/fl_bar_chart.dart';
 import 'components/period_selector_analysis.dart';
-import '../../../shared_components/income_expense_summary.dart';  // Should use this component
-import 'components/targets_section.dart';  // Should use this component
+import '../../../shared_components/income_expense_summary.dart';
+import 'components/targets_section.dart';
 import '../../../Controllers/analysis_controller.dart';
 import '../../../Models/analysis_model.dart';
-import '../../../Route/app_router.dart';
 
-@RoutePage()
 class AnalysisPage extends StatefulWidget {
   const AnalysisPage({Key? key}) : super(key: key);
 
@@ -48,7 +46,6 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
         builder: (context, controller, child) {
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
-          final tabsRouter = AutoTabsRouter.of(context);
 
           // Get current period data based on selection
           String currentPeriod = controller.periods[controller.selectedPeriodIndex];
@@ -67,16 +64,13 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                 children: [
                   Column(
                     children: [
-                      // Use the existing AnalysisHeader component
                       AnalysisHeader(
                         totalBalance: 7783.00,
                         totalExpense: 1187.40,
                         expensePercentage: 30,
                         expenseLimit: 20000.00,
-                        onBackPressed: () => tabsRouter.setActiveIndex(0), // Navigate back to the Home tab
-                        onNotificationTap: () {
-                          context.router.push(const NotificationRoute());
-                        },
+                        onBackPressed: () => context.go('/'), // Navigate back to Home using GoRouter
+                        onNotificationTap: () => context.push('/notification'),
                       ),
                       Expanded(
                         child: Container(
@@ -110,13 +104,11 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                                     ),
                                   ),
                                   SizedBox(height: screenHeight * 0.02),
-                                  // Use the existing IncomeExpenseSummary component
                                   const IncomeExpenseSummary(
                                     income: 4120.00,
                                     expense: 1187.40,
                                   ),
                                   SizedBox(height: screenHeight * 0.03),
-                                  // Use the existing TargetsSection component
                                   TargetsSection(targets: controller.targets),
                                   SizedBox(height: screenHeight * 0.1),
                                 ],

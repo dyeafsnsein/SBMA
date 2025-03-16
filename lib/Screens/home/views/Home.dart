@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:go_router/go_router.dart';
 import 'components/header.dart';
 import '../../../shared_components/balance_overview.dart';
 import '../../../shared_components/progress_bar.dart';
@@ -49,8 +50,8 @@ class HomePage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Header(
-                                  onNotificationTap: () {
-                                    context.router.push(const NotificationRoute());
+                                  onNotificationTap: () {context.push('/notification');
+                                  
                                   },
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
@@ -104,10 +105,7 @@ class HomePage extends StatelessWidget {
                                   goalText: 'Savings On Goals',
                                   revenueLastWeek: 4000.00,
                                   foodLastWeek: 100.00,
-                                  onTap: () {
-                                    // Navigate to QuickAnalysis as a nested route
-                                    context.router.push(const QuickAnalysisRoute());
-                                  },
+                             onTap: () => context.push('/quick-analysis'),
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
                                 PeriodSelector(

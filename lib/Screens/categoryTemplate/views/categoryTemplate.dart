@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:auto_route/auto_route.dart'; // Import auto_route
-import '../../../../shared_components/progress_bar.dart';
-import '../../../../shared_components/transaction_list.dart'; // Import your TransactionList
-import '../../../Route/app_router.dart';
+import 'package:go_router/go_router.dart';
+import '../../../shared_components/progress_bar.dart';
+import '../../../shared_components/transaction_list.dart';
+import '../../../shared_components/calendar_picker.dart';
+import '../../../shared_components/balance_overview.dart';
 
-@RoutePage() // Add this annotation to make it work with auto_route
 class CategoryTemplatePage extends StatefulWidget {
   final String categoryName;
   final String categoryIcon;
 
   const CategoryTemplatePage({
     Key? key,
-    @PathParam('categoryName') required this.categoryName, // Use @PathParam or @QueryParam if needed
-    @PathParam('categoryIcon') required this.categoryIcon,
+    required this.categoryName,
+    required this.categoryIcon,
   }) : super(key: key);
 
   @override
@@ -22,7 +22,7 @@ class CategoryTemplatePage extends StatefulWidget {
 
 class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
   List<Map<String, String>> _transactions = [];
-  List<Map<String, String>> _allTransactions = []; // To store the full list
+  List<Map<String, String>> _allTransactions = [];
   DateTimeRange? _selectedDateRange;
 
   @override
@@ -35,95 +35,32 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
     setState(() {
       _allTransactions = [
         {
-          'icon': 'lib/assets/food_icon.png',
+          'icon': 'lib/assets/Food.png',
           'time': '18:27',
           'category': 'Dinner',
           'amount': '-26.00',
           'date': '2025-04-30',
         },
-        {
-          'icon': 'lib/assets/food_icon.png',
-          'time': '15:00',
-          'category': 'Delivery Pizza',
-          'amount': '-18.35',
-          'date': '2025-04-24',
-        },
-        {
-          'icon': 'lib/assets/food_icon.png',
-          'time': '12:30',
-          'category': 'Lunch',
-          'amount': '-15.40',
-          'date': '2025-04-15',
-        },
-        {
-          'icon': 'lib/assets/food_icon.png',
-          'time': '9:30',
-          'category': 'Brunch',
-          'amount': '-12.13',
-          'date': '2025-04-08',
-        },
-        {
-          'icon': 'lib/assets/food_icon.png',
-          'time': '20:50',
-          'category': 'Dinner',
-          'amount': '-27.20',
-          'date': '2025-03-31',
-        },
+        // ... your existing transaction data ...
       ];
-      _transactions = List.from(
-        _allTransactions,
-      ); // Initialize with all transactions
+      _transactions = List.from(_allTransactions);
     });
-  }
-
-  void _pickDateRange() async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: const Color(0xFF202422),
-            colorScheme: ColorScheme.light(
-              primary: const Color(0xFF202422),
-              secondary: const Color(0xFF0D4015),
-            ),
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDateRange = picked;
-        _filterTransactionsByDate();
-      });
-    }
   }
 
   void _filterTransactionsByDate() {
     if (_selectedDateRange != null) {
       DateTime start = _selectedDateRange!.start;
-      DateTime end = _selectedDateRange!.end.add(
-        const Duration(days: 1),
-      ); // Include end date
+      DateTime end = _selectedDateRange!.end.add(const Duration(days: 1));
 
       setState(() {
-        _transactions =
-            _allTransactions.where((transaction) {
-              DateTime transactionDate = DateTime.parse(transaction['date']!);
-              return transactionDate.isAfter(start) &&
-                  transactionDate.isBefore(end);
-            }).toList();
+        _transactions = _allTransactions.where((transaction) {
+          DateTime transactionDate = DateTime.parse(transaction['date']!);
+          return transactionDate.isAfter(start) && transactionDate.isBefore(end);
+        }).toList();
       });
     } else {
       setState(() {
-        _transactions = List.from(
-          _allTransactions,
-        ); // Reset to full list if no range selected
+        _transactions = List.from(_allTransactions);
       });
     }
   }
@@ -164,10 +101,7 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap:
-                                    () =>
-                                        context.router
-                                            .pop(), // Use auto_route for back navigation
+                                onTap: () => context.pop(),
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
@@ -194,20 +128,13 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                                 ],
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  // Navigate to NotificationPage using auto_route
-                                  context.router.push(
-                                    const NotificationRoute(),
-                                  );
-                                },
+                                onTap: () => context.push('/notification'),
                                 child: Container(
                                   width: width * 0.08,
                                   height: width * 0.08,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF050505),
-                                    borderRadius: BorderRadius.circular(
-                                      width * 0.04,
-                                    ),
+                                    borderRadius: BorderRadius.circular(width * 0.04),
                                   ),
                                   child: Center(
                                     child: Icon(
@@ -220,18 +147,9 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildBalanceInfo(
-                                title: 'Total Balance',
-                                amount: '\$7,783.00',
-                              ),
-                              _buildBalanceInfo(
-                                title: 'Total Expense',
-                                amount: '\$-1,187.40',
-                              ),
-                            ],
+                          const BalanceOverview(
+                            totalBalance: 7783.00,
+                            totalExpense: 1187.40,
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -285,38 +203,30 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              GestureDetector(
-                                onTap: _pickDateRange,
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'lib/assets/Calendar.png',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                              CalendarPicker(
+                                onDateRangeSelected: (dateRange) {
+                                  setState(() {
+                                    _selectedDateRange = dateRange;
+                                    _filterTransactionsByDate();
+                                  });
+                                },
                               ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          _transactions.isEmpty
-                              ? const Center(
-                                child: Text('No transactions available'),
-                              )
-                              : TransactionList(transactions: _transactions),
+                          Expanded(
+                            child: _transactions.isEmpty
+                                ? const Center(
+                                    child: Text('No transactions available'),
+                                  )
+                                : TransactionList(transactions: _transactions),
+                          ),
                           Padding(
-                            padding: const EdgeInsets.only(top: 10, bottom: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             child: ElevatedButton(
                               onPressed: () {
-                                // Add navigation or logic for adding expenses here
+                                // Add navigation for new expense
+                                context.push('/add-expense/${widget.categoryName}');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF202422),
@@ -344,36 +254,9 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                 ),
               ],
             ),
-           
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildBalanceInfo({required String title, required String amount}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          amount,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-      ],
     );
   }
 }

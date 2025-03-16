@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:auto_route/auto_route.dart';
 import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/CalenderPieChart.dart';
 import '../../../Controllers/calendar_controller.dart';
 import '../../../Models/calendar_model.dart';
 
-@RoutePage()
 class CalendarPage extends StatelessWidget {
   const CalendarPage({Key? key}) : super(key: key);
 
