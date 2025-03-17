@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
+import 'package:test_app/Screens/settings/views/Settings.dart';
 import '../shared_components/main_container.dart';
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -148,6 +149,11 @@ final router = GoRouter(
                 ),
               ],
             ),
+            GoRoute(
+              path: 'settings',
+              builder: (context, state) => const Settings(),
+            ),
+            
           ],
         ),
       ],

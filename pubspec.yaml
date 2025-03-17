@@ -102,6 +102,7 @@ flutter:
     - lib/assets/Help.png
     - lib/assets/profile_image.png
     - lib/assets/Fingerprint.png
+    - lib/assets/Key.png
 
     
 
