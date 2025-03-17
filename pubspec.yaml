@@ -89,7 +89,16 @@ flutter:
     - lib/assets/Search.png
     - lib/assets/Transport.png
     - lib/assets/Groceries.png
-    - lib/assets/Star.png
+    - lib/assets/Gift.png
+    - lib/assets/Saving.png
+    - lib/assets/Entertainment.png
+    - lib/assets/More.png
+    - lib/assets/Security.png
+    - lib/assets/Logout.png
+    - lib/assets/Profile.png
+    - lib/assets/Settings.png
+    - lib/assets/Help.png
+    - lib/assets/profile_image.png
 
     
 

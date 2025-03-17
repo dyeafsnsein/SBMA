@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
+import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
 import '../shared_components/main_container.dart';
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -12,7 +14,6 @@ import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
-import '../Screens/categories/views/components/Add_expense.dart'; // Import AddExpensesPage
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -28,6 +29,18 @@ final router = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
+      path: '/success',
+      builder: (context, state) => const PinChangeSuccess(),
+    ),
+    GoRoute(
+      path: '/delete-success',
+      builder: (context, state) => const FingerprintDeleteSuccess(),
+    ),
+    GoRoute(
+      path: '/success2',
+      builder: (context, state) => const FingerprintAddSuccess(),
     ),
 
     // Main app shell with bottom nav
@@ -88,10 +101,55 @@ final router = GoRouter(
           ],
         ),
 
-        // Profile section
+        // Profile section and its sub-routes
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfilePage(),
+          routes: [
+            GoRoute(
+              path: 'edit-profile',
+              builder: (context, state) => const EditProfilePage(),
+            ),
+
+            GoRoute(
+              path: 'security-edit',
+              builder: (context, state) => const SecurityEdit(),
+              routes: [
+                GoRoute(
+                  path: 'change-pin',
+                  builder: (context, state) => const ChangePin(),
+                  routes: [
+                    GoRoute(
+                      path: 'success',
+                      builder: (context, state) => const PinChangeSuccess(),
+                    ),
+                  ],
+                ),
+                GoRoute(
+                  path: 'fingerprint',
+                  builder: (context, state) => const Fingerprint(),
+                  routes: [
+                    GoRoute(
+                      path: 'action/:fingerprintName',
+                      builder:
+                          (context, state) => FingerprintActionPage(
+                            fingerprintName:
+                                state.pathParameters['fingerprintName']!,
+                          ),
+                    ),
+                    GoRoute(
+                      path: 'add',
+                      builder: (context, state) => const AddFingerprint(),
+                    ),
+                  ],
+                ),
+                GoRoute(
+                  path: 'terms-and-conditions',
+                  builder: (context, state) => const TermsAndConditions(),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     ),
