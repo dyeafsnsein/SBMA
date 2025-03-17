@@ -23,22 +23,19 @@ import '../Screens/security/views/Fingerprint.dart';
 import '../Screens/security/views/FingerprintActionPage.dart';
 import '../Screens/security/views/AddFingerprint.dart';
 import '../Screens/security/views/TermsAndConditions.dart';
+import '../Screens/categories/views/components/Add_expense.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
     // Auth routes (outside shell, no bottom nav)
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupPage(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
@@ -55,7 +52,6 @@ final router = GoRouter(
       path: '/success2',
       builder: (context, state) => const FingerprintAddSuccess(),
     ),
-    
 
     // Main app shell with bottom nav
     ShellRoute(
@@ -75,19 +71,19 @@ final router = GoRouter(
             ),
           ],
         ),
-        
+
         // Analysis section
         GoRoute(
           path: '/analysis',
           builder: (context, state) => const AnalysisPage(),
         ),
-        
+
         // Transactions section
         GoRoute(
           path: '/transactions',
           builder: (context, state) => const TransactionsPage(),
         ),
-        
+
         // Categories section and its sub-routes
         GoRoute(
           path: '/categories',
@@ -95,10 +91,22 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: 'template/:categoryName/:categoryIcon',
-              builder: (context, state) => CategoryTemplatePage(
-                categoryName: state.pathParameters['categoryName']!,
-                categoryIcon: Uri.decodeComponent(state.pathParameters['categoryIcon']!),
-              ),
+              builder:
+                  (context, state) => CategoryTemplatePage(
+                    categoryName: state.pathParameters['categoryName']!,
+                    categoryIcon: Uri.decodeComponent(
+                      state.pathParameters['categoryIcon']!,
+                    ),
+                  ),
+            ),
+            GoRoute(
+              path: 'add-expense/:categoryName',
+              builder: (context, state) {
+                final categoryName = state.pathParameters['categoryName']!;
+                return AddExpensesPage(
+                  categoryName: categoryName,
+                ); // Pass categoryName
+              },
             ),
           ],
         ),
@@ -112,7 +120,7 @@ final router = GoRouter(
               path: 'edit-profile',
               builder: (context, state) => const EditProfilePage(),
             ),
-            
+
             GoRoute(
               path: 'security-edit',
               builder: (context, state) => const SecurityEdit(),
@@ -133,9 +141,11 @@ final router = GoRouter(
                   routes: [
                     GoRoute(
                       path: 'action/:fingerprintName',
-                      builder: (context, state) => FingerprintActionPage(
-                        fingerprintName: state.pathParameters['fingerprintName']!,
-                      ),
+                      builder:
+                          (context, state) => FingerprintActionPage(
+                            fingerprintName:
+                                state.pathParameters['fingerprintName']!,
+                          ),
                     ),
                     GoRoute(
                       path: 'add',
@@ -143,7 +153,7 @@ final router = GoRouter(
                     ),
                   ],
                 ),
-                    GoRoute(
+                GoRoute(
                   path: 'terms-and-conditions',
                   builder: (context, state) => const TermsAndConditions(),
                 ),
@@ -166,7 +176,7 @@ final router = GoRouter(
       builder: (context, state) => const NotificationPage(),
     ),
   ],
-  
+
   // Global redirect for auth
   redirect: (BuildContext context, GoRouterState state) {
     // Add your auth logic here if needed
@@ -175,14 +185,14 @@ final router = GoRouter(
     // final bool isAuthRoute = state.location.startsWith('/login') ||
     //     state.location.startsWith('/signup') ||
     //     state.location.startsWith('/forgot-password');
-    
+
     // if (!isLoggedIn && !isAuthRoute) {
     //   return '/login';
     // }
     // if (isLoggedIn && isAuthRoute) {
     //   return '/';
     // }
-    
+
     return null;
   },
 );

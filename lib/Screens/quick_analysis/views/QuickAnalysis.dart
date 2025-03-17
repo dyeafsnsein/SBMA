@@ -8,7 +8,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/quick_analysis_controller.dart';
 import '../../../Models/quick_analysis_model.dart';
-import '../../../Route/app_router.dart';
 
 @RoutePage()
 class QuickAnalysisPage extends StatelessWidget {
@@ -57,9 +56,7 @@ class QuickAnalysisPage extends StatelessWidget {
                               children: [
                                 QuickAnalysisHeader(
                                   onBackPressed: () => Navigator.pop(context),
-                                  onNotificationTap: () {
-                                    
-                                  },
+                                  onNotificationTap: () {},
                                 ),
                                 GoalOverview(
                                   goalIcon: 'lib/assets/Car.png',
@@ -88,7 +85,9 @@ class QuickAnalysisPage extends StatelessWidget {
                               children: [
                                 // Fixed height container for the chart instead of Flexible
                                 SizedBox(
-                                  height: height * 0.28, // Adjust this value as needed
+                                  height:
+                                      height *
+                                      0.28, // Adjust this value as needed
                                   child: FlBarChart(
                                     expenses: controller.expenses,
                                     income: controller.income,

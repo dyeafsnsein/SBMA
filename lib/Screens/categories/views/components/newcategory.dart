@@ -11,17 +11,17 @@ class NewCategoryDialog extends StatefulWidget {
 class _NewCategoryDialogState extends State<NewCategoryDialog> {
   final _formKey = GlobalKey<FormState>();
   final _categoryController = TextEditingController();
-  String _selectedIcon = 'lib/assets/Other.png'; // Default icon
+  String _selectedIcon = 'lib/assets/star.png'; // Default icon
 
   final List<String> _availableIcons = [
-    'lib/assets/Shopping.png',
+    'lib/assets/Rent.png',
     'lib/assets/Food.png',
     'lib/assets/Transport.png',
     'lib/assets/Entertainment.png',
-    'lib/assets/Health.png',
-    'lib/assets/Education.png',
-    'lib/assets/Bills.png',
-    'lib/assets/Other.png',
+    'lib/assets/Gift.png',
+    'lib/assets/Groceries.png',
+    'lib/assets/Medicine.png',
+    'lib/assets/star.png',
   ];
 
   @override
@@ -33,7 +33,7 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -79,9 +79,10 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                         height: 60,
                         margin: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: _selectedIcon == _availableIcons[index]
-                              ? const Color(0xFF202422)
-                              : Colors.white,
+                          color:
+                              _selectedIcon == _availableIcons[index]
+                                  ? const Color(0xFF202422)
+                                  : Colors.white,
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color: const Color(0xFF202422),
@@ -92,9 +93,10 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                           _availableIcons[index],
                           width: 30,
                           height: 30,
-                          color: _selectedIcon == _availableIcons[index]
-                              ? Colors.white
-                              : const Color(0xFF202422),
+                          color:
+                              _selectedIcon == _availableIcons[index]
+                                  ? Colors.white
+                                  : const Color(0xFF202422),
                         ),
                       ),
                     );
