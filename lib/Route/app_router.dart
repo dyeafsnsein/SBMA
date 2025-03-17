@@ -12,23 +12,19 @@ import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
+import '../Screens/categories/views/components/Add_expense.dart'; // Import AddExpensesPage
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
     // Auth routes (outside shell, no bottom nav)
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupPage(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
@@ -52,19 +48,19 @@ final router = GoRouter(
             ),
           ],
         ),
-        
+
         // Analysis section
         GoRoute(
           path: '/analysis',
           builder: (context, state) => const AnalysisPage(),
         ),
-        
+
         // Transactions section
         GoRoute(
           path: '/transactions',
           builder: (context, state) => const TransactionsPage(),
         ),
-        
+
         // Categories section and its sub-routes
         GoRoute(
           path: '/categories',
@@ -72,10 +68,22 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: 'template/:categoryName/:categoryIcon',
-              builder: (context, state) => CategoryTemplatePage(
-                categoryName: state.pathParameters['categoryName']!,
-                categoryIcon: Uri.decodeComponent(state.pathParameters['categoryIcon']!),
-              ),
+              builder:
+                  (context, state) => CategoryTemplatePage(
+                    categoryName: state.pathParameters['categoryName']!,
+                    categoryIcon: Uri.decodeComponent(
+                      state.pathParameters['categoryIcon']!,
+                    ),
+                  ),
+            ),
+            GoRoute(
+              path: 'add-expense/:categoryName',
+              builder: (context, state) {
+                final categoryName = state.pathParameters['categoryName']!;
+                return AddExpensesPage(
+                  categoryName: categoryName,
+                ); // Pass categoryName
+              },
             ),
           ],
         ),
@@ -95,23 +103,10 @@ final router = GoRouter(
       builder: (context, state) => const NotificationPage(),
     ),
   ],
-  
+
   // Global redirect for auth
   redirect: (BuildContext context, GoRouterState state) {
     // Add your auth logic here if needed
-    // Example:
-    // final bool isLoggedIn = AuthService.isLoggedIn;
-    // final bool isAuthRoute = state.location.startsWith('/login') ||
-    //     state.location.startsWith('/signup') ||
-    //     state.location.startsWith('/forgot-password');
-    
-    // if (!isLoggedIn && !isAuthRoute) {
-    //   return '/login';
-    // }
-    // if (isLoggedIn && isAuthRoute) {
-    //   return '/';
-    // }
-    
     return null;
   },
 );

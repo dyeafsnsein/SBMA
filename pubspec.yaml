@@ -81,7 +81,6 @@ flutter:
     - lib/assets/Saving.png
     - lib/assets/More.png
     - lib/assets/Entertainment.png
-
     - lib/assets/Salary.png
     - lib/assets/Pantry.png
     - lib/assets/Check.png
@@ -89,18 +88,8 @@ flutter:
     - lib/assets/Calendar.png
     - lib/assets/Search.png
     - lib/assets/Transport.png
-    - lib/assets/Medicine.png
     - lib/assets/Groceries.png
-    - lib/assets/Gift.png
-    - lib/assets/Saving.png
-    - lib/assets/Entertainment.png
-    - lib/assets/More.png
-    - lib/assets/Security.png
-    - lib/assets/Logout.png
-    - lib/assets/Profile.png
-    - lib/assets/Settings.png
-    - lib/assets/Help.png
-    - lib/assets/profile_image.png
+    - lib/assets/Star.png
 
     
 

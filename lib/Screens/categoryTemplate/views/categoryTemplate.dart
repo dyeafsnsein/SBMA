@@ -41,7 +41,7 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
           'amount': '-26.00',
           'date': '2025-04-30',
         },
-        // ... your existing transaction data ...
+        // Add more transactions here if needed
       ];
       _transactions = List.from(_allTransactions);
     });
@@ -53,10 +53,12 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
       DateTime end = _selectedDateRange!.end.add(const Duration(days: 1));
 
       setState(() {
-        _transactions = _allTransactions.where((transaction) {
-          DateTime transactionDate = DateTime.parse(transaction['date']!);
-          return transactionDate.isAfter(start) && transactionDate.isBefore(end);
-        }).toList();
+        _transactions =
+            _allTransactions.where((transaction) {
+              DateTime transactionDate = DateTime.parse(transaction['date']!);
+              return transactionDate.isAfter(start) &&
+                  transactionDate.isBefore(end);
+            }).toList();
       });
     } else {
       setState(() {
@@ -134,7 +136,9 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                                   height: width * 0.08,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF050505),
-                                    borderRadius: BorderRadius.circular(width * 0.04),
+                                    borderRadius: BorderRadius.circular(
+                                      width * 0.04,
+                                    ),
                                   ),
                                   child: Center(
                                     child: Icon(
@@ -215,34 +219,53 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                           ),
                           const SizedBox(height: 10),
                           Expanded(
-                            child: _transactions.isEmpty
-                                ? const Center(
-                                    child: Text('No transactions available'),
-                                  )
-                                : TransactionList(transactions: _transactions),
+                            child:
+                                _transactions.isEmpty
+                                    ? const Center(
+                                      child: Text('No transactions available'),
+                                    )
+                                    : TransactionList(
+                                      transactions: _transactions,
+                                    ),
                           ),
+                          // Add Expenses Button
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // Add navigation for new expense
-                                context.push('/add-expense/${widget.categoryName}');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF202422),
-                                foregroundColor: Colors.white,
-                                minimumSize: Size(width - 40, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
+                            padding: const EdgeInsets.only(
+                              top: 20,
+                              bottom: 80,
+                            ), // Adjusted padding
+                            child: SizedBox(
+                              width:
+                                  double.infinity, // Make the button full width
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Navigate to AddExpensesPage with the categoryName as a parameter
+                                  context.push(
+                                    '/categories/add-expense/${widget.categoryName}',
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(
+                                    0xFF202422,
+                                  ), // Dark background
+                                  foregroundColor: Colors.white, // White text
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 15,
+                                  ), // Button padding
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      25,
+                                    ), // Rounded corners
+                                  ),
+                                  elevation: 2, // Subtle shadow
                                 ),
-                                elevation: 2,
-                              ),
-                              child: const Text(
-                                'Add Expenses',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                child: const Text(
+                                  'Add Expenses',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
