@@ -13,6 +13,9 @@ import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
 import '../Screens/profile/views/editprofile.dart'; // Corrected file name
+import '../Screens/security/views/SecurityEdit.dart';
+import '../Screens/security/views/ChangePin.dart';
+import '../Screens/security/views/PinChangeSuccess.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -33,6 +36,10 @@ final router = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
+              path: '/success',
+              builder: (context, state) => const PinChangeSuccess(),
     ),
 
     // Main app shell with bottom nav
@@ -89,6 +96,17 @@ final router = GoRouter(
             GoRoute(
               path: 'edit-profile',
               builder: (context, state) => const EditProfilePage(),
+            ),
+            
+            GoRoute(
+              path: 'security-edit',
+              builder: (context, state) => const SecurityEdit(),
+              routes: [
+                GoRoute(
+                  path: 'change-pin',
+                  builder: (context, state) => const ChangePin(),
+                ),
+              ],
             ),
           ],
         ),

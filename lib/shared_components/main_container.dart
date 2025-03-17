@@ -40,6 +40,8 @@ class MainContainerPage extends StatelessWidget {
       [r'^/categories'], // Category routes
       [r'^/profile'], // Profile routes
       [r'^/profile', r'^/profile/edit-profile'], // Profile routes with edit profile
+      [r'^/profile', r'^/profile/security-edit'], // Profile routes with edit profile
+      [r'^/profile', r'^/profile/security-edit/change-pin'],
 
     ];
     

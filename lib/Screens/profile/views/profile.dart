@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import '../../../shared_components/custom_header.dart';
+import '../../../shared_components/profile_image.dart';
+import '../../../shared_components/profile_info.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -9,64 +12,15 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: const Color(0xFF202422),
       body: Column(
         children: [
-          // Minimal Header
-          Container(
-            padding: EdgeInsets.only(
-              top: topPadding,
-              left: screenWidth * 0.06,
-              right: screenWidth * 0.06,
-            ),
-            height: screenHeight * 0.15,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () => context.pop(),
-                  child: Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: screenWidth * 0.06,
-                  ),
-                ),
-                Text(
-                  'Profile',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: screenWidth * 0.045,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => context.push('/notification'),
-                  child: Container(
-                    padding: EdgeInsets.all(screenWidth * 0.02),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF050505),
-                      borderRadius: BorderRadius.circular(screenWidth * 0.90),
-                    ),
-                    child: Icon(
-                      Icons.notifications,
-                      color: Colors.white,
-                      size: screenWidth * 0.045,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Main Content
+          const CustomHeader(title: 'Profile'),
           Expanded(
             child: Stack(
               children: [
-                // White background container that fills the remaining space
                 Container(
                   margin: EdgeInsets.only(top: screenHeight * 0.04),
                   decoration: const BoxDecoration(
@@ -78,7 +32,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 
-                // Scrollable content
+                // Profile content
                 Container(
                   margin: EdgeInsets.only(top: screenHeight * 0.04),
                   child: SingleChildScrollView(
@@ -99,64 +53,12 @@ class ProfilePage extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            'John Smith',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.05, // Slightly larger
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF202422),
-                            ),
-                          ),
-                          Text(
-                            'ID: 25030024',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.04, // Slightly larger
-                              color: const Color(0xFF202422),
-                            ),
+                          const ProfileInfo(
+                            name: 'John Smith',
+                            id: '25030024',
                           ),
                           SizedBox(height: screenHeight * 0.03),
-                          
-                          // Profile options list
-                          ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              _buildProfileOption(
-                                iconPath: 'lib/assets/Profile.png',
-                                title: 'Edit Profile',
-                                onTap: () {context.push('/profile/edit-profile');},
-                                screenWidth: screenWidth,
-                              ),
-                              _buildProfileOption(
-                                iconPath: 'lib/assets/Security.png',
-                                title: 'Security',
-                                onTap: () {},
-                                screenWidth: screenWidth,
-                              ),
-                              _buildProfileOption(
-                                iconPath: 'lib/assets/Settings.png',
-                                title: 'Setting',
-                                onTap: () {},
-                                screenWidth: screenWidth,
-                              ),
-                              _buildProfileOption(
-                                iconPath: 'lib/assets/Help.png',
-                                title: 'Help',
-                                onTap: () {},
-                                screenWidth: screenWidth,
-                              ),
-                              _buildProfileOption(
-                                iconPath: 'lib/assets/Logout.png',
-                                title: 'Logout',
-                                onTap: () {},
-                                screenWidth: screenWidth,
-                              ),
-                            ],
-                          ),
-                          // Add extra space at the bottom to ensure scrolling works properly
-                          SizedBox(height: screenHeight * 0.1),
+                          _buildProfileOptions(context),
                         ],
                       ),
                     ),
@@ -164,14 +66,13 @@ class ProfilePage extends StatelessWidget {
                 ),
                 
                 // Profile Image
-                Positioned(
+                const Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: CircleAvatar(
-                      radius: screenWidth * 0.13, // Slightly larger
-                      backgroundImage: const AssetImage('lib/assets/profile_image.png'),
+                    child: ProfileImage(
+                      imagePath: 'lib/assets/profile_image.png',
                     ),
                   ),
                 ),
@@ -223,6 +124,46 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileOptions(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return ListView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _buildProfileOption(
+          iconPath: 'lib/assets/Profile.png',
+          title: 'Edit Profile',
+          onTap: () {context.push('/profile/edit-profile');},
+          screenWidth: screenWidth,
+        ),
+        _buildProfileOption(
+          iconPath: 'lib/assets/Security.png',
+          title: 'Security',
+          onTap: () {context.push('/profile/security-edit');},
+          screenWidth: screenWidth,
+        ),
+        _buildProfileOption(
+          iconPath: 'lib/assets/Settings.png',
+          title: 'Setting',
+          onTap: () {},
+          screenWidth: screenWidth,
+        ),
+        _buildProfileOption(
+          iconPath: 'lib/assets/Help.png',
+          title: 'Help',
+          onTap: () {},
+          screenWidth: screenWidth,
+        ),
+        _buildProfileOption(
+          iconPath: 'lib/assets/Logout.png',
+          title: 'Logout',
+          onTap: () {},
+          screenWidth: screenWidth,
+        ),
+      ],
     );
   }
 }

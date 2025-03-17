@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:go_router/go_router.dart';
+import '../../../shared_components/custom_header.dart';
+import '../../../shared_components/profile_image.dart';
+import '../../../shared_components/profile_info.dart';
+import '../../../shared_components/settings_form_field.dart';
+import '../../../shared_components/settings_toggle.dart';
 
-class EditProfilePage extends StatelessWidget {
+class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _EditProfilePageState createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  bool isPushNotificationsEnabled = true;
+  bool isDarkThemeEnabled = false;
+
+  final TextEditingController usernameController = TextEditingController(text: 'John Smith');
+  final TextEditingController phoneController = TextEditingController(text: '+44 555 5555 55');
+  final TextEditingController emailController = TextEditingController(text: 'example@example.com');
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +29,12 @@ class EditProfilePage extends StatelessWidget {
       backgroundColor: const Color(0xFF202422),
       body: Column(
         children: [
-          // Main Content
+          const CustomHeader(title: 'Edit Profile'),
+          
           Expanded(
             child: Stack(
               children: [
-                // White background container that fills the remaining space
+                // White background container
                 Container(
                   margin: EdgeInsets.only(top: screenHeight * 0.04),
                   decoration: const BoxDecoration(
@@ -30,212 +46,113 @@ class EditProfilePage extends StatelessWidget {
                   ),
                 ),
                 
-                // Scrollable content
-                Container(
-                  margin: EdgeInsets.only(top: screenHeight * 0.04),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF1FFF3),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                      ),
-                      padding: EdgeInsets.fromLTRB(
-                        screenWidth * 0.06,
-                        screenHeight * 0.08,
-                        screenWidth * 0.06,
-                        screenHeight * 0.02,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Account Settings',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.05,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF202422),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.03),
-                          
-                          // Username field
-                          Text(
-                            'Username',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.04,
-                              color: const Color(0xFF202422),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.04,
-                              vertical: screenHeight * 0.015,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              'John Smith',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: screenWidth * 0.04,
-                                color: const Color(0xFF202422),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          
-                          // Phone field
-                          Text(
-                            'Phone',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.04,
-                              color: const Color(0xFF202422),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.04,
-                              vertical: screenHeight * 0.015,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '+44 555 5555 55',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: screenWidth * 0.04,
-                                color: const Color(0xFF202422),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          
-                          // Email field
-                          Text(
-                            'Email Address',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: screenWidth * 0.04,
-                              color: const Color(0xFF202422),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.04,
-                              vertical: screenHeight * 0.015,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              'example@example.com',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: screenWidth * 0.04,
-                                color: const Color(0xFF202422),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          
-                          // Push Notifications toggle
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Push Notifications',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: screenWidth * 0.04,
-                                  color: const Color(0xFF202422),
-                                ),
-                              ),
-                              Switch(
-                                value: true,
-                                onChanged: (value) {},
-                                activeColor: const Color(0xFF202422),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          
-                          // Dark Theme toggle
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Turn Dark Theme',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: screenWidth * 0.04,
-                                  color: const Color(0xFF202422),
-                                ),
-                              ),
-                              Switch(
-                                value: false,
-                                onChanged: (value) {},
-                                activeColor: const Color(0xFF202422),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: screenHeight * 0.04),
-                          
-                          // Update Profile button
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF202422),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.1,
-                                  vertical: screenHeight * 0.02,
-                                ),
-                              ),
-                              child: Text(
-                                'Update Profile',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: screenWidth * 0.04,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.1),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                
                 // Profile Image
-                Positioned(
+                const Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: CircleAvatar(
-                      radius: screenWidth * 0.13,
-                      backgroundImage: const AssetImage('lib/assets/profile_image.png'),
+                    child: ProfileImage(
+                      imagePath: 'lib/assets/profile_image.png',
                     ),
+                  ),
+                ),
+
+                // Content Container
+                Container(
+                  margin: EdgeInsets.only(top: screenHeight * 0.04),
+                  child: Column(
+                    children: [
+                      SizedBox(height: screenWidth * 0.18),
+                      const ProfileInfo(
+                        name: 'John Smith',
+                        id: '25030024',
+                      ),
+                      SizedBox(height: screenHeight * 0.03),
+                      
+                      // Settings Content
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min, // Added this
+                            children: [
+                              Text(
+                                'Account Settings',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: screenWidth * 0.045, // Reduced font size
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF202422),
+                                ),
+                              ),
+                              SizedBox(height: screenHeight * 0.01), // Reduced spacing
+                              
+                              // Form Fields
+                              SettingsFormField(
+                                label: 'Username',
+                                controller: usernameController,
+                              ),
+                              SizedBox(height: screenHeight * 0.005), // Reduced spacing
+                              SettingsFormField(
+                                label: 'Phone',
+                                controller: phoneController,
+                              ),
+                              SizedBox(height: screenHeight * 0.005), // Reduced spacing
+                              SettingsFormField(
+                                label: 'Email Address',
+                                controller: emailController,
+                              ),
+                              SizedBox(height: screenHeight * 0.005), // Reduced spacing
+                              
+                              // Toggles
+                              SettingsToggle(
+                                label: 'Push Notifications',
+                                value: isPushNotificationsEnabled,
+                                onChanged: (value) {
+                                  setState(() => isPushNotificationsEnabled = value);
+                                },
+                              ),
+                              SizedBox(height: screenHeight * 0.015), // Reduced spacing
+                              SettingsToggle(
+                                label: 'Turn Dark Theme',
+                                value: isDarkThemeEnabled,
+                                onChanged: (value) {
+                                  setState(() => isDarkThemeEnabled = value);
+                                },
+                              ),
+                              SizedBox(height: screenHeight * 0.02), // Reduced spacing
+                              
+                              // Update Profile Button
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF202422),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15), // Reduced radius
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.08, // Reduced padding
+                                      vertical: screenHeight * 0.015, // Reduced padding
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Update Profile',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: screenWidth * 0.035, // Reduced font size
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
