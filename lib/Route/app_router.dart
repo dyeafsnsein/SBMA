@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
 import '../shared_components/main_container.dart';
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -17,6 +18,7 @@ import '../Screens/security/views/SecurityEdit.dart';
 import '../Screens/security/views/ChangePin.dart';
 import '../Screens/security/views/PinChangeSuccess.dart';
 import '../Screens/security/views/Fingerprint.dart';
+import '../Screens/security/views/FingerprintActionPage.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -37,6 +39,14 @@ final router = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
+      path: '/success',
+      builder: (context, state) => const PinChangeSuccess(),
+    ),
+    GoRoute(
+      path: '/delete-success',
+      builder: (context, state) => const FingerprintDeleteSuccess(),
     ),
 
     // Main app shell with bottom nav
@@ -112,6 +122,14 @@ final router = GoRouter(
                 GoRoute(
                   path: 'fingerprint',
                   builder: (context, state) => const Fingerprint(),
+                  routes: [
+                    GoRoute(
+                      path: 'action/:fingerprintName',
+                      builder: (context, state) => FingerprintActionPage(
+                        fingerprintName: state.pathParameters['fingerprintName']!,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

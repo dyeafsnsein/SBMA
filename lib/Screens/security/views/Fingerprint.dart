@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../shared_components/custom_header.dart';
 
 class Fingerprint extends StatelessWidget {
@@ -33,7 +34,7 @@ class Fingerprint extends StatelessWidget {
                     iconPath: 'lib/assets/Fingerprint.png',
                     title: 'John Fingerprint',
                     onTap: () {
-                      // Handle fingerprint option tap
+                      context.push('/profile/security-edit/fingerprint/action/John%20Fingerprint');
                     },
                   ),
                   SizedBox(height: screenHeight * 0.02),

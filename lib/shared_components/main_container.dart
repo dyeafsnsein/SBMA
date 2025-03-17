@@ -40,10 +40,10 @@ class MainContainerPage extends StatelessWidget {
       [r'^/categories'], // Category routes
       [r'^/profile'], // Profile routes
       [r'^/profile', r'^/profile/edit-profile'], // Profile routes with edit profile
-      [r'^/profile', r'^/profile/security-edit'], // Profile routes with edit profile
+      [r'^/profile', r'^/profile/security-edit'], // Profile routes with security edit
       [r'^/profile', r'^/profile/security-edit/change-pin'],
       [r'^/profile', r'^/profile/security-edit/fingerprint'],
-
+      [r'^/profile', r'^/profile/security-edit/fingerprint/action'], // Fingerprint action page
     ];
     
     // Find matching pattern index
