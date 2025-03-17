@@ -14,6 +14,15 @@ import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
+import '../Screens/profile/views/editprofile.dart'; // Corrected file name
+import '../Screens/security/views/SecurityEdit.dart';
+import '../Screens/security/views/ChangePin.dart';
+import '../Screens/security/views/PinChangeSuccess.dart';
+import '../Screens/security/views/Fingerprint.dart';
+import '../Screens/security/views/FingerprintActionPage.dart';
+import '../Screens/security/views/AddFingerprint.dart';
+import '../Screens/security/views/TermsAndConditions.dart';
+import '../Screens/categories/views/components/Add_expense.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -165,6 +174,19 @@ final router = GoRouter(
   // Global redirect for auth
   redirect: (BuildContext context, GoRouterState state) {
     // Add your auth logic here if needed
+    // Example:
+    // final bool isLoggedIn = AuthService.isLoggedIn;
+    // final bool isAuthRoute = state.location.startsWith('/login') ||
+    //     state.location.startsWith('/signup') ||
+    //     state.location.startsWith('/forgot-password');
+
+    // if (!isLoggedIn && !isAuthRoute) {
+    //   return '/login';
+    // }
+    // if (isLoggedIn && isAuthRoute) {
+    //   return '/';
+    // }
+
     return null;
   },
 );
