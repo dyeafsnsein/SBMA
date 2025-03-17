@@ -42,9 +42,8 @@ class Fingerprint extends StatelessWidget {
                     context: context,
                     iconPath: 'lib/assets/More.png',
                     title: 'Add A Fingerprint',
-                    onTap: () {
-                      // Handle add fingerprint option tap
-                    },
+                    onTap: () {context.push('/profile/security-edit/fingerprint/add');},
+                    
                   ),
                 ],
               ),

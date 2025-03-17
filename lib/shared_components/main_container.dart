@@ -44,6 +44,8 @@ class MainContainerPage extends StatelessWidget {
       [r'^/profile', r'^/profile/security-edit/change-pin'],
       [r'^/profile', r'^/profile/security-edit/fingerprint'],
       [r'^/profile', r'^/profile/security-edit/fingerprint/action'], // Fingerprint action page
+      [r'^/profile', r'^/profile/security-edit/fingerprint/add'], // Fingerprint action page
+      [r'^/profile', r'^/profile/security-edit/terms-and-conditions'],
     ];
     
     // Find matching pattern index

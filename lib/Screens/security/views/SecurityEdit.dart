@@ -63,7 +63,7 @@ class SecurityEdit extends StatelessWidget {
                         _buildSecurityOption(
                           context: context,
                           title: 'Terms And Conditions',
-                          onTap: () {},
+                          onTap: () {context.push('/profile/security-edit/terms-and-conditions');},
                         ),
                       ],
                     ),
