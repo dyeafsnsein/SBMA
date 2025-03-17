@@ -56,7 +56,7 @@ class SecurityEdit extends StatelessWidget {
                         _buildSecurityOption(
                           context: context,
                           title: 'Fingerprint',
-                          onTap: () {},
+                          onTap: () {context.push('/profile/security-edit/fingerprint');},
                         ),
                         SizedBox(height: screenHeight * 0.02),
 

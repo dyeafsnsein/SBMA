@@ -42,6 +42,7 @@ class MainContainerPage extends StatelessWidget {
       [r'^/profile', r'^/profile/edit-profile'], // Profile routes with edit profile
       [r'^/profile', r'^/profile/security-edit'], // Profile routes with edit profile
       [r'^/profile', r'^/profile/security-edit/change-pin'],
+      [r'^/profile', r'^/profile/security-edit/fingerprint'],
 
     ];
     

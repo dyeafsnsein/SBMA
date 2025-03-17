@@ -16,6 +16,7 @@ import '../Screens/profile/views/editprofile.dart'; // Corrected file name
 import '../Screens/security/views/SecurityEdit.dart';
 import '../Screens/security/views/ChangePin.dart';
 import '../Screens/security/views/PinChangeSuccess.dart';
+import '../Screens/security/views/Fingerprint.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -36,10 +37,6 @@ final router = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
-    ),
-    GoRoute(
-              path: '/success',
-              builder: (context, state) => const PinChangeSuccess(),
     ),
 
     // Main app shell with bottom nav
@@ -105,6 +102,16 @@ final router = GoRouter(
                 GoRoute(
                   path: 'change-pin',
                   builder: (context, state) => const ChangePin(),
+                  routes: [
+                    GoRoute(
+                      path: 'success',
+                      builder: (context, state) => const PinChangeSuccess(),
+                    ),
+                  ],
+                ),
+                GoRoute(
+                  path: 'fingerprint',
+                  builder: (context, state) => const Fingerprint(),
                 ),
               ],
             ),
