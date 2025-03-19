@@ -5,6 +5,7 @@ import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/calendar_picker.dart';
 import '../../../shared_components/balance_overview.dart';
+import '../../categories/views/components/Add_expense.dart';
 
 class CategoryTemplatePage extends StatefulWidget {
   final String categoryName;
@@ -41,7 +42,6 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
           'amount': '-26.00',
           'date': '2025-04-30',
         },
-        // Add more transactions here if needed
       ];
       _transactions = List.from(_allTransactions);
     });
@@ -65,6 +65,13 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
         _transactions = List.from(_allTransactions);
       });
     }
+  }
+
+  void _addNewExpense(Map<String, String> newExpense) {
+    setState(() {
+      _allTransactions.add(newExpense);
+      _transactions = List.from(_allTransactions);
+    });
   }
 
   @override
@@ -194,7 +201,7 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                 Expanded(
                   child: Container(
                     decoration: const BoxDecoration(
-                      color: Color(0xFFD9EAD3),
+                      color: Color(0xFFF1FFF3),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(40),
                         topRight: Radius.circular(40),
@@ -230,34 +237,32 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                           ),
                           // Add Expenses Button
                           Padding(
-                            padding: const EdgeInsets.only(
-                              top: 20,
-                              bottom: 80,
-                            ), // Adjusted padding
+                            padding: const EdgeInsets.only(top: 20, bottom: 80),
                             child: SizedBox(
-                              width:
-                                  double.infinity, // Make the button full width
+                              width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // Navigate to AddExpensesPage with the categoryName as a parameter
+                                  // Debug the route path
+                                  print(
+                                    'Navigating to: /categories/template/${widget.categoryName}/${Uri.encodeComponent(widget.categoryIcon)}/add-expense',
+                                  );
+
+                                  // Navigate to AddExpensesPage using GoRouter
                                   context.push(
-                                    '/categories/add-expense/${widget.categoryName}',
+                                    '/categories/template/${widget.categoryName}/${Uri.encodeComponent(widget.categoryIcon)}/add-expense',
+                                    extra: _addNewExpense,
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(
-                                    0xFF202422,
-                                  ), // Dark background
-                                  foregroundColor: Colors.white, // White text
+                                  backgroundColor: const Color(0xFF202422),
+                                  foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 15,
-                                  ), // Button padding
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      25,
-                                    ), // Rounded corners
                                   ),
-                                  elevation: 2, // Subtle shadow
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  elevation: 2,
                                 ),
                                 child: const Text(
                                   'Add Expenses',

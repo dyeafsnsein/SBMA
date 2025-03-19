@@ -2,40 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared_components/progress_bar.dart';
-import 'components/newcategory.dart'; // Import NewCategoryDialog
-import '../../saving/saving.dart'; // Import SavingsPage
+import 'saving_analysis.dart'; // Import the SavingsAnalysisPage
 
-class CategoryPage extends StatefulWidget {
-  const CategoryPage({Key? key}) : super(key: key);
-
-  @override
-  State<CategoryPage> createState() => _CategoryState();
-}
-
-class _CategoryState extends State<CategoryPage> {
-  final List<Map<String, String>> _categories = [
-    {'label': 'Food', 'icon': 'lib/assets/Food.png'},
-    {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
-    {'label': 'Rent', 'icon': 'lib/assets/Rent.png'},
-    {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
-    {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
-    {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
-    {'label': 'Saving', 'icon': 'lib/assets/Saving.png'},
-    {'label': 'More', 'icon': 'lib/assets/More.png'},
-  ];
-
-  void _showNewCategoryDialog(BuildContext context) async {
-    final result = await showDialog(
-      context: context,
-      builder: (BuildContext context) => const NewCategoryDialog(),
-    );
-
-    if (result != null) {
-      setState(() {
-        _categories.add({'label': result['name'], 'icon': result['icon']});
-      });
-    }
-  }
+class SavingsPage extends StatelessWidget {
+  const SavingsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +55,7 @@ class _CategoryState extends State<CategoryPage> {
                                 ),
                               ),
                               Text(
-                                'Categories',
+                                'Savings',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: width * 0.06,
@@ -187,21 +157,43 @@ class _CategoryState extends State<CategoryPage> {
                               mainAxisSpacing: 20,
                               childAspectRatio: 0.75,
                             ),
-                        itemCount: _categories.length,
+                        itemCount: 4, // Number of savings categories
                         itemBuilder: (context, index) {
-                          final category = _categories[index];
+                          final List<Map<String, String>> savingsCategories = [
+                            {
+                              'label': 'Travel',
+                              'icon': 'lib/assets/Travel.png',
+                            },
+                            {
+                              'label': 'New House',
+                              'icon': 'lib/assets/New House.png',
+                            },
+                            {'label': 'Car', 'icon': 'lib/assets/Car.png'},
+                            {
+                              'label': 'Wedding',
+                              'icon': 'lib/assets/Wedding.png',
+                            },
+                          ];
+
+                          final category = savingsCategories[index];
                           return GestureDetector(
                             onTap: () {
-                              if (category['label'] == 'More') {
-                                _showNewCategoryDialog(context);
-                              } else if (category['label'] == 'Saving') {
-                                // Navigate to the SavingsPage
-                                context.push('/savings');
-                              } else {
-                                context.push(
-                                  '/categories/template/${category['label']}/${Uri.encodeComponent(category['icon']!)}',
-                                );
-                              }
+                              // Ensure category['label'] and category['icon'] are non-null
+                              final categoryName =
+                                  category['label'] ?? 'Unknown';
+                              final iconPath =
+                                  category['icon'] ?? 'lib/assets/default.png';
+
+                              print(
+                                'Navigating to SavingsAnalysisPage with: $categoryName, $iconPath',
+                              ); // Debug print
+                              context.push(
+                                '/savings-analysis',
+                                extra: {
+                                  'categoryName': categoryName,
+                                  'iconPath': iconPath,
+                                },
+                              );
                             },
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -215,7 +207,8 @@ class _CategoryState extends State<CategoryPage> {
                                   ),
                                   child: Center(
                                     child: Image.asset(
-                                      category['icon'] ?? '',
+                                      category['icon'] ??
+                                          'lib/assets/default.png',
                                       width: 45,
                                       height: 45,
                                     ),
@@ -223,7 +216,7 @@ class _CategoryState extends State<CategoryPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  category['label'] ?? '',
+                                  category['label'] ?? 'Unknown',
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 12,
@@ -240,6 +233,42 @@ class _CategoryState extends State<CategoryPage> {
                   ),
                 ),
               ],
+            ),
+            // Add More Button (smaller in width)
+            Positioned(
+              bottom: 80, // Adjust this value to position the button
+              left: 20,
+              right: 20,
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Handle "Add More" button tap
+                    print('Add More tapped');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF202422),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 24, // Smaller horizontal padding
+                    ),
+                    minimumSize: const Size(120, 48), // Smaller width
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        15,
+                      ), // Rounded corners
+                    ),
+                  ),
+                  child: const Text(
+                    'Add More',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14, // Smaller font size
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

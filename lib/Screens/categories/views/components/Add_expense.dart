@@ -1,18 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // For SystemUiOverlayStyle
+import 'package:flutter/services.dart';
 
-class AddExpensesPage extends StatelessWidget {
+class AddExpensesPage extends StatefulWidget {
   final String categoryName;
+  final Function(Map<String, String>) onSave;
 
-  const AddExpensesPage({Key? key, required this.categoryName})
-    : super(key: key);
+  const AddExpensesPage({
+    Key? key,
+    required this.categoryName,
+    required this.onSave,
+  }) : super(key: key);
+
+  @override
+  _AddExpensesPageState createState() => _AddExpensesPageState();
+}
+
+class _AddExpensesPageState extends State<AddExpensesPage> {
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController messageController = TextEditingController();
+  String selectedCategory = 'Food';
+  String selectedDate = 'April 30, 2024';
 
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent, // Transparent status bar
-        statusBarIconBrightness: Brightness.light, // Light icons (white)
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFF202422),
@@ -22,7 +37,7 @@ class AddExpensesPage extends StatelessWidget {
               children: [
                 // Top Section (Header)
                 Expanded(
-                  flex: 16, // 16% of the screen height
+                  flex: 12,
                   child: Container(
                     color: const Color(0xFF202422),
                     child: Padding(
@@ -31,7 +46,7 @@ class AddExpensesPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () => Navigator.pop(context), // Go back
+                            onTap: () => Navigator.pop(context),
                             child: const Icon(
                               Icons.arrow_back,
                               color: Colors.white,
@@ -69,7 +84,7 @@ class AddExpensesPage extends StatelessWidget {
 
                 // Bottom Section (Form Fields)
                 Expanded(
-                  flex: 84, // 84% of the screen height
+                  flex: 88,
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Color(0xFFF1FFF3),
@@ -79,22 +94,13 @@ class AddExpensesPage extends StatelessWidget {
                       ),
                     ),
                     child: SingleChildScrollView(
-                      // Make the content scrollable
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 20.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Display the selected category name
-                          Text(
-                            'Category: $categoryName',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
                           // Date Picker Field
                           Text(
                             'Date',
@@ -105,34 +111,44 @@ class AddExpensesPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextField(
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              hintText: 'April 30, 2024', // Placeholder text
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              suffixIcon: const Icon(
-                                Icons.calendar_today,
-                                color: Colors.grey,
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                hintText: selectedDate,
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                suffixIcon: const Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.grey,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF202422),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
-                              ),
+                              style: const TextStyle(color: Colors.white),
+                              onTap: () async {
+                                DateTime? pickedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
+                                );
+                                if (pickedDate != null) {
+                                  setState(() {
+                                    selectedDate =
+                                        "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                                  });
+                                }
+                              },
                             ),
-                            style: const TextStyle(color: Colors.black),
-                            onTap: () async {
-                              DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2100),
-                              );
-                              if (pickedDate != null) {
-                                // Handle the selected date
-                              }
-                            },
                           ),
                           const SizedBox(height: 20),
 
@@ -146,30 +162,44 @@ class AddExpensesPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Select the category', // Placeholder text
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
+                          SizedBox(
+                            width: double.infinity,
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                hintText: 'Select the category',
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                filled: true,
+                                fillColor: const Color(0xFF202422),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
                               ),
+                              value: selectedCategory,
+                              items:
+                                  ['Food', 'Travel', 'Work', 'Leisure']
+                                      .map(
+                                        (category) => DropdownMenuItem<String>(
+                                          value: category,
+                                          child: Text(
+                                            category,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value!;
+                                });
+                              },
                             ),
-                            items:
-                                ['Food', 'Travel', 'Work', 'Leisure']
-                                    .map(
-                                      (category) => DropdownMenuItem<String>(
-                                        value: category,
-                                        child: Text(category),
-                                      ),
-                                    )
-                                    .toList(),
-                            onChanged: (value) {
-                              // Handle category selection
-                            },
                           ),
                           const SizedBox(height: 20),
 
@@ -183,19 +213,27 @@ class AddExpensesPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextField(
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: '\$26,00', // Placeholder text
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              controller: amountController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: '\$26,00',
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                filled: true,
+                                fillColor: const Color(0xFF202422),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
                               ),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            style: const TextStyle(color: Colors.black),
                           ),
                           const SizedBox(height: 20),
 
@@ -209,18 +247,26 @@ class AddExpensesPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Dinner', // Placeholder text
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              controller: titleController,
+                              decoration: InputDecoration(
+                                hintText: 'Dinner',
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                filled: true,
+                                fillColor: const Color(0xFF202422),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
                               ),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            style: const TextStyle(color: Colors.black),
                           ),
                           const SizedBox(height: 20),
 
@@ -234,20 +280,27 @@ class AddExpensesPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextField(
-                            maxLines: 3, // Set a reasonable number of lines
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Enter your message here', // Placeholder text
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              controller: messageController,
+                              maxLines: 3,
+                              decoration: InputDecoration(
+                                hintText: 'Enter your message here',
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                filled: true,
+                                fillColor: const Color(0xFF202422),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
                               ),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            style: const TextStyle(color: Colors.black),
                           ),
                           const SizedBox(height: 24),
 
@@ -256,27 +309,46 @@ class AddExpensesPage extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                // Handle saving the expense
+                                // Create a new expense object
+                                final newExpense = {
+                                  'icon': 'lib/assets/Food.png',
+                                  'time': '18:27',
+                                  'category': selectedCategory,
+                                  'amount': '-${amountController.text}',
+                                  'date': selectedDate,
+                                  'title': titleController.text,
+                                  'message': messageController.text,
+                                };
+
+                                // Debug the new expense
+                                print('New Expense: $newExpense');
+
+                                // Pass the new expense back to the Category Template page
+                                widget.onSave(newExpense);
+
+                                // Close the Add Expense page
+                                Navigator.pop(context);
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                  vertical: 12,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
+                                  borderRadius: BorderRadius.circular(15.0),
                                 ),
                               ),
                               child: const Text(
                                 'Save',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
+                          const SizedBox(height: 60),
                         ],
                       ),
                     ),

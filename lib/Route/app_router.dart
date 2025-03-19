@@ -23,6 +23,8 @@ import '../Screens/security/views/FingerprintActionPage.dart';
 import '../Screens/security/views/AddFingerprint.dart';
 import '../Screens/security/views/TermsAndConditions.dart';
 import '../Screens/categories/views/components/Add_expense.dart';
+import '../Screens/saving/saving.dart';
+import '../Screens/saving/saving_analysis.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -97,17 +99,39 @@ final router = GoRouter(
                       state.pathParameters['categoryIcon']!,
                     ),
                   ),
-            ),
-            GoRoute(
-              path: 'add-expense/:categoryName',
-              builder: (context, state) {
-                final categoryName = state.pathParameters['categoryName']!;
-                return AddExpensesPage(
-                  categoryName: categoryName,
-                ); // Pass categoryName
-              },
+              routes: [
+                GoRoute(
+                  path: 'add-expense',
+                  builder: (context, state) {
+                    final categoryName = state.pathParameters['categoryName']!;
+                    final addNewExpense =
+                        state.extra as Function(Map<String, String>);
+                    return AddExpensesPage(
+                      categoryName: categoryName,
+                      onSave: addNewExpense, // Pass the callback
+                    );
+                  },
+                ),
+              ],
             ),
           ],
+        ),
+        // Savings section (moved to top-level routes)
+        GoRoute(
+          path: '/savings',
+          builder: (context, state) => const SavingsPage(),
+        ),
+        GoRoute(
+          path: '/savings-analysis',
+          builder: (context, state) {
+            final args =
+                state.extra as Map<String, String>; // Non-nullable cast
+            print('Received args: $args'); // Debug print
+            return SavingsAnalysisPage(
+              categoryName: args['categoryName']!,
+              iconPath: args['iconPath']!,
+            );
+          },
         ),
 
         // Profile section and its sub-routes
@@ -119,7 +143,6 @@ final router = GoRouter(
               path: 'edit-profile',
               builder: (context, state) => const EditProfilePage(),
             ),
-
             GoRoute(
               path: 'security-edit',
               builder: (context, state) => const SecurityEdit(),
@@ -174,19 +197,6 @@ final router = GoRouter(
   // Global redirect for auth
   redirect: (BuildContext context, GoRouterState state) {
     // Add your auth logic here if needed
-    // Example:
-    // final bool isLoggedIn = AuthService.isLoggedIn;
-    // final bool isAuthRoute = state.location.startsWith('/login') ||
-    //     state.location.startsWith('/signup') ||
-    //     state.location.startsWith('/forgot-password');
-
-    // if (!isLoggedIn && !isAuthRoute) {
-    //   return '/login';
-    // }
-    // if (isLoggedIn && isAuthRoute) {
-    //   return '/';
-    // }
-
     return null;
   },
 );
