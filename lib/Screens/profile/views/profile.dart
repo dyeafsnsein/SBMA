@@ -148,7 +148,7 @@ class ProfilePage extends StatelessWidget {
         _buildProfileOption(
           iconPath: 'lib/assets/Settings.png',
           title: 'Setting',
-          onTap: () {},
+          onTap: () {context.push('/profile/settings');},
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
