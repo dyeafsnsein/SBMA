@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
 import 'package:test_app/Screens/settings/views/Settings.dart';
+import 'package:test_app/Screens/settings/views/NotificationSettings.dart';
+import 'package:test_app/Screens/settings/views/PasswordSettings.dart'; // Add this import
 import '../shared_components/main_container.dart';
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -15,7 +17,7 @@ import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
-import '../Screens/profile/views/editprofile.dart'; // Corrected file name
+import '../Screens/profile/views/editprofile.dart';
 import '../Screens/security/views/SecurityEdit.dart';
 import '../Screens/security/views/ChangePin.dart';
 import '../Screens/security/views/PinChangeSuccess.dart';
@@ -93,13 +95,12 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: 'template/:categoryName/:categoryIcon',
-              builder:
-                  (context, state) => CategoryTemplatePage(
-                    categoryName: state.pathParameters['categoryName']!,
-                    categoryIcon: Uri.decodeComponent(
-                      state.pathParameters['categoryIcon']!,
-                    ),
-                  ),
+              builder: (context, state) => CategoryTemplatePage(
+                categoryName: state.pathParameters['categoryName']!,
+                categoryIcon: Uri.decodeComponent(
+                  state.pathParameters['categoryIcon']!,
+                ),
+              ),
               routes: [
                 GoRoute(
                   path: 'add-expense',
@@ -117,6 +118,7 @@ final router = GoRouter(
             ),
           ],
         ),
+
         // Savings section (moved to top-level routes)
         GoRoute(
           path: '/savings',
@@ -125,8 +127,7 @@ final router = GoRouter(
         GoRoute(
           path: '/savings-analysis',
           builder: (context, state) {
-            final args =
-                state.extra as Map<String, String>; // Non-nullable cast
+            final args = state.extra as Map<String, String>;
             print('Received args: $args'); // Debug print
             return SavingsAnalysisPage(
               categoryName: args['categoryName']!,
@@ -158,17 +159,16 @@ final router = GoRouter(
                     ),
                   ],
                 ),
+             
                 GoRoute(
                   path: 'fingerprint',
                   builder: (context, state) => const Fingerprint(),
                   routes: [
                     GoRoute(
                       path: 'action/:fingerprintName',
-                      builder:
-                          (context, state) => FingerprintActionPage(
-                            fingerprintName:
-                                state.pathParameters['fingerprintName']!,
-                          ),
+                      builder: (context, state) => FingerprintActionPage(
+                        fingerprintName: state.pathParameters['fingerprintName']!,
+                      ),
                     ),
                     GoRoute(
                       path: 'add',
@@ -185,8 +185,17 @@ final router = GoRouter(
             GoRoute(
               path: 'settings',
               builder: (context, state) => const Settings(),
+              routes: [
+                GoRoute(
+                  path: 'notification-settings',
+                  builder: (context, state) => const NotificationSettings(),
+                ),
+                   GoRoute(
+                  path: 'password-settings',
+                  builder: (context, state) => const PasswordSettings(),
+                ),
+              ],
             ),
-            
           ],
         ),
       ],

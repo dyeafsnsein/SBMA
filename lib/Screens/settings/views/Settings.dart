@@ -34,6 +34,7 @@ class Settings extends StatelessWidget {
                     iconPath: 'lib/assets/Notification.png',
                     title: 'Notification Settings',
                     onTap: () {
+                      context.go('/profile/settings/notification-settings');
                       // Handle navigation to Notification Settings
                     },
                   ),
@@ -42,7 +43,7 @@ class Settings extends StatelessWidget {
                     context: context,
                     iconPath: 'lib/assets/Key.png',
                     title: 'Password Settings',
-                    onTap: () {
+                    onTap: () { context.go('/profile/settings/password-settings');
                       // Handle navigation to Password Settings
                     },
                   ),
