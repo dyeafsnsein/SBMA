@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared_components/custom_header.dart';
+import 'DeleteAccountConfirmationDialog.dart'; // Add this import
 
 class DeleteAccount extends StatefulWidget {
   const DeleteAccount({Key? key}) : super(key: key);
@@ -143,8 +144,11 @@ class _DeleteAccountState extends State<DeleteAccount> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  // Add logic for deleting account
-                                  // For now, we'll just navigate back or to a success page
+                                  // Show the confirmation dialog
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => const DeleteAccountConfirmationDialog(),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF202422),
