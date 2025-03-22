@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/Screens/help/views/HelpCenter.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
 import 'package:test_app/Screens/settings/views/DeleteAccount.dart';
@@ -206,6 +207,10 @@ final router = GoRouter(
                 ),
               ],
             ),
+                GoRoute(
+                  path: 'help-center',
+                  builder: (context, state) => const HelpCenter(),
+                ),
           ],
         ),
       ],

@@ -52,49 +52,47 @@ class DeleteAccountConfirmationDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: screenHeight * 0.03),
-            Row(
+            Column(
               children: [
-                Expanded(
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD3D3D3),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: screenWidth * 0.04 > 16 ? 16 : screenWidth * 0.04,
-                          color: const Color(0xFF202422),
-                        ),
+                Container(
+                  height: 50,
+                  width: double.infinity, // Full width for the button
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF202422),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      context.pop(); // Close the dialog
+                      // Navigate to the login page after deletion
+                      context.go('/login');
+                    },
+                    child: Text(
+                      'Yes, Delete Account',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: screenWidth * 0.04 > 16 ? 16 : screenWidth * 0.04,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.03),
-                Expanded(
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF202422),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        context.pop(); // Close the dialog
-                        // Navigate to the login page after deletion
-                        context.go('/login');
-                      },
-                      child: Text(
-                        'Yes, Delete Account',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: screenWidth * 0.04 > 16 ? 16 : screenWidth * 0.04,
-                          color: Colors.white,
-                        ),
+                SizedBox(height: screenHeight * 0.015),
+                Container(
+                  height: 50,
+                  width: double.infinity, // Full width for the button
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD3D3D3),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: TextButton(
+                    onPressed: () => context.pop(),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: screenWidth * 0.04 > 16 ? 16 : screenWidth * 0.04,
+                        color: const Color(0xFF202422),
                       ),
                     ),
                   ),

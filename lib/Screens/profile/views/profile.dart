@@ -154,7 +154,7 @@ class ProfilePage extends StatelessWidget {
         _buildProfileOption(
           iconPath: 'lib/assets/Help.png',
           title: 'Help',
-          onTap: () {},
+          onTap: () {context.push('/profile/help-center');},
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
