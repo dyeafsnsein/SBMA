@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
+import 'package:test_app/Screens/settings/views/DeleteAccount.dart';
 import 'package:test_app/Screens/settings/views/PasswordChangeSuccess.dart';
 import 'package:test_app/Screens/settings/views/Settings.dart';
 import 'package:test_app/Screens/settings/views/NotificationSettings.dart';
@@ -198,6 +199,10 @@ final router = GoRouter(
                    GoRoute(
                   path: 'password-settings',
                   builder: (context, state) => const PasswordSettings(),
+                ),
+                    GoRoute(
+                  path: 'delete-account',
+                  builder: (context, state) => const DeleteAccount(),
                 ),
               ],
             ),

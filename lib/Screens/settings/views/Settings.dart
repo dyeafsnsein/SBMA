@@ -52,7 +52,7 @@ class Settings extends StatelessWidget {
                     context: context,
                     iconPath: 'lib/assets/Profile.png',
                     title: 'Delete Account',
-                    onTap: () {
+                    onTap: () {context.go('/profile/settings/delete-account');
                       // Handle navigation to Delete Account
                     },
                     titleColor: Colors.red,

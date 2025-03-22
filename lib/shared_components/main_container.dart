@@ -49,6 +49,8 @@ class MainContainerPage extends StatelessWidget {
       [r'^/profile', r'^/profile/security-edit/terms-and-conditions'],
       [r'^/profile', r'^/profile/settings/notification-settings'],
       [r'^/profile', r'^/profile/settings/password-settings'],
+            [r'^/profile', r'^/profile/settings/delete-account'],
+
 
     ];
     
