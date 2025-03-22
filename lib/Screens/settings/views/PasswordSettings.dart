@@ -52,8 +52,7 @@ class _PasswordSettingsState extends State<PasswordSettings> {
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              // Add navigation or logic for changing password
-                              // For now, we'll leave it empty as in the screenshot
+                              context.push('/success3');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF202422),

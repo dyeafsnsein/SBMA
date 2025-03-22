@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
+import 'package:test_app/Screens/settings/views/PasswordChangeSuccess.dart';
 import 'package:test_app/Screens/settings/views/Settings.dart';
 import 'package:test_app/Screens/settings/views/NotificationSettings.dart';
 import 'package:test_app/Screens/settings/views/PasswordSettings.dart'; // Add this import
@@ -28,7 +29,6 @@ import '../Screens/security/views/TermsAndConditions.dart';
 import '../Screens/categories/views/components/Add_expense.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
-
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
@@ -56,6 +56,11 @@ final router = GoRouter(
       path: '/success2',
       builder: (context, state) => const FingerprintAddSuccess(),
     ),
+     GoRoute(
+      path: '/success3',
+      builder: (context, state) => const PasswordChangeSuccess(),
+    ),
+
 
     // Main app shell with bottom nav
     ShellRoute(
