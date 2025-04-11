@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Add this for auth state
 import 'package:test_app/Screens/help/views/HelpCenter.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
@@ -7,7 +8,7 @@ import 'package:test_app/Screens/settings/views/DeleteAccount.dart';
 import 'package:test_app/Screens/settings/views/PasswordChangeSuccess.dart';
 import 'package:test_app/Screens/settings/views/Settings.dart';
 import 'package:test_app/Screens/settings/views/NotificationSettings.dart';
-import 'package:test_app/Screens/settings/views/PasswordSettings.dart'; // Add this import
+import 'package:test_app/Screens/settings/views/PasswordSettings.dart';
 import '../shared_components/main_container.dart';
 import '../Screens/home/views/Home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -31,13 +32,13 @@ import '../Screens/security/views/TermsAndConditions.dart';
 import '../Screens/categories/views/components/Add_expense.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey =
-    GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/',
+  initialLocation: '/login', // Changed to start at the login screen
   routes: [
     // Auth routes (outside shell, no bottom nav)
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
@@ -58,11 +59,10 @@ final router = GoRouter(
       path: '/success2',
       builder: (context, state) => const FingerprintAddSuccess(),
     ),
-     GoRoute(
+    GoRoute(
       path: '/success3',
       builder: (context, state) => const PasswordChangeSuccess(),
     ),
-
 
     // Main app shell with bottom nav
     ShellRoute(
@@ -117,7 +117,7 @@ final router = GoRouter(
                         state.extra as Function(Map<String, String>);
                     return AddExpensesPage(
                       categoryName: categoryName,
-                      onSave: addNewExpense, // Pass the callback
+                      onSave: addNewExpense,
                     );
                   },
                 ),
@@ -126,7 +126,7 @@ final router = GoRouter(
           ],
         ),
 
-        // Savings section (moved to top-level routes)
+        // Savings section
         GoRoute(
           path: '/savings',
           builder: (context, state) => const SavingsPage(),
@@ -135,7 +135,7 @@ final router = GoRouter(
           path: '/savings-analysis',
           builder: (context, state) {
             final args = state.extra as Map<String, String>;
-            print('Received args: $args'); // Debug print
+            print('Received args: $args');
             return SavingsAnalysisPage(
               categoryName: args['categoryName']!,
               iconPath: args['iconPath']!,
@@ -166,7 +166,6 @@ final router = GoRouter(
                     ),
                   ],
                 ),
-             
                 GoRoute(
                   path: 'fingerprint',
                   builder: (context, state) => const Fingerprint(),
@@ -197,20 +196,20 @@ final router = GoRouter(
                   path: 'notification-settings',
                   builder: (context, state) => const NotificationSettings(),
                 ),
-                   GoRoute(
+                GoRoute(
                   path: 'password-settings',
                   builder: (context, state) => const PasswordSettings(),
                 ),
-                    GoRoute(
+                GoRoute(
                   path: 'delete-account',
                   builder: (context, state) => const DeleteAccount(),
                 ),
               ],
             ),
-                GoRoute(
-                  path: 'help-center',
-                  builder: (context, state) => const HelpCenter(),
-                ),
+            GoRoute(
+              path: 'help-center',
+              builder: (context, state) => const HelpCenter(),
+            ),
           ],
         ),
       ],
@@ -225,8 +224,18 @@ final router = GoRouter(
   ],
 
   // Global redirect for auth
-  redirect: (BuildContext context, GoRouterState state) {
-    // Add your auth logic here if needed
-    return null;
+  redirect: (BuildContext context, GoRouterState state) async {
+    final bool isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    final bool isOnAuthRoute = state.matchedLocation == '/login' ||
+        state.matchedLocation == '/signup' ||
+        state.matchedLocation == '/forgot-password';
+
+    if (!isLoggedIn && !isOnAuthRoute) {
+      return '/login'; // Redirect to login if not logged in and not on an auth route
+    }
+    if (isLoggedIn && isOnAuthRoute) {
+      return '/'; // Redirect to home if logged in and on an auth route
+    }
+    return null; // No redirect needed
   },
 );

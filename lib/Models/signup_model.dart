@@ -1,8 +1,10 @@
 class SignupModel {
-  String fullName = '';
+  String name = '';
   String email = '';
-  String mobileNumber = '';
-  String dateOfBirth = '';
   String password = '';
   String confirmPassword = '';
+  String dateOfBirth = ''; // New field for date of birth
+  String mobileNumber = ''; // New field for mobile number
+
+  SignupModel();
 }

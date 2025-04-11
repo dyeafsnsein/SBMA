@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/services.dart';
+import '../../../services/auth_service.dart';
 import '../../../shared_components/custom_header.dart';
 import '../../../shared_components/profile_image.dart';
 import '../../../shared_components/profile_info.dart';
@@ -31,7 +31,6 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                
                 // Profile content
                 Container(
                   margin: EdgeInsets.only(top: screenHeight * 0.04),
@@ -64,7 +63,6 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                
                 // Profile Image
                 const Positioned(
                   top: 0,
@@ -93,12 +91,12 @@ class ProfilePage extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03), // Slightly larger spacing
+        padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
         child: Row(
           children: [
             Container(
-              width: screenWidth * 0.12, // Slightly larger
-              height: screenWidth * 0.12, // Slightly larger
+              width: screenWidth * 0.12,
+              height: screenWidth * 0.12,
               decoration: BoxDecoration(
                 color: const Color(0xFF202422),
                 borderRadius: BorderRadius.circular(screenWidth * 0.04),
@@ -106,8 +104,8 @@ class ProfilePage extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   iconPath,
-                  width: screenWidth * 0.06, // Slightly larger
-                  height: screenWidth * 0.06, // Slightly larger
+                  width: screenWidth * 0.06,
+                  height: screenWidth * 0.06,
                   color: Colors.white,
                 ),
               ),
@@ -117,7 +115,7 @@ class ProfilePage extends StatelessWidget {
               title,
               style: TextStyle(
                 fontFamily: 'Poppins',
-                fontSize: screenWidth * 0.045, // Slightly larger
+                fontSize: screenWidth * 0.045,
                 color: const Color(0xFF202422),
               ),
             ),
@@ -125,6 +123,48 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final AuthService authService = AuthService();
+    try {
+      await authService.signOut();
+      // Navigate to login page after successful logout
+      if (context.mounted) {
+        context.go('/login');
+      }
+    } catch (e) {
+      // Show error message if logout fails
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final bool? shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await _logout(context);
+    }
   }
 
   Widget _buildProfileOptions(BuildContext context) {
@@ -136,31 +176,41 @@ class ProfilePage extends StatelessWidget {
         _buildProfileOption(
           iconPath: 'lib/assets/Profile.png',
           title: 'Edit Profile',
-          onTap: () {context.push('/profile/edit-profile');},
+          onTap: () {
+            context.push('/profile/edit-profile');
+          },
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
           iconPath: 'lib/assets/Security.png',
           title: 'Security',
-          onTap: () {context.push('/profile/security-edit');},
+          onTap: () {
+            context.push('/profile/security-edit');
+          },
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
           iconPath: 'lib/assets/Settings.png',
           title: 'Setting',
-          onTap: () {context.push('/profile/settings');},
+          onTap: () {
+            context.push('/profile/settings');
+          },
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
           iconPath: 'lib/assets/Help.png',
           title: 'Help',
-          onTap: () {context.push('/profile/help-center');},
+          onTap: () {
+            context.push('/profile/help-center');
+          },
           screenWidth: screenWidth,
         ),
         _buildProfileOption(
           iconPath: 'lib/assets/Logout.png',
           title: 'Logout',
-          onTap: () {},
+          onTap: () {
+            _confirmLogout(context);
+          },
           screenWidth: screenWidth,
         ),
       ],
