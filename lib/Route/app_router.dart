@@ -32,7 +32,7 @@ import '../Screens/security/views/TermsAndConditions.dart';
 import '../Screens/categories/views/components/Add_expense.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
-
+import '../Screens/set_balance/views/set_balance.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -62,6 +62,10 @@ final router = GoRouter(
     GoRoute(
       path: '/success3',
       builder: (context, state) => const PasswordChangeSuccess(),
+    ),
+    GoRoute(
+      path: '/set-balance',
+      builder: (context, state) => const SetBalancePage(),
     ),
 
     // Main app shell with bottom nav

@@ -47,17 +47,20 @@ class HomePage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Header(
-                                  onNotificationTap: () {context.push('/notification');
-                                  
+                                  onNotificationTap: () {
+                                    context.push('/notification');
                                   },
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
                                 BalanceOverview(
-                                  totalBalance: 7783.00,
-                                  totalExpense: 1187.40,
+                                  totalBalance: controller.totalBalance,
+                                  totalExpense: controller.totalExpense,
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
-                                ProgressBar(progress: 0.3, goalAmount: 20000.00),
+                                ProgressBar(
+                                  progress: controller.totalBalance / 20000.0,
+                                  goalAmount: 20000.00,
+                                ),
                                 SizedBox(height: screenHeight * 0.01),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -69,7 +72,9 @@ class HomePage extends StatelessWidget {
                                     ),
                                     SizedBox(width: screenWidth * 0.02),
                                     Text(
-                                      '30% of your expenses, looks good.',
+                                      controller.totalBalance > 0
+                                          ? '${(controller.totalExpense / controller.totalBalance * 100).toStringAsFixed(0)}% of your expenses, looks good.'
+                                          : '0% of your expenses, looks good.',
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
                                         fontSize: screenWidth * 0.037,
@@ -100,9 +105,9 @@ class HomePage extends StatelessWidget {
                                 GoalOverview(
                                   goalIcon: 'lib/assets/Car.png',
                                   goalText: 'Savings On Goals',
-                                  revenueLastWeek: 4000.00,
-                                  foodLastWeek: 100.00,
-                             onTap: () => context.push('/quick-analysis'),
+                                  revenueLastWeek: controller.revenueLastWeek,
+                                  foodLastWeek: controller.foodLastWeek,
+                                  onTap: () => context.push('/quick-analysis'),
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
                                 PeriodSelector(
@@ -111,9 +116,7 @@ class HomePage extends StatelessWidget {
                                   onPeriodTapped: controller.onPeriodTapped,
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
-                                Expanded(
-                                  child: TransactionList(transactions: controller.transactions),
-                                ),
+                                TransactionList(transactions: controller.transactions),
                               ],
                             ),
                           ),
@@ -122,6 +125,13 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ],
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  context.push('/add-transaction');
+                },
+                backgroundColor: const Color(0xFF202422),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ),
           );

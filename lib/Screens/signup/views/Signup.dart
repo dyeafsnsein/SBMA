@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/signup_controller.dart';
-import '../../../Models/signup_model.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
@@ -10,7 +9,7 @@ class SignupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SignupController(SignupModel()),
+      create: (_) => SignupController(),
       child: Consumer<SignupController>(
         builder: (context, controller, child) {
           return Scaffold(
@@ -65,7 +64,7 @@ class SignupPage extends StatelessWidget {
                                       _buildMobileNumberField(controller),
                                       const SizedBox(height: 30),
                                       // Error Message
-                                      if (controller.errorMessage != null)
+                                      if (controller.errorMessage != null) ...[
                                         Text(
                                           controller.errorMessage!,
                                           style: const TextStyle(
@@ -74,7 +73,8 @@ class SignupPage extends StatelessWidget {
                                             fontSize: 14,
                                           ),
                                         ),
-                                      const SizedBox(height: 10),
+                                        const SizedBox(height: 10),
+                                      ],
                                       // Sign Up Button
                                       _buildSignUpButton(controller, context),
                                       const SizedBox(height: 20),
@@ -115,181 +115,283 @@ class SignupPage extends StatelessWidget {
   }
 
   Widget _buildNameField(SignupController controller) {
-    return TextField(
-      controller: controller.nameController,
-      decoration: InputDecoration(
-        labelText: 'Full Name',
-        hintText: 'John Doe',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.nameController,
+          decoration: InputDecoration(
+            labelText: 'Full Name',
+            hintText: 'John Doe',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(0, 0, 0, 0.45),
+            ),
+          ),
         ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color.fromRGBO(0, 0, 0, 0.45),
-        ),
-      ),
+        if (controller.nameErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.nameErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildEmailField(SignupController controller) {
-    return TextField(
-      controller: controller.emailController,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        hintText: 'example@example.com',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.emailController,
+          decoration: InputDecoration(
+            labelText: 'Email',
+            hintText: 'example@example.com',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(0, 0, 0, 0.45),
+            ),
+          ),
         ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color.fromRGBO(0, 0, 0, 0.45),
-        ),
-      ),
+        if (controller.emailErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.emailErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildPasswordField(SignupController controller) {
-    return TextField(
-      controller: controller.passwordController,
-      obscureText: !controller.isPasswordVisible,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: const Color.fromRGBO(0, 0, 0, 0.45),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.passwordController,
+          obscureText: !controller.isPasswordVisible,
+          decoration: InputDecoration(
+            labelText: 'Password',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                color: const Color.fromRGBO(0, 0, 0, 0.45),
+              ),
+              onPressed: controller.togglePasswordVisibility,
+            ),
           ),
-          onPressed: controller.togglePasswordVisibility,
         ),
-      ),
+        if (controller.passwordErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.passwordErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildConfirmPasswordField(SignupController controller) {
-    return TextField(
-      controller: controller.confirmPasswordController,
-      obscureText: !controller.isConfirmPasswordVisible,
-      decoration: InputDecoration(
-        labelText: 'Confirm Password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            controller.isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: const Color.fromRGBO(0, 0, 0, 0.45),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.confirmPasswordController,
+          obscureText: !controller.isConfirmPasswordVisible,
+          decoration: InputDecoration(
+            labelText: 'Confirm Password',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                controller.isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                color: const Color.fromRGBO(0, 0, 0, 0.45),
+              ),
+              onPressed: controller.toggleConfirmPasswordVisibility,
+            ),
           ),
-          onPressed: controller.toggleConfirmPasswordVisibility,
         ),
-      ),
+        if (controller.confirmPasswordErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.confirmPasswordErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildDateOfBirthField(SignupController controller, BuildContext context) {
-    return TextField(
-      controller: controller.dateOfBirthController,
-      readOnly: true, // Make it read-only to use the date picker
-      decoration: InputDecoration(
-        labelText: 'Date of Birth',
-        hintText: 'DD/MM/YYYY',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color.fromRGBO(0, 0, 0, 0.45),
-        ),
-        suffixIcon: IconButton(
-          icon: const Icon(
-            Icons.calendar_today,
-            color: Color.fromRGBO(0, 0, 0, 0.45),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.dateOfBirthController,
+          readOnly: true, // Make it read-only to use the date picker
+          decoration: InputDecoration(
+            labelText: 'Date of Birth',
+            hintText: 'DD/MM/YYYY',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(0, 0, 0, 0.45),
+            ),
+            suffixIcon: IconButton(
+              icon: const Icon(
+                Icons.calendar_today,
+                color: Color.fromRGBO(0, 0, 0, 0.45),
+              ),
+              onPressed: () async {
+                DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+                if (pickedDate != null) {
+                  String formattedDate =
+                      '${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}';
+                  controller.dateOfBirthController.text = formattedDate;
+                }
+              },
+            ),
           ),
-          onPressed: () async {
-            DateTime? pickedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime.now(),
-            );
-            if (pickedDate != null) {
-              String formattedDate =
-                  '${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}';
-              controller.dateOfBirthController.text = formattedDate;
-            }
-          },
         ),
-      ),
+        if (controller.dateOfBirthErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.dateOfBirthErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildMobileNumberField(SignupController controller) {
-    return TextField(
-      controller: controller.mobileNumberController,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        labelText: 'Mobile Number',
-        hintText: '12345678',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.mobileNumberController,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: 'Mobile Number',
+            hintText: '12345678',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(0, 0, 0, 0.45),
+            ),
+          ),
         ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color.fromRGBO(0, 0, 0, 0.45),
-        ),
-      ),
+        if (controller.mobileNumberErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.mobileNumberErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/login_controller.dart';
-import '../../../Models/login_model.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -10,7 +9,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LoginController(LoginModel()),
+      create: (_) => LoginController(),
       child: Consumer<LoginController>(
         builder: (context, controller, child) {
           return Scaffold(
@@ -166,7 +165,7 @@ class LoginPage extends StatelessWidget {
             controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
             color: const Color.fromRGBO(0, 0, 0, 0.45),
           ),
-          onPressed: controller.togglePasswordVisibility,
+          onPressed: () => controller.togglePasswordVisibility(),
         ),
       ),
     );
@@ -178,7 +177,7 @@ class LoginPage extends StatelessWidget {
       child: controller.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ElevatedButton(
-              onPressed: () => controller.login(context),
+              onPressed: () => controller.signIn(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF202422),
                 padding: const EdgeInsets.symmetric(vertical: 15),
@@ -265,9 +264,7 @@ class LoginPage extends StatelessWidget {
                 width: 32.71,
                 height: 32.65,
               ),
-              onPressed: () {
-                // TODO: Add Facebook login logic
-              },
+              onPressed: () {},
             ),
             const SizedBox(width: 16),
             IconButton(

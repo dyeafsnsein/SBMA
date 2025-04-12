@@ -7,7 +7,6 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Sign up with email and password
   Future<User?> signUp({
     required String name,
     required String email,
@@ -16,7 +15,6 @@ class AuthService {
     required String mobileNumber,
   }) async {
     try {
-      // Create a new user with email and password
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -24,31 +22,23 @@ class AuthService {
       User? user = userCredential.user;
 
       if (user != null) {
-        // Update the user's display name
-        await user.updateDisplayName(name);
-
-        // Store user data in Firestore
         await _firestore.collection('users').doc(user.uid).set({
           'name': name,
           'email': email,
-          'date_of_birth': dateOfBirth,
-          'mobile_number': mobileNumber,
-          'budget_limit': 500.0, // Default value, to be managed in the app
-          'created_at': FieldValue.serverTimestamp(),
+          'dateOfBirth': dateOfBirth,
+          'mobileNumber': mobileNumber,
+          'createdAt': FieldValue.serverTimestamp(),
+          'balance': 0.0,
+          'hasSetBalance': false,
         });
       }
-
       return user;
     } catch (e) {
-      throw Exception('Sign-up failed: $e');
+      rethrow;
     }
   }
 
-  // Sign in with email and password
-  Future<User?> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<User?> signIn({required String email, required String password}) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -56,56 +46,78 @@ class AuthService {
       );
       return userCredential.user;
     } catch (e) {
-      throw Exception('Sign-in failed: $e');
+      rethrow;
     }
   }
 
-  // Sign in with Google
   Future<User?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        throw Exception('Google Sign-In canceled');
-      }
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
+      final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      final User? user = userCredential.user;
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      User? user = userCredential.user;
 
       if (user != null) {
-        final userDoc = await _firestore.collection('users').doc(user.uid).get();
+        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
         if (!userDoc.exists) {
           await _firestore.collection('users').doc(user.uid).set({
             'name': user.displayName ?? 'Unknown',
-            'email': user.email,
-            'date_of_birth': '', // Default empty for Google users
-            'mobile_number': '', // Default empty for Google users
-            'budget_limit': 500.0, // Default value
-            'created_at': FieldValue.serverTimestamp(),
+            'email': user.email ?? '',
+            'dateOfBirth': '',
+            'mobileNumber': '',
+            'createdAt': FieldValue.serverTimestamp(),
+            'balance': 0.0,
+            'hasSetBalance': false,
           });
         }
       }
-
       return user;
     } catch (e) {
-      throw Exception('Google Sign-In failed: $e');
+      rethrow;
     }
   }
 
-  // Sign out
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
     await _auth.signOut();
+    await _googleSignIn.signOut();
   }
 
-  // Get current user
-  User? getCurrentUser() {
-    return _auth.currentUser;
+  Future<Map<String, dynamic>?> getUserData(String uid) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateBalance(String uid, double balance) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'balance': balance,
+        'hasSetBalance': true,
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> addNotification(String uid, String title, String message) async {
+    try {
+      await _firestore.collection('users').doc(uid).collection('notifications').add({
+        'title': title,
+        'message': message,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 }
