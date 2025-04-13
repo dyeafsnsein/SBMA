@@ -26,7 +26,7 @@ class LoginController extends ChangeNotifier {
         password: passwordController.text.trim(),
       );
       if (context.mounted) {
-        context.go('/home');
+        context.go('/');
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -45,7 +45,7 @@ class LoginController extends ChangeNotifier {
     try {
       await _authService.signInWithGoogle();
       if (context.mounted) {
-        context.go('/home');
+        context.go('/');
       }
     } catch (e) {
       _errorMessage = 'Google Sign-In failed: $e';

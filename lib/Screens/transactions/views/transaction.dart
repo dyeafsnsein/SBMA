@@ -20,6 +20,9 @@ class TransactionsPage extends StatelessWidget {
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
 
+          // Fetch data when the page loads
+          controller.fetchData();
+
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle.light.copyWith(
               statusBarColor: Colors.transparent,
@@ -84,7 +87,6 @@ class TransactionsPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            // ...rest of your existing UI code remains the same
                             SizedBox(height: screenHeight * 0.04),
                             Text(
                               'Total Balance',
@@ -130,7 +132,18 @@ class TransactionsPage extends StatelessWidget {
                                   right: screenWidth * 0.05,
                                   bottom: screenWidth * 0.05,
                                 ),
-                                child: TransactionList(transactions: controller.transactions),
+                                child: controller.transactions.isEmpty
+                                    ? const Center(
+                                        child: Text(
+                                          'No transactions yet. Start adding some!',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 16,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      )
+                                    : TransactionList(transactions: controller.transactions),
                               ),
                               Positioned(
                                 top: 20,

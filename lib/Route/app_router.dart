@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Add this for auth state
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_app/Screens/help/views/HelpCenter.dart';
 import 'package:test_app/Screens/security/views/FingerprintAddSuccess.dart';
 import 'package:test_app/Screens/security/views/FingerprintDeleteSuccess.dart';
@@ -33,12 +33,14 @@ import '../Screens/categories/views/components/Add_expense.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
 import '../Screens/set_balance/views/set_balance.dart';
+import '../services/auth_service.dart'; // Add this import
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/login', // Changed to start at the login screen
+  initialLocation: '/login',
   routes: [
     // Auth routes (outside shell, no bottom nav)
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
@@ -227,19 +229,47 @@ final router = GoRouter(
     ),
   ],
 
-  // Global redirect for auth
+  // Global redirect for auth and balance setup
   redirect: (BuildContext context, GoRouterState state) async {
     final bool isLoggedIn = FirebaseAuth.instance.currentUser != null;
     final bool isOnAuthRoute = state.matchedLocation == '/login' ||
         state.matchedLocation == '/signup' ||
         state.matchedLocation == '/forgot-password';
+    final bool isOnSetBalanceRoute = state.matchedLocation == '/set-balance';
 
+    // If not logged in and not on an auth route, redirect to login
     if (!isLoggedIn && !isOnAuthRoute) {
-      return '/login'; // Redirect to login if not logged in and not on an auth route
+      return '/login';
     }
+
+    // If logged in and on an auth route, redirect to root (will handle further redirects)
     if (isLoggedIn && isOnAuthRoute) {
-      return '/'; // Redirect to home if logged in and on an auth route
+      return '/';
     }
+
+    // If logged in, check if the user has set their balance
+    if (isLoggedIn) {
+      final authService = AuthService();
+      final user = FirebaseAuth.instance.currentUser!;
+      final userData = await authService.getUserData(user.uid);
+
+      if (userData == null) {
+        // If user data doesn't exist, redirect to login (shouldn't happen after signup)
+        return '/login';
+      }
+
+      final hasSetBalance = userData['hasSetBalance'] ?? false;
+      // If balance not set and not on set-balance route, redirect to set-balance
+      if (!hasSetBalance && !isOnSetBalanceRoute) {
+        return '/set-balance';
+      }
+
+      // If balance is set and on root, stay on root (or proceed to intended route)
+      if (hasSetBalance && state.matchedLocation == '/') {
+        return null; // Let the user proceed to the home page
+      }
+    }
+
     return null; // No redirect needed
   },
 );

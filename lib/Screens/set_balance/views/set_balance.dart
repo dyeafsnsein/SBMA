@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/bank_service.dart'; // Add this import
 
 class SetBalancePage extends StatefulWidget {
   const SetBalancePage({super.key});
@@ -13,14 +14,17 @@ class SetBalancePage extends StatefulWidget {
 class _SetBalancePageState extends State<SetBalancePage> {
   final TextEditingController _balanceController = TextEditingController();
   final AuthService _authService = AuthService();
+  final BankService _bankService = BankService(); // Add BankService
   String? _errorMessage;
   bool _isLoading = false;
+  bool _isFetchingBalance = false; // Track fetching state
 
   Future<void> _setBalance() async {
     final balanceText = _balanceController.text.trim();
+
     if (balanceText.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your initial balance';
+        _errorMessage = 'Please enter a balance';
       });
       return;
     }
@@ -42,8 +46,9 @@ class _SetBalancePageState extends State<SetBalancePage> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await _authService.updateBalance(user.uid, balance);
+        await _authService.updateUserData(user.uid, {'hasSetBalance': true});
         if (context.mounted) {
-          context.go('/home');
+          context.go('/'); // Navigate to root (HomePage)
         }
       }
     } catch (e) {
@@ -53,6 +58,27 @@ class _SetBalancePageState extends State<SetBalancePage> {
     } finally {
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  // Add method to fetch balance from bank
+  Future<void> _fetchBalanceFromBank() async {
+    setState(() {
+      _isFetchingBalance = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final balance = await _bankService.fetchBalanceFromBank();
+      _balanceController.text = balance.toString();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to fetch balance: $e';
+      });
+    } finally {
+      setState(() {
+        _isFetchingBalance = false;
       });
     }
   }
@@ -71,10 +97,10 @@ class _SetBalancePageState extends State<SetBalancePage> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Set Your Initial Balance',
+                'Set Your Balance',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 24,
@@ -88,7 +114,7 @@ class _SetBalancePageState extends State<SetBalancePage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Initial Balance',
-                  hintText: 'e.g., 5000.00',
+                  hintText: 'e.g., 1000.00',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -107,6 +133,29 @@ class _SetBalancePageState extends State<SetBalancePage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
+              // Add Fetch Balance button
+              _isFetchingBalance
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _fetchBalanceFromBank,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text(
+                        'Fetch Balance from Bank',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 10),
                 Text(

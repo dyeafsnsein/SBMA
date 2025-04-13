@@ -1,105 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/transaction_model.dart';
 
 class TransactionController extends ChangeNotifier {
-  final TransactionModel model;
+  TransactionModel _model;
 
-  TransactionController(this.model) {
-    fetchDataFromBackend();
-  }
+  TransactionController(this._model);
 
-  List<Map<String, String>> get transactions => model.transactions;
-  double get totalBalance => model.totalBalance;
-  double get totalIncome => model.totalIncome;
-  double get totalExpense => model.totalExpense;
-  DateTimeRange? get selectedDateRange => model.selectedDateRange;
+  double get totalBalance => _model.totalBalance;
+  double get totalIncome => _model.totalIncome;
+  double get totalExpense => _model.totalExpense;
+  List<Map<String, dynamic>> get transactions => _model.transactions;
 
-  void fetchDataFromBackend() {
-    model.transactions = [
-      {
-        'icon': 'lib/assets/Salary.png',
-        'time': '18:27 - April 30',
-        'category': 'Monthly',
-        'amount': '4000.00',
-        'title': 'Salary',
-        'date': '2023-04-30',
-      },
-      {
-        'icon': 'lib/assets/Pantry.png',
-        'time': '17:00 - April 24',
-        'category': 'Pantry',
-        'amount': '-100.00',
-        'title': 'Groceries',
-        'date': '2023-04-24',
-      },
-      {
-        'icon': 'lib/assets/Rent.png',
-        'time': '8:30 - April 15',
-        'category': 'Rent',
-        'amount': '-674.40',
-        'title': 'Rent',
-        'date': '2023-04-15',
-      },
-      {
-        'icon': 'lib/assets/Transport.png',
-        'time': '7:30 - April 08',
-        'category': 'Fuel',
-        'amount': '-4.13',
-        'title': 'Transport',
-        'date': '2023-04-08',
-      },
-      {
-        'icon': 'lib/assets/Food.png',
-        'time': '19:30 - March 31',
-        'category': 'Dinner',
-        'amount': '-70.40',
-        'title': 'Food',
-        'date': '2023-03-31',
-      },
-    ];
+  // Fetch data from Firestore
+  Future<void> fetchData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    model.calculateTotals();
-    notifyListeners();
-  }
+    try {
+      // Fetch user balance
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      if (!userDoc.exists) {
+        _model.totalBalance = 0.0;
+        notifyListeners();
+        return;
+      }
 
-  void pickDateRange(BuildContext context) async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: const Color(0xFF202422),
-            colorScheme: ColorScheme.light(
-              primary: const Color(0xFF202422),
-              secondary: const Color(0xFF0D4015),
-            ),
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          ),
-          child: child!,
-        );
-      },
-    );
+      final userData = userDoc.data() as Map<String, dynamic>;
+      _model.totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
 
-    if (picked != null) {
-      model.selectedDateRange = picked;
-      filterTransactionsByDate();
-    }
-  }
+      // Fetch transactions
+      final transactionSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .orderBy('timestamp', descending: true)
+          .get();
 
-  void filterTransactionsByDate() {
-    if (model.selectedDateRange != null) {
-      DateTime start = model.selectedDateRange!.start;
-      DateTime end = model.selectedDateRange!.end;
-
-      model.transactions = model.transactions.where((transaction) {
-        DateTime transactionDate = DateTime.parse(transaction['date']!);
-        return transactionDate.isAfter(start) && transactionDate.isBefore(end);
+      _model.transactions = transactionSnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'category': data['category'] ?? 'Unknown',
+          'amount': (data['amount'] as num?)?.toDouble() ?? 0.0,
+          'timestamp': (data['timestamp'] as Timestamp?)?.toDate(),
+        };
       }).toList();
 
-      model.calculateTotals();
+      // For now, set income and expense to 0 (we'll calculate them later)
+      _model.totalIncome = 0.0;
+      _model.totalExpense = 0.0;
+
       notifyListeners();
+    } catch (e) {
+      // Handle errors silently for now, but you can add logging if needed
+      print('Error fetching data: $e');
     }
+  }
+
+  // Placeholder for date range picker (to be implemented later if needed)
+  Future<void> pickDateRange(BuildContext context) async {
+    // For now, this is a placeholder
+    print('Date range picker tapped');
   }
 }
