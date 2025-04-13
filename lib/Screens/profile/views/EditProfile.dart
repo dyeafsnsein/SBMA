@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../shared_components/custom_header.dart';
-import '../../../shared_components/profile_image.dart';
-import '../../../shared_components/profile_info.dart';
 import '../../../shared_components/settings_form_field.dart';
 import '../../../shared_components/settings_toggle.dart';
 
@@ -56,10 +54,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: Column(
                         children: [
                           SizedBox(height: profileDiameter / 2 + screenHeight * 0.01), // Reduced space for image overlap
-                          const ProfileInfo(
-                            name: 'John Smith',
-                            id: '25030024',
-                          ),
+                        
                           SizedBox(height: screenHeight * 0.03),
                           // Settings Content
                           Padding(
@@ -144,17 +139,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                   ),
                   // Profile Image positioned to straddle header and container
-                  Positioned(
-                    top: -(profileDiameter / 6), // Half above the container
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: ProfileImage(
-                        imagePath: 'lib/assets/profile_image.png',
-                        radius: profileRadius / screenWidth, // Convert back to radius fraction
-                      ),
-                    ),
-                  ),
+                
                 ],
               ),
             ),

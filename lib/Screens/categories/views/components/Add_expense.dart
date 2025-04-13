@@ -21,6 +21,7 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
   final TextEditingController messageController = TextEditingController();
   String selectedCategory = 'Food';
   String selectedDate = 'April 30, 2024';
+  TimeOfDay selectedTime = TimeOfDay.now();
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +102,9 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Date Picker Field
+                          // Date and Time Picker Field
                           Text(
-                            'Date',
+                            'Date & Time',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -116,7 +117,7 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                             child: TextField(
                               readOnly: true,
                               decoration: InputDecoration(
-                                hintText: selectedDate,
+                                hintText: '$selectedDate, ${selectedTime.format(context)}',
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 suffixIcon: const Icon(
                                   Icons.calendar_today,
@@ -142,10 +143,16 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                                   lastDate: DateTime(2100),
                                 );
                                 if (pickedDate != null) {
-                                  setState(() {
-                                    selectedDate =
-                                        "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-                                  });
+                                  TimeOfDay? pickedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedTime,
+                                  );
+                                  if (pickedTime != null) {
+                                    setState(() {
+                                      selectedDate = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                                      selectedTime = pickedTime;
+                                    });
+                                  }
                                 }
                               },
                             ),
@@ -179,6 +186,7 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                                   horizontal: 16,
                                 ),
                               ),
+                              dropdownColor: const Color(0xFF202422),
                               value: selectedCategory,
                               items:
                                   ['Food', 'Travel', 'Work', 'Leisure']
@@ -199,6 +207,9 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                                   selectedCategory = value!;
                                 });
                               },
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -311,23 +322,20 @@ class _AddExpensesPageState extends State<AddExpensesPage> {
                               onPressed: () {
                                 // Create a new expense object
                                 final newExpense = {
-                                  'icon': 'lib/assets/Food.png',
-                                  'time': '18:27',
+                                  'icon': 'lib/assets/${selectedCategory}.png',
+                                  'time': '${selectedTime.hour}:${selectedTime.minute}',
                                   'category': selectedCategory,
-                                  'amount': '-${amountController.text}',
+                                  'amount': amountController.text,
                                   'date': selectedDate,
                                   'title': titleController.text,
                                   'message': messageController.text,
                                 };
 
-                                // Debug the new expense
-                                print('New Expense: $newExpense');
-
                                 // Pass the new expense back to the Category Template page
                                 widget.onSave(newExpense);
 
-                                // Close the Add Expense page
-                                Navigator.pop(context);
+                                // Navigate back to the transactions page
+                                Navigator.of(context).popUntil((route) => route.isFirst);
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,

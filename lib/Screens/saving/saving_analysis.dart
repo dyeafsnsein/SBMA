@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../shared_components/progress_bar.dart';
-import '../../../shared_components/calendar_picker.dart';
 
 class SavingsAnalysisPage extends StatelessWidget {
   final String categoryName;
@@ -188,11 +187,7 @@ class SavingsAnalysisPage extends StatelessWidget {
                             color: Color(0xFF202422),
                           ),
                         ),
-                        CalendarPicker(
-                          onDateRangeSelected: (DateTimeRange? range) {
-                            // Handle date selection
-                          },
-                        ),
+                    
                       ],
                     ),
 

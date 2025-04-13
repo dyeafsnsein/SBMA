@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 
 class IncomeExpenseSummary extends StatelessWidget {
   final double income;
   final double expense;
+  final Function()? onAddIncome;
 
   const IncomeExpenseSummary({
     Key? key,
     required this.income,
     required this.expense,
+    this.onAddIncome,
   }) : super(key: key);
 
   @override
@@ -21,12 +24,15 @@ class IncomeExpenseSummary extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Flexible(
-            child: _buildIncomeExpense(
-              icon: CupertinoIcons.arrow_up_right_square,
-              title: 'Income',
-              amount: '\$${income.toStringAsFixed(2)}',
-              color: const Color(0xFF0D4015),
-              screenWidth: screenWidth,
+            child: GestureDetector(
+              onTap: onAddIncome,
+              child: _buildIncomeExpense(
+                icon: CupertinoIcons.arrow_up_right_square,
+                title: 'Income',
+                amount: '\$${income.toStringAsFixed(2)}',
+                color: const Color(0xFF0D4015),
+                screenWidth: screenWidth,
+              ),
             ),
           ),
           SizedBox(width: screenWidth * 0.05),

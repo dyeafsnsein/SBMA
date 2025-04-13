@@ -4,67 +4,114 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/transaction_model.dart';
 
 class TransactionController extends ChangeNotifier {
-  TransactionModel _model;
+  List<TransactionModel> _transactions = [];
+  double _totalBalance = 0.0;
+  double _totalIncome = 0.0;
+  double _totalExpenses = 0.0;
 
-  TransactionController(this._model);
+  List<TransactionModel> get transactions => _transactions;
+  double get totalBalance => _totalBalance;
+  double get totalIncome => _totalIncome;
+  double get totalExpenses => _totalExpenses;
 
-  double get totalBalance => _model.totalBalance;
-  double get totalIncome => _model.totalIncome;
-  double get totalExpense => _model.totalExpense;
-  List<Map<String, dynamic>> get transactions => _model.transactions;
+  TransactionController() {
+    _fetchTransactions();
+  }
 
-  // Fetch data from Firestore
-  Future<void> fetchData() async {
+  Future<void> _fetchTransactions() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user != null) {
+      try {
+        final transactionsSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .orderBy('timestamp', descending: true)
+            .get();
 
-    try {
-      // Fetch user balance
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      
-      if (!userDoc.exists) {
-        _model.totalBalance = 0.0;
+        _transactions = transactionsSnapshot.docs.map((doc) {
+          final data = doc.data();
+          return TransactionModel(
+            type: data['type'] ?? 'expense',
+            amount: double.parse(data['amount'].toString()),
+            date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            description: data['description'] ?? '',
+            category: data['category'] ?? '',
+            icon: data['icon'] ?? 'lib/assets/Transaction.png',
+          );
+        }).toList();
+
+        _calculateTotals();
         notifyListeners();
-        return;
+      } catch (e) {
+        // Error handling
       }
-
-      final userData = userDoc.data() as Map<String, dynamic>;
-      _model.totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
-
-      // Fetch transactions
-      final transactionSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('transactions')
-          .orderBy('timestamp', descending: true)
-          .get();
-
-      _model.transactions = transactionSnapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'category': data['category'] ?? 'Unknown',
-          'amount': (data['amount'] as num?)?.toDouble() ?? 0.0,
-          'timestamp': (data['timestamp'] as Timestamp?)?.toDate(),
-        };
-      }).toList();
-
-      // For now, set income and expense to 0 (we'll calculate them later)
-      _model.totalIncome = 0.0;
-      _model.totalExpense = 0.0;
-
-      notifyListeners();
-    } catch (e) {
-      // Handle errors silently for now, but you can add logging if needed
-      print('Error fetching data: $e');
     }
   }
 
-  // Placeholder for date range picker (to be implemented later if needed)
-  Future<void> pickDateRange(BuildContext context) async {
-    // For now, this is a placeholder
-    print('Date range picker tapped');
+  void _calculateTotals() {
+    _totalIncome = _transactions
+        .where((t) => t.type == 'income')
+        .fold(0.0, (total, t) => total + t.amount);
+    
+    _totalExpenses = _transactions
+        .where((t) => t.type == 'expense')
+        .fold(0.0, (total, t) => total + t.amount.abs());
+    
+    _totalBalance = _totalIncome - _totalExpenses;
+  }
+
+  Future<void> addExpense(Map<String, String> expenseData) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final amount = double.parse(expenseData['amount'] ?? '0');
+        final transaction = {
+          'type': 'expense',
+          'amount': -amount, // Store as negative for expenses
+          'timestamp': Timestamp.now(),
+          'description': expenseData['description'] ?? '',
+          'category': expenseData['category'] ?? '',
+          'icon': expenseData['icon'] ?? 'lib/assets/Transaction.png',
+        };
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .add(transaction);
+
+        await _fetchTransactions();
+      } catch (e) {
+        // Error handling
+      }
+    }
+  }
+
+  Future<void> addIncome(Map<String, String> incomeData) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final amount = double.parse(incomeData['amount'] ?? '0');
+        final transaction = {
+          'type': 'income',
+          'amount': amount,
+          'timestamp': Timestamp.now(),
+          'description': incomeData['description'] ?? '',
+          'category': 'Income',
+          'icon': 'lib/assets/Salary.png',
+        };
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .add(transaction);
+
+        await _fetchTransactions();
+      } catch (e) {
+        // Error handling
+      }
+    }
   }
 }

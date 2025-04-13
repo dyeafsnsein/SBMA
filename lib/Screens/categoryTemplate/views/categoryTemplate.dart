@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/transaction_list.dart';
-import '../../../shared_components/calendar_picker.dart';
 import '../../../shared_components/balance_overview.dart';
 import '../../categories/views/components/Add_expense.dart';
+import '../../../Models/transaction_model.dart';
 
 class CategoryTemplatePage extends StatefulWidget {
   final String categoryName;
@@ -22,9 +23,8 @@ class CategoryTemplatePage extends StatefulWidget {
 }
 
 class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
-  List<Map<String, String>> _transactions = [];
-  List<Map<String, String>> _allTransactions = [];
-  DateTimeRange? _selectedDateRange;
+  final RxList<TransactionModel> _transactions = <TransactionModel>[].obs;
+  final RxList<TransactionModel> _allTransactions = <TransactionModel>[].obs;
 
   @override
   void initState() {
@@ -33,45 +33,31 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
   }
 
   void _fetchInitialData() {
-    setState(() {
-      _allTransactions = [
-        {
-          'icon': 'lib/assets/Food.png',
-          'time': '18:27',
-          'category': 'Dinner',
-          'amount': '-26.00',
-          'date': '2025-04-30',
-        },
-      ];
-      _transactions = List.from(_allTransactions);
-    });
-  }
-
-  void _filterTransactionsByDate() {
-    if (_selectedDateRange != null) {
-      DateTime start = _selectedDateRange!.start;
-      DateTime end = _selectedDateRange!.end.add(const Duration(days: 1));
-
-      setState(() {
-        _transactions =
-            _allTransactions.where((transaction) {
-              DateTime transactionDate = DateTime.parse(transaction['date']!);
-              return transactionDate.isAfter(start) &&
-                  transactionDate.isBefore(end);
-            }).toList();
-      });
-    } else {
-      setState(() {
-        _transactions = List.from(_allTransactions);
-      });
-    }
+    _allTransactions.value = [
+      TransactionModel(
+        type: 'expense',
+        amount: -26.00,
+        date: DateTime(2025, 4, 30),
+        description: 'Dinner',
+        category: 'Food',
+        icon: 'lib/assets/Food.png',
+      ),
+    ];
+    _transactions.value = List.from(_allTransactions);
   }
 
   void _addNewExpense(Map<String, String> newExpense) {
-    setState(() {
-      _allTransactions.add(newExpense);
-      _transactions = List.from(_allTransactions);
-    });
+    final transaction = TransactionModel(
+      type: 'expense',
+      amount: double.parse(newExpense['amount'] ?? '0'),
+      date: DateTime.parse(newExpense['date'] ?? DateTime.now().toString()),
+      description: newExpense['description'] ?? '',
+      category: newExpense['category'] ?? '',
+      icon: newExpense['icon'] ?? 'lib/assets/Transaction.png',
+    );
+
+    _allTransactions.add(transaction);
+    _transactions.value = List.from(_allTransactions);
   }
 
   @override
@@ -211,69 +197,13 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              CalendarPicker(
-                                onDateRangeSelected: (dateRange) {
-                                  setState(() {
-                                    _selectedDateRange = dateRange;
-                                    _filterTransactionsByDate();
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
                           const SizedBox(height: 10),
                           Expanded(
-                            child:
-                                _transactions.isEmpty
-                                    ? const Center(
-                                      child: Text('No transactions available'),
-                                    )
-                                    : TransactionList(
-                                      transactions: _transactions,
-                                    ),
-                          ),
-                          // Add Expenses Button
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20, bottom: 80),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Debug the route path
-                                  print(
-                                    'Navigating to: /categories/template/${widget.categoryName}/${Uri.encodeComponent(widget.categoryIcon)}/add-expense',
-                                  );
-
-                                  // Navigate to AddExpensesPage using GoRouter
-                                  context.push(
-                                    '/categories/template/${widget.categoryName}/${Uri.encodeComponent(widget.categoryIcon)}/add-expense',
-                                    extra: _addNewExpense,
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF202422),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 15,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  elevation: 2,
-                                ),
-                                child: const Text(
-                                  'Add Expenses',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            child: Obx(() => _transactions.isEmpty
+                                ? const Center(
+                                    child: Text('No transactions available'),
+                                  )
+                                : TransactionList(transactions: _transactions)),
                           ),
                         ],
                       ),

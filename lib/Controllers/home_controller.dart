@@ -3,19 +3,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/home_model.dart';
 import '../services/auth_service.dart';
+import '../Models/transaction_model.dart';
 
 class HomeController extends ChangeNotifier {
-  final HomeModel model;
+  final HomeModel model = HomeModel();
   final AuthService _authService = AuthService();
 
   double _totalBalance = 0.0;
   double _totalExpense = 0.0;
   double _revenueLastWeek = 0.0;
   double _foodLastWeek = 0.0;
-  List<Map<String, dynamic>> _allTransactions = [];
-  List<Map<String, dynamic>> _filteredTransactions = [];
+  List<TransactionModel> _allTransactions = [];
+  List<TransactionModel> _filteredTransactions = [];
+  int _selectedPeriodIndex = 0;
 
-  HomeController(this.model) {
+  HomeController() {
     _fetchUserData();
   }
 
@@ -23,9 +25,9 @@ class HomeController extends ChangeNotifier {
   double get totalExpense => _totalExpense;
   double get revenueLastWeek => _revenueLastWeek;
   double get foodLastWeek => _foodLastWeek;
-  int get selectedPeriodIndex => model.selectedPeriodIndex;
+  int get selectedPeriodIndex => _selectedPeriodIndex;
   List<String> get periods => model.periods;
-  List<Map<String, dynamic>> get transactions => _filteredTransactions;
+  List<TransactionModel> get transactions => _filteredTransactions;
 
   Future<void> _fetchUserData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -47,13 +49,14 @@ class HomeController extends ChangeNotifier {
 
         _allTransactions = transactionsSnapshot.docs.map((doc) {
           final data = doc.data();
-          return {
-            'icon': data['icon'] ?? 'lib/assets/Transaction.png',
-            'time': data['time'] ?? '',
-            'category': data['category'] ?? '',
-            'amount': data['amount'].toString(),
-            'timestamp': (data['timestamp'] as Timestamp?)?.toDate(),
-          };
+          return TransactionModel(
+            type: data['type'] ?? 'expense',
+            amount: double.parse(data['amount'].toString()),
+            date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            description: data['description'] ?? '',
+            category: data['category'] ?? '',
+            icon: data['icon'] ?? 'lib/assets/Transaction.png',
+          );
         }).toList();
 
         // Calculate revenue and food expenses for the last week
@@ -63,7 +66,7 @@ class HomeController extends ChangeNotifier {
         _filterTransactions();
         notifyListeners();
       } catch (e) {
-        // Error handling (previously commented out print statement)
+        // Error handling
       }
     }
   }
@@ -72,57 +75,47 @@ class HomeController extends ChangeNotifier {
     final now = DateTime.now();
     final lastWeekStart = now.subtract(const Duration(days: 7));
     final lastWeekTransactions = _allTransactions.where((transaction) {
-      final transactionDate = transaction['timestamp'] as DateTime?;
-      if (transactionDate == null) return false;
-      return transactionDate.isAfter(lastWeekStart) || transactionDate.isAtSameMomentAs(lastWeekStart);
+      return transaction.date.isAfter(lastWeekStart) || transaction.date.isAtSameMomentAs(lastWeekStart);
     }).toList();
 
     // Calculate revenue (income) for the last week
     _revenueLastWeek = lastWeekTransactions
-        .where((t) => double.parse(t['amount']) > 0)
-        .fold(0.0, (total, t) => total + double.parse(t['amount']));
+        .where((t) => t.amount > 0)
+        .fold(0.0, (total, t) => total + t.amount);
 
     // Calculate food expenses for the last week
     _foodLastWeek = lastWeekTransactions
         .where((t) =>
-            double.parse(t['amount']) < 0 &&
-            (t['category'].toString().toLowerCase() == 'food' ||
-                t['category'].toString().toLowerCase() == 'pantry'))
-        .fold(0.0, (total, t) => total + double.parse(t['amount']).abs());
+            t.amount < 0 &&
+            (t.category.toLowerCase() == 'food' ||
+                t.category.toLowerCase() == 'pantry'))
+        .fold(0.0, (total, t) => total + t.amount.abs());
   }
 
   void _filterTransactions() {
     final now = DateTime.now();
     DateTime startDate;
-
-    switch (model.selectedPeriodIndex) {
+    switch (_selectedPeriodIndex) {
       case 0: // Daily
-        startDate = DateTime(now.year, now.month, now.day);
+        startDate = now.subtract(const Duration(days: 1));
         break;
       case 1: // Weekly
-        startDate = now.subtract(Duration(days: now.weekday - 1));
-        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        startDate = now.subtract(const Duration(days: 7));
         break;
       case 2: // Monthly
-      default:
         startDate = DateTime(now.year, now.month, 1);
         break;
+      default:
+        startDate = now.subtract(const Duration(days: 1));
     }
 
     _filteredTransactions = _allTransactions.where((transaction) {
-      final transactionDate = transaction['timestamp'] as DateTime?;
-      if (transactionDate == null) return false;
-      return transactionDate.isAfter(startDate) || transactionDate.isAtSameMomentAs(startDate);
+      return transaction.date.isAfter(startDate) || transaction.date.isAtSameMomentAs(startDate);
     }).toList();
-
-    // Recalculate total expenses for the filtered period
-    _totalExpense = _filteredTransactions
-        .where((t) => double.parse(t['amount']) < 0)
-        .fold(0.0, (total, t) => total + double.parse(t['amount']).abs());
   }
 
   void onPeriodTapped(int index) {
-    model.selectedPeriodIndex = index;
+    _selectedPeriodIndex = index;
     _filterTransactions();
     notifyListeners();
   }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../Models/transaction_model.dart';
 
 class TransactionList extends StatelessWidget {
-  final List<Map<String, dynamic>> transactions;
+  final List<TransactionModel> transactions;
 
   const TransactionList({Key? key, required this.transactions}) : super(key: key);
 
@@ -31,8 +32,7 @@ class TransactionList extends StatelessWidget {
         itemCount: transactions.length,
         itemBuilder: (context, index) {
           final transaction = transactions[index];
-          final amount = double.parse(transaction['amount']);
-          final isExpense = amount < 0;
+          final isExpense = transaction.type.toLowerCase() == 'expense';
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 7.0),
@@ -47,7 +47,7 @@ class TransactionList extends StatelessWidget {
                   ),
                   child: Center(
                     child: Image.asset(
-                      transaction['icon']!,
+                      transaction.icon,
                       width: 31,
                       height: 28,
                     ),
@@ -58,7 +58,7 @@ class TransactionList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      transaction['time']!,
+                      '${transaction.date.hour.toString().padLeft(2, '0')}:${transaction.date.minute.toString().padLeft(2, '0')}',
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 12,
@@ -67,7 +67,7 @@ class TransactionList extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      transaction['category']!,
+                      transaction.category,
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 13,
@@ -79,7 +79,7 @@ class TransactionList extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '\$${amount.abs().toStringAsFixed(2)}',
+                  '\$${transaction.amount.abs().toStringAsFixed(2)}',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 15,

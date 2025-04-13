@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../services/auth_service.dart';
 import '../../../shared_components/custom_header.dart';
-import '../../../shared_components/profile_image.dart';
-import '../../../shared_components/profile_info.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -52,10 +50,6 @@ class ProfilePage extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          const ProfileInfo(
-                            name: 'John Smith',
-                            id: '25030024',
-                          ),
                           SizedBox(height: screenHeight * 0.03),
                           _buildProfileOptions(context),
                         ],
@@ -64,16 +58,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 // Profile Image
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ProfileImage(
-                      imagePath: 'lib/assets/profile_image.png',
-                    ),
-                  ),
-                ),
+        
               ],
             ),
           ),
@@ -178,30 +163,6 @@ class ProfilePage extends StatelessWidget {
           title: 'Edit Profile',
           onTap: () {
             context.push('/profile/edit-profile');
-          },
-          screenWidth: screenWidth,
-        ),
-        _buildProfileOption(
-          iconPath: 'lib/assets/Security.png',
-          title: 'Security',
-          onTap: () {
-            context.push('/profile/security-edit');
-          },
-          screenWidth: screenWidth,
-        ),
-        _buildProfileOption(
-          iconPath: 'lib/assets/Settings.png',
-          title: 'Setting',
-          onTap: () {
-            context.push('/profile/settings');
-          },
-          screenWidth: screenWidth,
-        ),
-        _buildProfileOption(
-          iconPath: 'lib/assets/Help.png',
-          title: 'Help',
-          onTap: () {
-            context.push('/profile/help-center');
           },
           screenWidth: screenWidth,
         ),

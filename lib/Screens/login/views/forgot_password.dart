@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../security/views/SecurityPin.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -105,10 +104,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                     height: 32,
                                     child: ElevatedButton(
                                         onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const SecurityPinWidget()),
-                                      );
+                                 
                                     },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(0xFF202422),

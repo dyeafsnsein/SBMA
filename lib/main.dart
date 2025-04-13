@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'Route/app_router.dart';
 import 'Controllers/signup_controller.dart';
+import 'Controllers/home_controller.dart';
+import 'Controllers/transaction_controller.dart';
+import 'Controllers/login_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SignupController()),
+        ChangeNotifierProvider(create: (_) => HomeController()),
+        ChangeNotifierProvider(create: (_) => TransactionController()),
+        ChangeNotifierProvider(create: (_) => LoginController()),
       ],
       child: FutureBuilder(
         future: Firebase.initializeApp(

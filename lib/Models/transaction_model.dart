@@ -1,13 +1,17 @@
 class TransactionModel {
-  double totalBalance;
-  double totalIncome;
-  double totalExpense;
-  List<Map<String, dynamic>> transactions;
+  final String type;
+  final double amount;
+  final DateTime date;
+  final String description;
+  final String category;
+  final String icon;
 
   TransactionModel({
-    this.totalBalance = 0.0,
-    this.totalIncome = 0.0,
-    this.totalExpense = 0.0,
-    this.transactions = const [],
+    required this.type,
+    required this.amount,
+    required this.date,
+    required this.description,
+    required this.category,
+    required this.icon,
   });
 }

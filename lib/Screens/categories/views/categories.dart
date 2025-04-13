@@ -20,7 +20,6 @@ class _CategoryState extends State<CategoryPage> {
     {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
     {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
     {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
-    {'label': 'Saving', 'icon': 'lib/assets/Saving.png'},
     {'label': 'More', 'icon': 'lib/assets/More.png'},
   ];
 
@@ -194,9 +193,6 @@ class _CategoryState extends State<CategoryPage> {
                             onTap: () {
                               if (category['label'] == 'More') {
                                 _showNewCategoryDialog(context);
-                              } else if (category['label'] == 'Saving') {
-                                // Navigate to the SavingsPage
-                                context.push('/savings');
                               } else {
                                 context.push(
                                   '/categories/template/${category['label']}/${Uri.encodeComponent(category['icon']!)}',

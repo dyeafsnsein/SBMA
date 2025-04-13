@@ -236,9 +236,9 @@ class SavingsPage extends StatelessWidget {
             ),
             // Add More Button (smaller in width)
             Positioned(
-              bottom: 80, // Adjust this value to position the button
-              left: 20,
-              right: 20,
+              bottom: height * 0.12, // 12% from bottom to account for navbar
+              left: width * 0.05, // 5% from left
+              right: width * 0.05, // 5% from right
               child: Center(
                 child: ElevatedButton(
                   onPressed: () {
@@ -248,22 +248,20 @@ class SavingsPage extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF202422),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24, // Smaller horizontal padding
+                    padding: EdgeInsets.symmetric(
+                      vertical: height * 0.015, // 1.5% of screen height
+                      horizontal: width * 0.06, // 6% of screen width
                     ),
-                    minimumSize: const Size(120, 48), // Smaller width
+                    minimumSize: Size(width * 0.3, height * 0.06), // 30% width, 6% height
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        15,
-                      ), // Rounded corners
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Add More',
                     style: TextStyle(
                       fontFamily: 'Poppins',
-                      fontSize: 14, // Smaller font size
+                      fontSize: width * 0.04, // 4% of screen width
                       fontWeight: FontWeight.w600,
                     ),
                   ),
