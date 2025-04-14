@@ -11,7 +11,10 @@ class HomeController extends ChangeNotifier {
   double _totalBalance = 0.0;
   double _totalExpense = 0.0;
   double _revenueLastWeek = 0.0;
-  double _foodLastWeek = 0.0;
+  double _foodLastWeek = 0.0; // We'll replace this with dynamic category spending
+  String _topCategoryLastWeek = ''; // New: Store the top category
+  double _topCategoryAmountLastWeek = 0.0; // New: Store the amount for the top category
+  String _topCategoryIconLastWeek = ''; // New: Store the icon for the top category
   List<TransactionModel> _allTransactions = [];
   List<TransactionModel> _filteredTransactions = [];
   int _selectedPeriodIndex = 2;
@@ -24,10 +27,13 @@ class HomeController extends ChangeNotifier {
     _setupAuthListener();
   }
 
+  // Updated getters
   double get totalBalance => _totalBalance;
   double get totalExpense => _totalExpense;
   double get revenueLastWeek => _revenueLastWeek;
-  double get foodLastWeek => _foodLastWeek;
+  String get topCategoryLastWeek => _topCategoryLastWeek; // New getter
+  double get topCategoryAmountLastWeek => _topCategoryAmountLastWeek; // New getter
+  String get topCategoryIconLastWeek => _topCategoryIconLastWeek; // New getter
   int get selectedPeriodIndex => _selectedPeriodIndex;
   List<String> get periods => model.periods;
   List<TransactionModel> get transactions => _filteredTransactions;
@@ -38,13 +44,11 @@ class HomeController extends ChangeNotifier {
         .doc(userId)
         .collection('categories');
 
-    // Check if categories already exist
     final snapshot = await categoriesRef.get();
     if (snapshot.docs.isNotEmpty) {
-      return; // Categories already exist, no need to seed
+      return;
     }
 
-    // Default categories
     final defaultCategories = [
       {'label': 'Food', 'icon': 'lib/assets/Food.png'},
       {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
@@ -56,7 +60,6 @@ class HomeController extends ChangeNotifier {
       {'label': 'Income', 'icon': 'lib/assets/Salary.png'},
     ];
 
-    // Add default categories to Firestore
     final batch = FirebaseFirestore.instance.batch();
     for (var category in defaultCategories) {
       final docRef = categoriesRef.doc(category['label']);
@@ -107,7 +110,9 @@ class HomeController extends ChangeNotifier {
     _totalBalance = 0.0;
     _totalExpense = 0.0;
     _revenueLastWeek = 0.0;
-    _foodLastWeek = 0.0;
+    _topCategoryLastWeek = '';
+    _topCategoryAmountLastWeek = 0.0;
+    _topCategoryIconLastWeek = '';
     _allTransactions = [];
     _filteredTransactions = [];
     _categoryIcons.clear();
@@ -185,16 +190,35 @@ class HomeController extends ChangeNotifier {
           transaction.date.isAtSameMomentAs(lastWeekStart);
     }).toList();
 
+    // Calculate revenue last week
     _revenueLastWeek = lastWeekTransactions
         .where((t) => t.type == 'income')
         .fold(0.0, (total, t) => total + t.amount);
 
-    _foodLastWeek = lastWeekTransactions
-        .where((t) =>
-            t.type == 'expense' &&
-            (t.category.toLowerCase() == 'food' ||
-                t.category.toLowerCase() == 'pantry'))
-        .fold(0.0, (total, t) => total + t.amount.abs());
+    // Calculate the top spending category last week
+    final categorySpending = <String, double>{};
+    final categoryIcons = <String, String>{};
+
+    for (var transaction in lastWeekTransactions) {
+      if (transaction.type == 'expense') {
+        final category = transaction.category;
+        categorySpending[category] =
+            (categorySpending[category] ?? 0) + transaction.amount.abs();
+        categoryIcons[category] = transaction.icon;
+      }
+    }
+
+    if (categorySpending.isNotEmpty) {
+      final topEntry = categorySpending.entries.reduce((a, b) =>
+          a.value > b.value ? a : b);
+      _topCategoryLastWeek = topEntry.key;
+      _topCategoryAmountLastWeek = topEntry.value;
+      _topCategoryIconLastWeek = categoryIcons[topEntry.key] ?? 'lib/assets/Transaction.png';
+    } else {
+      _topCategoryLastWeek = 'None';
+      _topCategoryAmountLastWeek = 0.0;
+      _topCategoryIconLastWeek = 'lib/assets/Transaction.png';
+    }
   }
 
   void _filterTransactions() {

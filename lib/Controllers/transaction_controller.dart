@@ -179,7 +179,7 @@ class TransactionController extends ChangeNotifier {
       final amount = double.parse(expenseData['amount'].toString());
       final category = expenseData['category'] ?? 'Unknown';
       final icon = expenseData['icon'] ?? await _getIconForCategory(user.uid, category);
-      final date = expenseData['date'] as DateTime? ?? DateTime.now(); // Use provided date or default to now
+      final date = expenseData['date'] as DateTime? ?? DateTime.now();
       final transaction = {
         'type': 'expense',
         'amount': -amount,
@@ -204,6 +204,7 @@ class TransactionController extends ChangeNotifier {
       batch.update(userRef, {'balance': newBalance});
 
       await batch.commit();
+      _selectedDate = null; // Reset the date filter after adding a transaction
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding expense: $e');
@@ -219,7 +220,7 @@ class TransactionController extends ChangeNotifier {
       final amount = double.parse(incomeData['amount'].toString());
       final category = 'Income';
       final icon = await _getIconForCategory(user.uid, category);
-      final date = incomeData['date'] as DateTime? ?? DateTime.now(); // Use provided date or default to now
+      final date = incomeData['date'] as DateTime? ?? DateTime.now();
       final transaction = {
         'type': 'income',
         'amount': amount,
@@ -244,6 +245,7 @@ class TransactionController extends ChangeNotifier {
       batch.update(userRef, {'balance': newBalance});
 
       await batch.commit();
+      _selectedDate = null; // Reset the date filter after adding a transaction
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding income: $e');

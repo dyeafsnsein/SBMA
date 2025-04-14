@@ -76,11 +76,13 @@ class HomePage extends StatelessWidget {
                             goalIcon: 'lib/assets/Car.png',
                             goalText: 'Savings On Goals',
                             revenueLastWeek: controller.revenueLastWeek,
-                            foodLastWeek: controller.foodLastWeek,
+                            topCategoryLastWeek: controller.topCategoryLastWeek,
+                            topCategoryAmountLastWeek: controller.topCategoryAmountLastWeek,
+                            topCategoryIconLastWeek: controller.topCategoryIconLastWeek,
+                            goalAmount: 10000.0,
+                            currentBalance: controller.totalBalance,
                             onTap: () => context.push('/analysis'),
                           ),
-                          SizedBox(height: screenHeight * 0.02),
-                        
                           SizedBox(height: screenHeight * 0.02),
                           Expanded(
                             child: TransactionList(transactions: controller.transactions),
