@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async'; // Added import for StreamSubscription
+import 'dart:async';
+import '../Models/transaction_model.dart';
 
 class TransactionController extends ChangeNotifier {
-  List<Map<String, dynamic>> _transactions = [];
+  List<TransactionModel> _transactions = [];
   double _totalBalance = 0.0;
   double _totalIncome = 0.0;
   double _totalExpenses = 0.0;
   DateTime? _selectedDate;
+  final Map<String, String> _categoryIcons = {};
 
-  // Streams for Firestore listeners
   StreamSubscription<DocumentSnapshot>? _balanceSubscription;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
 
-  List<Map<String, dynamic>> get transactions {
+  List<TransactionModel> get transactions {
     if (_selectedDate == null) return _transactions;
     return _transactions.where((transaction) {
-      final transactionDate = transaction['timestamp'] as DateTime?;
-      if (transactionDate == null) return false;
-      return transactionDate.year == _selectedDate!.year &&
-          transactionDate.month == _selectedDate!.month &&
-          transactionDate.day == _selectedDate!.day;
+      return transaction.date.year == _selectedDate!.year &&
+          transaction.date.month == _selectedDate!.month &&
+          transaction.date.day == _selectedDate!.day;
     }).toList();
   }
 
@@ -33,31 +32,81 @@ class TransactionController extends ChangeNotifier {
     _setupAuthListener();
   }
 
+  Future<void> _initializeCategories(String userId) async {
+    final categoriesRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('categories');
+
+    final snapshot = await categoriesRef.get();
+    if (snapshot.docs.isNotEmpty) {
+      return;
+    }
+
+    final defaultCategories = [
+      {'label': 'Food', 'icon': 'lib/assets/Food.png'},
+      {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
+      {'label': 'Rent', 'icon': 'lib/assets/Rent.png'},
+      {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
+      {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
+      {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
+      {'label': 'More', 'icon': 'lib/assets/More.png'},
+      {'label': 'Income', 'icon': 'lib/assets/Salary.png'},
+    ];
+
+    final batch = FirebaseFirestore.instance.batch();
+    for (var category in defaultCategories) {
+      final docRef = categoriesRef.doc(category['label']);
+      batch.set(docRef, category);
+    }
+    await batch.commit();
+  }
+
+  Future<void> _loadCategories(String userId) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('categories')
+        .get();
+    _categoryIcons.clear();
+    for (var doc in snapshot.docs) {
+      _categoryIcons[doc['label'] as String] = doc['icon'] as String;
+    }
+  }
+
+  Future<String> _getIconForCategory(String userId, String category) async {
+    if (_categoryIcons.isEmpty) {
+      await _loadCategories(userId);
+    }
+    return _categoryIcons[category] ?? 'lib/assets/Transaction.png';
+  }
+
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        // User logged out
         _clearState();
       } else {
-        // User logged in
-        _setupListeners();
+        _initializeCategories(user.uid).then((_) {
+          _loadCategories(user.uid).then((_) {
+            _setupListeners();
+          });
+        });
       }
     });
   }
 
   void _clearState() {
-    // Cancel existing subscriptions
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
     _balanceSubscription = null;
     _transactionSubscription = null;
 
-    // Clear in-memory data
     _transactions = [];
     _totalBalance = 0.0;
     _totalIncome = 0.0;
     _totalExpenses = 0.0;
     _selectedDate = null;
+    _categoryIcons.clear();
 
     notifyListeners();
   }
@@ -69,7 +118,6 @@ class TransactionController extends ChangeNotifier {
       return;
     }
 
-    // Stream for user balance
     _balanceSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -84,25 +132,27 @@ class TransactionController extends ChangeNotifier {
       debugPrint('Error listening to user balance: $e');
     });
 
-    // Stream for transactions
     _transactionSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .collection('transactions')
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .listen((snapshot) {
-      _transactions = snapshot.docs.map((doc) {
+        .listen((snapshot) async {
+      _transactions = [];
+      for (var doc in snapshot.docs) {
         final data = doc.data();
-        return {
-          'category': data['category'] ?? 'Unknown',
-          'amount': (data['amount'] as num?)?.toDouble() ?? 0.0,
-          'timestamp': (data['timestamp'] as Timestamp?)?.toDate(),
-          'description': data['description'] ?? '',
-          'type': data['type'] ?? 'expense',
-          'icon': data['icon'] ?? 'lib/assets/Transaction.png',
-        };
-      }).toList();
+        final category = data['category'] ?? 'Unknown';
+        final icon = data['icon'] ?? await _getIconForCategory(user.uid, category);
+        _transactions.add(TransactionModel(
+          type: data['type'] ?? 'expense',
+          amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+          date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          description: data['description'] ?? '',
+          category: category,
+          icon: icon,
+        ));
+      }
 
       _calculateTotals();
       notifyListeners();
@@ -113,12 +163,12 @@ class TransactionController extends ChangeNotifier {
 
   void _calculateTotals() {
     _totalIncome = _transactions
-        .where((t) => t['type'] == 'income')
-        .fold(0.0, (total, t) => total + (t['amount'] as double));
+        .where((t) => t.type == 'income')
+        .fold(0.0, (total, t) => total + t.amount);
 
     _totalExpenses = _transactions
-        .where((t) => t['type'] == 'expense')
-        .fold(0.0, (total, t) => total + (t['amount'] as double).abs());
+        .where((t) => t.type == 'expense')
+        .fold(0.0, (total, t) => total + t.amount.abs());
   }
 
   Future<void> addExpense(Map<String, dynamic> expenseData) async {
@@ -127,16 +177,18 @@ class TransactionController extends ChangeNotifier {
 
     try {
       final amount = double.parse(expenseData['amount'].toString());
+      final category = expenseData['category'] ?? 'Unknown';
+      final icon = expenseData['icon'] ?? await _getIconForCategory(user.uid, category);
+      final date = expenseData['date'] as DateTime? ?? DateTime.now(); // Use provided date or default to now
       final transaction = {
         'type': 'expense',
-        'amount': -amount, // Store as negative for expenses
-        'timestamp': Timestamp.now(),
+        'amount': -amount,
+        'timestamp': Timestamp.fromDate(date),
         'description': expenseData['description'] ?? '',
-        'category': expenseData['category'] ?? '',
-        'icon': expenseData['icon'] ?? 'lib/assets/Transaction.png',
+        'category': category,
+        'icon': icon,
       };
 
-      // Use a batch to ensure atomic updates
       final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
@@ -145,7 +197,6 @@ class TransactionController extends ChangeNotifier {
           .doc();
       batch.set(transactionRef, transaction);
 
-      // Update the user's balance
       final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
       final userDoc = await userRef.get();
       final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
@@ -153,8 +204,10 @@ class TransactionController extends ChangeNotifier {
       batch.update(userRef, {'balance': newBalance});
 
       await batch.commit();
+      notifyListeners();
     } catch (e) {
       debugPrint('Error adding expense: $e');
+      throw Exception('Failed to add expense: $e');
     }
   }
 
@@ -164,16 +217,18 @@ class TransactionController extends ChangeNotifier {
 
     try {
       final amount = double.parse(incomeData['amount'].toString());
+      final category = 'Income';
+      final icon = await _getIconForCategory(user.uid, category);
+      final date = incomeData['date'] as DateTime? ?? DateTime.now(); // Use provided date or default to now
       final transaction = {
         'type': 'income',
         'amount': amount,
-        'timestamp': Timestamp.now(),
+        'timestamp': Timestamp.fromDate(date),
         'description': incomeData['description'] ?? '',
-        'category': 'Income',
-        'icon': 'lib/assets/Salary.png',
+        'category': category,
+        'icon': icon,
       };
 
-      // Use a batch to ensure atomic updates
       final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
@@ -182,7 +237,6 @@ class TransactionController extends ChangeNotifier {
           .doc();
       batch.set(transactionRef, transaction);
 
-      // Update the user's balance
       final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
       final userDoc = await userRef.get();
       final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
@@ -190,8 +244,10 @@ class TransactionController extends ChangeNotifier {
       batch.update(userRef, {'balance': newBalance});
 
       await batch.commit();
+      notifyListeners();
     } catch (e) {
       debugPrint('Error adding income: $e');
+      throw Exception('Failed to add income: $e');
     }
   }
 

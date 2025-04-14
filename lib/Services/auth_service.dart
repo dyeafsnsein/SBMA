@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart'; // Add this import
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart'; // Add this import for debugPrint
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(); // Add this for Google Sign-In
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<User?> signUp({
     required String name,
@@ -53,34 +54,26 @@ class AuthService {
     }
   }
 
-  // Add this new method for Google Sign-In
   Future<User?> signInWithGoogle() async {
     try {
-      // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // User canceled the sign-in
         return null;
       }
 
-      // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      // Create a new credential for Firebase
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the Google credential
       UserCredential userCredential = await _auth.signInWithCredential(credential);
       User? user = userCredential.user;
 
       if (user != null) {
-        // Check if the user already exists in Firestore
         final userDoc = await _firestore.collection('users').doc(user.uid).get();
         if (!userDoc.exists) {
-          // If the user doesn't exist, create a new document with default values
           await _firestore.collection('users').doc(user.uid).set({
             'name': user.displayName ?? 'Unknown',
             'email': user.email ?? '',
@@ -100,8 +93,8 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut(); // Sign out from Google
-    await _auth.signOut(); // Sign out from Firebase
+    await _googleSignIn.signOut();
+    await _auth.signOut();
   }
 
   Future<Map<String, dynamic>?> getUserData(String uid) async {
@@ -109,6 +102,7 @@ class AuthService {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
       return doc.data() as Map<String, dynamic>?;
     } catch (e) {
+      debugPrint('Error fetching user data: $e'); // Now debugPrint is defined
       rethrow;
     }
   }

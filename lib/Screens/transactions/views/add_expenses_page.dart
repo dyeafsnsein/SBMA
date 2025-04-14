@@ -1,197 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class TransactionAddExpensePage extends StatefulWidget {
-  final Function(Map<String, String>) onSave;
+class TransactionAddExpensePage extends StatelessWidget {
+  final Function(Map<String, String>) onSave; // Add onSave parameter
 
-  const TransactionAddExpensePage({
-    super.key,
-    required this.onSave,
-  });
-
-  @override
-  State<TransactionAddExpensePage> createState() => _TransactionAddExpensePageState();
-}
-
-class _TransactionAddExpensePageState extends State<TransactionAddExpensePage> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  String _selectedCategory = 'Food';
-
-  final List<String> _categories = [
-    'Food',
-    'Transport',
-    'Shopping',
-    'Entertainment',
-    'Bills',
-    'Other',
-  ];
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      widget.onSave({
-        'title': _titleController.text,
-        'amount': _amountController.text,
-        'category': _selectedCategory,
-      });
-      context.pop();
-    }
-  }
+  const TransactionAddExpensePage({Key? key, required this.onSave}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final TextEditingController amountController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+    String selectedCategory = 'Food'; // Default category
 
     return Scaffold(
-      backgroundColor: const Color(0xFF202422),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(
-          'Add Expense',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Poppins',
-          ),
-        ),
+        title: const Text('Add Expense'),
+        backgroundColor: const Color(0xFF202422),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.06,
-            vertical: screenHeight * 0.04,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: _titleController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white30),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.03),
-                TextFormField(
-                  controller: _amountController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Amount',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white30),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an amount';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.03),
-                DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Category',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white30),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  dropdownColor: const Color(0xFF202422), // Set dropdown background to match page
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white70), // Customize dropdown icon
-                  menuMaxHeight: screenHeight * 0.3, // Limit dropdown height
-                  items: _categories.map((String category) {
-                    return DropdownMenuItem<String>(
-                      value: category,
-                      child: Text(
-                        category,
-                        style: const TextStyle(
-                          color: Colors.white, // Ensure dropdown item text is white
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.05),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D4015),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
             ),
-          ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            const SizedBox(height: 16),
+            DropdownButton<String>(
+              value: selectedCategory,
+              onChanged: (value) {
+                selectedCategory = value!;
+              },
+              items: [
+                'Food',
+                'Transport',
+                'Rent',
+                'Entertainment',
+                'Medicine',
+                'Groceries',
+                'More'
+              ].map((category) => DropdownMenuItem(
+                    value: category,
+                    child: Text(category),
+                  )).toList(),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                final expenseData = {
+                  'amount': amountController.text,
+                  'description': descriptionController.text,
+                  'category': selectedCategory,
+                  'type': 'expense',
+                };
+                onSave(expenseData); // Call onSave with the expense data
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
       ),
     );

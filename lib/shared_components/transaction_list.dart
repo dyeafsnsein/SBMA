@@ -50,6 +50,14 @@ class TransactionList extends StatelessWidget {
                       transaction.icon,
                       width: 31,
                       height: 28,
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('Failed to load icon: ${transaction.icon}, error: $error');
+                        return Icon(
+                          isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                          color: Colors.white,
+                          size: 28,
+                        );
+                      },
                     ),
                   ),
                 ),

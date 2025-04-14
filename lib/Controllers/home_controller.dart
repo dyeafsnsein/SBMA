@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async'; // Added import for StreamSubscription
+import 'dart:async';
 import '../Models/home_model.dart';
 import '../Models/transaction_model.dart';
 
@@ -14,9 +14,9 @@ class HomeController extends ChangeNotifier {
   double _foodLastWeek = 0.0;
   List<TransactionModel> _allTransactions = [];
   List<TransactionModel> _filteredTransactions = [];
-  int _selectedPeriodIndex = 2; // Default to Monthly
+  int _selectedPeriodIndex = 2;
+  final Map<String, String> _categoryIcons = {};
 
-  // Streams for Firestore listeners
   StreamSubscription<DocumentSnapshot>? _balanceSubscription;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
 
@@ -32,32 +32,85 @@ class HomeController extends ChangeNotifier {
   List<String> get periods => model.periods;
   List<TransactionModel> get transactions => _filteredTransactions;
 
+  Future<void> _initializeCategories(String userId) async {
+    final categoriesRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('categories');
+
+    // Check if categories already exist
+    final snapshot = await categoriesRef.get();
+    if (snapshot.docs.isNotEmpty) {
+      return; // Categories already exist, no need to seed
+    }
+
+    // Default categories
+    final defaultCategories = [
+      {'label': 'Food', 'icon': 'lib/assets/Food.png'},
+      {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
+      {'label': 'Rent', 'icon': 'lib/assets/Rent.png'},
+      {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
+      {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
+      {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
+      {'label': 'More', 'icon': 'lib/assets/More.png'},
+      {'label': 'Income', 'icon': 'lib/assets/Salary.png'},
+    ];
+
+    // Add default categories to Firestore
+    final batch = FirebaseFirestore.instance.batch();
+    for (var category in defaultCategories) {
+      final docRef = categoriesRef.doc(category['label']);
+      batch.set(docRef, category);
+    }
+    await batch.commit();
+  }
+
+  Future<void> _loadCategories(String userId) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('categories')
+        .get();
+    _categoryIcons.clear();
+    for (var doc in snapshot.docs) {
+      _categoryIcons[doc['label'] as String] = doc['icon'] as String;
+    }
+  }
+
+  Future<String> _getIconForCategory(String userId, String category) async {
+    if (_categoryIcons.isEmpty) {
+      await _loadCategories(userId);
+    }
+    return _categoryIcons[category] ?? 'lib/assets/Transaction.png';
+  }
+
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        // User logged out
         _clearState();
       } else {
-        // User logged in
-        _setupListeners();
+        _initializeCategories(user.uid).then((_) {
+          _loadCategories(user.uid).then((_) {
+            _setupListeners();
+          });
+        });
       }
     });
   }
 
   void _clearState() {
-    // Cancel existing subscriptions
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
     _balanceSubscription = null;
     _transactionSubscription = null;
 
-    // Clear in-memory data
     _totalBalance = 0.0;
     _totalExpense = 0.0;
     _revenueLastWeek = 0.0;
     _foodLastWeek = 0.0;
     _allTransactions = [];
     _filteredTransactions = [];
+    _categoryIcons.clear();
 
     notifyListeners();
   }
@@ -69,7 +122,6 @@ class HomeController extends ChangeNotifier {
       return;
     }
 
-    // Stream for user balance
     _balanceSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -79,7 +131,6 @@ class HomeController extends ChangeNotifier {
         final userData = userDoc.data() as Map<String, dynamic>;
         _totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
 
-        // Recalculate total expenses (since balance might change due to transactions)
         await _calculateTotalExpense();
         _filterTransactions();
         notifyListeners();
@@ -88,25 +139,28 @@ class HomeController extends ChangeNotifier {
       debugPrint('Error listening to user balance: $e');
     });
 
-    // Stream for transactions
     _transactionSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .collection('transactions')
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .listen((snapshot) {
-      _allTransactions = snapshot.docs.map((doc) {
+        .listen((snapshot) async {
+      _allTransactions = [];
+      for (var doc in snapshot.docs) {
         final data = doc.data();
-        return TransactionModel(
+        final category = data['category'] ?? 'Unknown';
+        final icon = data['icon'] ??
+            await _getIconForCategory(user.uid, category);
+        _allTransactions.add(TransactionModel(
           type: data['type'] ?? 'expense',
           amount: double.parse(data['amount'].toString()),
           date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
           description: data['description'] ?? '',
-          category: data['category'] ?? '',
-          icon: data['icon'] ?? 'lib/assets/Transaction.png',
-        );
-      }).toList();
+          category: category,
+          icon: icon,
+        ));
+      }
 
       _calculateLastWeekMetrics();
       _calculateTotalExpense();
@@ -131,12 +185,10 @@ class HomeController extends ChangeNotifier {
           transaction.date.isAtSameMomentAs(lastWeekStart);
     }).toList();
 
-    // Calculate revenue (income) for the last week
     _revenueLastWeek = lastWeekTransactions
         .where((t) => t.type == 'income')
         .fold(0.0, (total, t) => total + t.amount);
 
-    // Calculate food expenses for the last week
     _foodLastWeek = lastWeekTransactions
         .where((t) =>
             t.type == 'expense' &&
@@ -149,13 +201,13 @@ class HomeController extends ChangeNotifier {
     final now = DateTime.now();
     DateTime startDate;
     switch (_selectedPeriodIndex) {
-      case 0: // Daily
+      case 0:
         startDate = now.subtract(const Duration(days: 1));
         break;
-      case 1: // Weekly
+      case 1:
         startDate = now.subtract(const Duration(days: 7));
         break;
-      case 2: // Monthly
+      case 2:
         startDate = DateTime(now.year, now.month, 1);
         break;
       default:

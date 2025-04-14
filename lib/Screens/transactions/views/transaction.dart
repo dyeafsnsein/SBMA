@@ -3,16 +3,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:test_app/Models/transaction_model.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../shared_components/income_expense_summary.dart';
 import '../../../shared_components/add_transaction_dialog.dart';
+import '../../../shared_components/transaction_list.dart'; // Import the shared TransactionList
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class TransactionsPage extends StatelessWidget {
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
 
-  void _showAddTransactionDialog(BuildContext context) {
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage> {
+  void _showAddTransactionDialog() {
     final controller = Provider.of<TransactionController>(context, listen: false);
     showDialog(
       context: context,
@@ -29,7 +36,7 @@ class TransactionsPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showDatePicker(BuildContext context) async {
+  Future<void> _showDatePicker() async {
     final controller = Provider.of<TransactionController>(context, listen: false);
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -38,12 +45,14 @@ class TransactionsPage extends StatelessWidget {
       lastDate: DateTime(2100),
     );
 
-    if (pickedDate != null) {
+    if (pickedDate != null && mounted) {
       controller.setFilterDate(pickedDate);
     }
   }
 
-  Future<void> _deleteTransaction(BuildContext context, Map<String, dynamic> transaction) async {
+  Future<void> _deleteTransaction(TransactionModel transaction) async {
+    if (!mounted) return;
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -53,14 +62,13 @@ class TransactionsPage extends StatelessWidget {
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
-          .where('timestamp', isEqualTo: Timestamp.fromDate(transaction['timestamp']))
-          .where('amount', isEqualTo: transaction['amount'])
-          .where('category', isEqualTo: transaction['category'])
+          .where('timestamp', isEqualTo: Timestamp.fromDate(transaction.date))
+          .where('amount', isEqualTo: transaction.amount)
+          .where('category', isEqualTo: transaction.category)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         final docId = snapshot.docs.first.id;
-        final amount = transaction['amount'] as double;
 
         // Use a batch to delete the transaction and update the balance
         final batch = FirebaseFirestore.instance.batch();
@@ -75,25 +83,30 @@ class TransactionsPage extends StatelessWidget {
         final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
         final userDoc = await userRef.get();
         final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
-        final newBalance = currentBalance - amount; // Subtract the amount (negative for expenses, positive for income)
+        // If expense, amount is negative; if income, amount is positive
+        final newBalance = currentBalance - transaction.amount;
         batch.update(userRef, {'balance': newBalance});
 
         await batch.commit();
 
-        // Show a snackbar for user feedback
+        if (mounted) {
+          // Show a snackbar for user feedback
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${transaction.category} transaction deleted'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        // Handle error (e.g., show a snackbar)
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${transaction['category']} transaction deleted'),
+          const SnackBar(
+            content: Text('Error deleting transaction'),
           ),
         );
       }
-    } catch (e) {
-      // Handle error (e.g., show a snackbar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error deleting transaction'),
-        ),
-      );
     }
   }
 
@@ -190,7 +203,7 @@ class TransactionsPage extends StatelessWidget {
                       IncomeExpenseSummary(
                         income: controller.totalIncome,
                         expense: controller.totalExpenses,
-                        onAddIncome: () => _showAddTransactionDialog(context),
+                        onAddIncome: () => _showAddTransactionDialog(),
                       ),
                     ],
                   ),
@@ -213,106 +226,9 @@ class TransactionsPage extends StatelessWidget {
                             right: screenWidth * 0.05,
                             bottom: screenWidth * 0.05,
                           ),
-                          child: controller.transactions.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'No transactions yet. Start adding some!',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 16,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: controller.transactions.length,
-                                  itemBuilder: (context, index) {
-                                    final transaction = controller.transactions[index];
-                                    final isExpense = transaction['type'] == 'expense';
-                                    return Card(
-                                      margin: const EdgeInsets.symmetric(vertical: 8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      child: ListTile(
-                                        leading: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Image.asset(
-                                              transaction['icon'] ?? 'lib/assets/Transaction.png',
-                                              width: 28,
-                                              height: 28,
-                                              errorBuilder: (context, error, stackTrace) => Icon(
-                                                isExpense ? Icons.arrow_downward : Icons.arrow_upward,
-                                                color: isExpense ? Colors.red : Colors.green,
-                                                size: 28,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                          ],
-                                        ),
-                                        title: Text(
-                                          transaction['category'] ?? 'Unknown',
-                                          style: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              transaction['timestamp'] != null
-                                                  ? (transaction['timestamp'] as DateTime)
-                                                      .toString()
-                                                      .substring(0, 16)
-                                                  : 'Unknown date',
-                                              style: const TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontSize: 14,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            if (transaction['description'] != null &&
-                                                transaction['description'].isNotEmpty)
-                                              Text(
-                                                transaction['description'],
-                                                style: const TextStyle(
-                                                  fontFamily: 'Poppins',
-                                                  fontSize: 12,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              '\$${(transaction['amount'] as double).abs().toStringAsFixed(2)}',
-                                              style: TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: isExpense ? Colors.red : Colors.green,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                                size: 20,
-                                              ),
-                                              onPressed: () => _deleteTransaction(context, transaction),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                          child: TransactionList(
+                            transactions: controller.transactions,
+                          ),
                         ),
                         Positioned(
                           top: 20,
@@ -320,7 +236,7 @@ class TransactionsPage extends StatelessWidget {
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () => _showDatePicker(context),
+                                onTap: () => _showDatePicker(),
                                 child: Container(
                                   width: 40,
                                   height: 40,
@@ -339,7 +255,7 @@ class TransactionsPage extends StatelessWidget {
                               ),
                               const SizedBox(width: 10),
                               GestureDetector(
-                                onTap: () => _showAddTransactionDialog(context),
+                                onTap: () => _showAddTransactionDialog(),
                                 child: Container(
                                   width: 40,
                                   height: 40,
