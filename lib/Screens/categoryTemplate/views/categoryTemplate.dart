@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/transaction_list.dart';
 import '../../../shared_components/balance_overview.dart';
-import '../../categories/views/components/Add_expense.dart';
+import '../../../Controllers/home_controller.dart';
 import '../../../Models/transaction_model.dart';
 
 class CategoryTemplatePage extends StatefulWidget {
@@ -24,40 +25,26 @@ class CategoryTemplatePage extends StatefulWidget {
 
 class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
   final RxList<TransactionModel> _transactions = <TransactionModel>[].obs;
-  final RxList<TransactionModel> _allTransactions = <TransactionModel>[].obs;
+  late HomeController _homeController;
 
   @override
   void initState() {
     super.initState();
+    _homeController = Provider.of<HomeController>(context, listen: false);
     _fetchInitialData();
   }
 
   void _fetchInitialData() {
-    _allTransactions.value = [
-      TransactionModel(
-        type: 'expense',
-        amount: -26.00,
-        date: DateTime(2025, 4, 30),
-        description: 'Dinner',
-        category: 'Food',
-        icon: 'lib/assets/Food.png',
-      ),
-    ];
-    _transactions.value = List.from(_allTransactions);
-  }
-
-  void _addNewExpense(Map<String, String> newExpense) {
-    final transaction = TransactionModel(
-      type: 'expense',
-      amount: double.parse(newExpense['amount'] ?? '0'),
-      date: DateTime.parse(newExpense['date'] ?? DateTime.now().toString()),
-      description: newExpense['description'] ?? '',
-      category: newExpense['category'] ?? '',
-      icon: newExpense['icon'] ?? 'lib/assets/Transaction.png',
-    );
-
-    _allTransactions.add(transaction);
-    _transactions.value = List.from(_allTransactions);
+    // Filter transactions by category
+    _transactions.value = _homeController.transactions
+        .where((t) => t.category == widget.categoryName)
+        .toList();
+    // Update transactions when HomeController updates
+    _homeController.addListener(() {
+      _transactions.value = _homeController.transactions
+          .where((t) => t.category == widget.categoryName)
+          .toList();
+    });
   }
 
   @override
@@ -144,9 +131,9 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                               ),
                             ],
                           ),
-                          const BalanceOverview(
-                            totalBalance: 7783.00,
-                            totalExpense: 1187.40,
+                          BalanceOverview(
+                            totalBalance: _homeController.totalBalance,
+                            totalExpense: _homeController.totalExpense,
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4),

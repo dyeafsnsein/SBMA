@@ -8,6 +8,7 @@ import 'components/period_selector_analysis.dart';
 import '../../../shared_components/income_expense_summary.dart';
 import 'components/targets_section.dart';
 import '../../../Controllers/analysis_controller.dart';
+import '../../../Controllers/home_controller.dart';
 import '../../../Models/analysis_model.dart';
 
 class AnalysisPage extends StatefulWidget {
@@ -40,14 +41,18 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final homeController = Provider.of<HomeController>(context);
+    final expensePercentage = homeController.totalBalance > 0
+        ? (homeController.totalExpense / homeController.totalBalance * 100).toInt()
+        : 0;
+
     return ChangeNotifierProvider(
-      create: (_) => AnalysisController(AnalysisModel()),
+      create: (_) => AnalysisController(AnalysisModel(), homeController),
       child: Consumer<AnalysisController>(
         builder: (context, controller, child) {
           final screenHeight = MediaQuery.of(context).size.height;
           final screenWidth = MediaQuery.of(context).size.width;
 
-          // Get current period data based on selection
           String currentPeriod = controller.periods[controller.selectedPeriodIndex];
           List<double> expenses = List<double>.from(controller.periodData[currentPeriod]!['expenses']);
           List<double> income = List<double>.from(controller.periodData[currentPeriod]!['income']);
@@ -65,11 +70,10 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                   Column(
                     children: [
                       AnalysisHeader(
-                        totalBalance: 7783.00,
-                        totalExpense: 1187.40,
-                        expensePercentage: 30,
-                        expenseLimit: 20000.00,
-                        onBackPressed: () => context.go('/'), // Navigate back to Home using GoRouter
+                        totalBalance: homeController.totalBalance,
+                        totalExpense: homeController.totalExpense,
+                        expensePercentage: expensePercentage,
+                        onBackPressed: () => context.go('/'),
                         onNotificationTap: () => context.push('/notification'),
                       ),
                       Expanded(
@@ -104,9 +108,9 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                                     ),
                                   ),
                                   SizedBox(height: screenHeight * 0.02),
-                                  const IncomeExpenseSummary(
-                                    income: 4120.00,
-                                    expense: 1187.40,
+                                  IncomeExpenseSummary(
+                                    income: controller.totalIncome,
+                                    expense: controller.totalExpense,
                                   ),
                                   SizedBox(height: screenHeight * 0.03),
                                   TargetsSection(targets: controller.targets),

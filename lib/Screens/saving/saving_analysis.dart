@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../shared_components/progress_bar.dart';
 
 class SavingsAnalysisPage extends StatelessWidget {
   final String categoryName;
@@ -170,7 +169,7 @@ class SavingsAnalysisPage extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     // Progress Bar
-                    const ProgressBar(progress: 0.4, goalAmount: 20000.00),
+                 
 
                     const SizedBox(height: 20),
 

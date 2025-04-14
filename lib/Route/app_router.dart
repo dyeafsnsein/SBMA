@@ -87,7 +87,7 @@ final router = GoRouter(
           path: '/transactions',
           builder: (context, state) => TransactionsPage(),
           routes: [
-            GoRoute(
+            GoRoute(                    
               path: 'add-expense',
               builder: (context, state) {
                 final addNewExpense = state.extra as Function(Map<String, String>);

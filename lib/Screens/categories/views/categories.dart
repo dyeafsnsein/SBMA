@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared_components/progress_bar.dart';
+import 'package:provider/provider.dart';
 import 'components/newcategory.dart'; // Import NewCategoryDialog
 import '../../saving/saving.dart'; // Import SavingsPage
+import '../../../Controllers/home_controller.dart'; // Import HomeController
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({Key? key}) : super(key: key);
@@ -38,6 +39,7 @@ class _CategoryState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<HomeController>(context); // Access HomeController
     final Size screenSize = MediaQuery.of(context).size;
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
@@ -46,6 +48,11 @@ class _CategoryState extends State<CategoryPage> {
     final double topSectionHeight = height * 0.32;
     final double horizontalPadding = width * 0.06;
     final double verticalPadding = height * 0.02;
+
+    // Calculate the percentage of expenses dynamically
+    final double expensePercentage = controller.totalBalance > 0
+        ? (controller.totalExpense / controller.totalBalance * 100).toDouble()
+        : 0.0;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -121,11 +128,11 @@ class _CategoryState extends State<CategoryPage> {
                             children: [
                               _buildBalanceInfo(
                                 title: 'Total Balance',
-                                amount: '\$7,783.00',
+                                amount: '\$${controller.totalBalance.toStringAsFixed(2)}', // Use HomeController
                               ),
                               _buildBalanceInfo(
                                 title: 'Total Expense',
-                                amount: '-\$1,187.40',
+                                amount: '-\$${controller.totalExpense.toStringAsFixed(2)}', // Use HomeController
                               ),
                             ],
                           ),
@@ -133,31 +140,7 @@ class _CategoryState extends State<CategoryPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const ProgressBar(
-                                  progress: 0.3,
-                                  goalAmount: 20000.00,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_box,
-                                      color: Colors.white,
-                                      size: width * 0.04,
-                                    ),
-                                    SizedBox(width: width * 0.02),
-                                    Text(
-                                      '30% Of Your Expenses, Looks Good.',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: width * 0.035,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            
                             ),
                           ),
                         ],
@@ -181,11 +164,11 @@ class _CategoryState extends State<CategoryPage> {
                         padding: const EdgeInsets.only(top: 20, bottom: 80),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.75,
+                        ),
                         itemCount: _categories.length,
                         itemBuilder: (context, index) {
                           final category = _categories[index];
@@ -249,7 +232,7 @@ class _CategoryState extends State<CategoryPage> {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -258,7 +241,7 @@ class _CategoryState extends State<CategoryPage> {
         ),
         Text(
           amount,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontSize: 20,
             fontWeight: FontWeight.w700,

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../shared_components/balance_overview.dart';
-import '../../../../shared_components/progress_bar.dart';
 
 class AnalysisHeader extends StatelessWidget {
   final double totalBalance;
   final double totalExpense;
-  final int expensePercentage;
-  final double expenseLimit;
+  final int expensePercentage; // Keep as int to match AnalysisPage
   final VoidCallback onBackPressed;
   final VoidCallback onNotificationTap;
 
@@ -15,7 +13,6 @@ class AnalysisHeader extends StatelessWidget {
     required this.totalBalance,
     required this.totalExpense,
     required this.expensePercentage,
-    required this.expenseLimit,
     required this.onBackPressed,
     required this.onNotificationTap,
   }) : super(key: key);
@@ -37,7 +34,7 @@ class AnalysisHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: onBackPressed, // Correctly assign the onBackPressed callback
+                onTap: onBackPressed,
                 child: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
@@ -72,33 +69,26 @@ class AnalysisHeader extends StatelessWidget {
             ],
           ),
           SizedBox(height: screenHeight * 0.02),
-          // Using the imported BalanceOverview widget
           BalanceOverview(
             totalBalance: totalBalance,
             totalExpense: totalExpense,
           ),
           SizedBox(height: screenHeight * 0.02),
-          // Using the imported ProgressBar widget
-          ProgressBar(
-            progress: expensePercentage / 100,
-            goalAmount: expenseLimit,
-          ),
-          SizedBox(height: screenHeight * 0.01),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'lib/assets/Check.png',
-                width: screenWidth * 0.03,
-                height: screenWidth * 0.03,
+              Icon(
+                Icons.check_box,
+                color: Colors.white,
+                size: screenWidth * 0.04,
               ),
               SizedBox(width: screenWidth * 0.02),
               Text(
                 '$expensePercentage% Of Your Expenses, Looks Good.',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: screenWidth * 0.035,
                   fontFamily: 'Poppins',
+                  fontSize: screenWidth * 0.035,
+                  color: Colors.white,
                 ),
               ),
             ],

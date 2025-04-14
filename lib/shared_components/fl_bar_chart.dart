@@ -18,26 +18,23 @@ class FlBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
-    // Calculate the maximum value to set appropriate maxY
+
     double maxValue = 0;
     for (int i = 0; i < expenses.length; i++) {
       maxValue = maxValue > expenses[i] ? maxValue : expenses[i];
       maxValue = maxValue > income[i] ? maxValue : income[i];
     }
-    
-    // Add 20% padding to the max value and ensure a minimum value
+
     maxValue = maxValue * 1.2;
-    maxValue = maxValue < 10 ? 10 : maxValue; // Ensure minimum maxY of 10
-    
-    // Determine the appropriate interval based on the max value
+    maxValue = maxValue < 10 ? 10 : maxValue;
+
     double interval = 5;
     if (maxValue > 1000) interval = 500;
     else if (maxValue > 100) interval = 200;
     else if (maxValue > 50) interval = 20;
     else if (maxValue > 20) interval = 10;
     else interval = 5;
-    
+
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
@@ -118,12 +115,15 @@ class FlBarChart extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: screenWidth * 0.025,
                               ),
+                              textAlign: TextAlign.center, // Center the text
+                              maxLines: 2, // Allow two lines for month and year
+                              overflow: TextOverflow.visible,
                             ),
                           );
                         }
                         return const SizedBox();
                       },
-                      reservedSize: screenHeight * 0.03,
+                      reservedSize: screenHeight * 0.05, // Increased to accommodate two lines
                     ),
                   ),
                   leftTitles: AxisTitles(

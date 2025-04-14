@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'components/header.dart';
 import '../../../shared_components/balance_overview.dart';
-import '../../../shared_components/progress_bar.dart';
 import '../../../shared_components/goal_overview.dart';
 import 'components/period_selector.dart';
 import '../../../shared_components/transaction_list.dart';
@@ -16,6 +15,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Provider.of<HomeController>(context);
+    debugPrint('HomePage rebuilt with totalBalance: ${controller.totalBalance}');
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -52,40 +53,13 @@ class HomePage extends StatelessWidget {
                             totalBalance: controller.totalBalance,
                             totalExpense: controller.totalExpense,
                           ),
-                          SizedBox(height: screenHeight * 0.02),
-                          ProgressBar(
-                            progress: controller.totalBalance / 20000.0,
-                            goalAmount: 20000.00,
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'lib/assets/Check.png',
-                                width: screenWidth * 0.03,
-                                height: screenWidth * 0.03,
-                              ),
-                              SizedBox(width: screenWidth * 0.02),
-                              Text(
-                                controller.totalBalance > 0
-                                    ? '${(controller.totalExpense / controller.totalBalance * 100).toStringAsFixed(0)}% of your expenses, looks good.'
-                                    : '0% of your expenses, looks good.',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: screenWidth * 0.037,
-                                  color: const Color(0xFFFCFCFC),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
                 Expanded(
-                  flex: 64,
+                  flex: 100,
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Color(0xFFF1FFF3),
@@ -106,13 +80,11 @@ class HomePage extends StatelessWidget {
                             onTap: () => context.push('/analysis'),
                           ),
                           SizedBox(height: screenHeight * 0.02),
-                          PeriodSelector(
-                            periods: controller.periods,
-                            selectedPeriodIndex: controller.selectedPeriodIndex,
-                            onPeriodTapped: controller.onPeriodTapped,
-                          ),
+                        
                           SizedBox(height: screenHeight * 0.02),
-                          TransactionList(transactions: controller.transactions),
+                          Expanded(
+                            child: TransactionList(transactions: controller.transactions),
+                          ),
                         ],
                       ),
                     ),

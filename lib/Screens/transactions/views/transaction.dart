@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../shared_components/transaction_list.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../shared_components/income_expense_summary.dart';
 import '../../../shared_components/add_transaction_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TransactionsPage extends StatelessWidget {
   const TransactionsPage({super.key});
@@ -25,6 +27,74 @@ class TransactionsPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _showDatePicker(BuildContext context) async {
+    final controller = Provider.of<TransactionController>(context, listen: false);
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      controller.setFilterDate(pickedDate);
+    }
+  }
+
+  Future<void> _deleteTransaction(BuildContext context, Map<String, dynamic> transaction) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      // Find the transaction in Firestore by matching fields
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .where('timestamp', isEqualTo: Timestamp.fromDate(transaction['timestamp']))
+          .where('amount', isEqualTo: transaction['amount'])
+          .where('category', isEqualTo: transaction['category'])
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final docId = snapshot.docs.first.id;
+        final amount = transaction['amount'] as double;
+
+        // Use a batch to delete the transaction and update the balance
+        final batch = FirebaseFirestore.instance.batch();
+        final transactionRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .doc(docId);
+        batch.delete(transactionRef);
+
+        // Update the user's balance
+        final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        final userDoc = await userRef.get();
+        final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+        final newBalance = currentBalance - amount; // Subtract the amount (negative for expenses, positive for income)
+        batch.update(userRef, {'balance': newBalance});
+
+        await batch.commit();
+
+        // Show a snackbar for user feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${transaction['category']} transaction deleted'),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error (e.g., show a snackbar)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error deleting transaction'),
+        ),
+      );
+    }
   }
 
   @override
@@ -154,8 +224,94 @@ class TransactionsPage extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : TransactionList(
-                                  transactions: controller.transactions,
+                              : ListView.builder(
+                                  itemCount: controller.transactions.length,
+                                  itemBuilder: (context, index) {
+                                    final transaction = controller.transactions[index];
+                                    final isExpense = transaction['type'] == 'expense';
+                                    return Card(
+                                      margin: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: ListTile(
+                                        leading: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Image.asset(
+                                              transaction['icon'] ?? 'lib/assets/Transaction.png',
+                                              width: 28,
+                                              height: 28,
+                                              errorBuilder: (context, error, stackTrace) => Icon(
+                                                isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                                                color: isExpense ? Colors.red : Colors.green,
+                                                size: 28,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                          ],
+                                        ),
+                                        title: Text(
+                                          transaction['category'] ?? 'Unknown',
+                                          style: const TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              transaction['timestamp'] != null
+                                                  ? (transaction['timestamp'] as DateTime)
+                                                      .toString()
+                                                      .substring(0, 16)
+                                                  : 'Unknown date',
+                                              style: const TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontSize: 14,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            if (transaction['description'] != null &&
+                                                transaction['description'].isNotEmpty)
+                                              Text(
+                                                transaction['description'],
+                                                style: const TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 12,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '\$${(transaction['amount'] as double).abs().toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: isExpense ? Colors.red : Colors.green,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                                size: 20,
+                                              ),
+                                              onPressed: () => _deleteTransaction(context, transaction),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                         ),
                         Positioned(
@@ -164,9 +320,7 @@ class TransactionsPage extends StatelessWidget {
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  // TODO: Implement date range picker
-                                },
+                                onTap: () => _showDatePicker(context),
                                 child: Container(
                                   width: 40,
                                   height: 40,
@@ -174,12 +328,11 @@ class TransactionsPage extends StatelessWidget {
                                     color: const Color(0xFF202422),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'lib/assets/Calendar.png',
-                                      width: 20,
-                                      height: 20,
+                                  child: const Center(
+                                    child: Icon(
+                                      CupertinoIcons.calendar,
                                       color: Colors.white,
+                                      size: 20,
                                     ),
                                   ),
                                 ),

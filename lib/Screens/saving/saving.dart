@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared_components/progress_bar.dart';
+import 'package:provider/provider.dart';
+import '../../../../Controllers/home_controller.dart'; // Import HomeController
 import 'saving_analysis.dart'; // Import the SavingsAnalysisPage
 
 class SavingsPage extends StatelessWidget {
@@ -9,6 +10,7 @@ class SavingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<HomeController>(context); // Access HomeController
     final Size screenSize = MediaQuery.of(context).size;
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
@@ -92,43 +94,19 @@ class SavingsPage extends StatelessWidget {
                             children: [
                               _buildBalanceInfo(
                                 title: 'Total Balance',
-                                amount: '\$7,783.00',
+                                amount: '\$${controller.totalBalance.toStringAsFixed(2)}', // Use HomeController
                               ),
                               _buildBalanceInfo(
                                 title: 'Total Expense',
-                                amount: '-\$1,187.40',
+                                amount: '-\$${controller.totalExpense.toStringAsFixed(2)}', // Use HomeController
                               ),
                             ],
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Column(
+                            child: const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const ProgressBar(
-                                  progress: 0.3,
-                                  goalAmount: 20000.00,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_box,
-                                      color: Colors.white,
-                                      size: width * 0.04,
-                                    ),
-                                    SizedBox(width: width * 0.02),
-                                    Text(
-                                      '30% Of Your Expenses, Looks Good.',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: width * 0.035,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                              children: [],
                             ),
                           ),
                         ],
@@ -152,11 +130,11 @@ class SavingsPage extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 20, bottom: 80),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.75,
+                        ),
                         itemCount: 4, // Number of savings categories
                         itemBuilder: (context, index) {
                           final List<Map<String, String>> savingsCategories = [
@@ -178,7 +156,6 @@ class SavingsPage extends StatelessWidget {
                           final category = savingsCategories[index];
                           return GestureDetector(
                             onTap: () {
-                              // Ensure category['label'] and category['icon'] are non-null
                               final categoryName =
                                   category['label'] ?? 'Unknown';
                               final iconPath =
@@ -234,25 +211,23 @@ class SavingsPage extends StatelessWidget {
                 ),
               ],
             ),
-            // Add More Button (smaller in width)
             Positioned(
-              bottom: height * 0.12, // 12% from bottom to account for navbar
-              left: width * 0.05, // 5% from left
-              right: width * 0.05, // 5% from right
+              bottom: height * 0.12,
+              left: width * 0.05,
+              right: width * 0.05,
               child: Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Handle "Add More" button tap
                     print('Add More tapped');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF202422),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(
-                      vertical: height * 0.015, // 1.5% of screen height
-                      horizontal: width * 0.06, // 6% of screen width
+                      vertical: height * 0.015,
+                      horizontal: width * 0.06,
                     ),
-                    minimumSize: Size(width * 0.3, height * 0.06), // 30% width, 6% height
+                    minimumSize: Size(width * 0.3, height * 0.06),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -261,7 +236,7 @@ class SavingsPage extends StatelessWidget {
                     'Add More',
                     style: TextStyle(
                       fontFamily: 'Poppins',
-                      fontSize: width * 0.04, // 4% of screen width
+                      fontSize: width * 0.04,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -280,7 +255,7 @@ class SavingsPage extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -289,7 +264,7 @@ class SavingsPage extends StatelessWidget {
         ),
         Text(
           amount,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontSize: 20,
             fontWeight: FontWeight.w700,

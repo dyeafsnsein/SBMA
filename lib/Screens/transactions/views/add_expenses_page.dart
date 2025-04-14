@@ -144,10 +144,19 @@ class _TransactionAddExpensePageState extends State<TransactionAddExpensePage> {
                       borderSide: const BorderSide(color: Colors.white),
                     ),
                   ),
+                  dropdownColor: const Color(0xFF202422), // Set dropdown background to match page
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white70), // Customize dropdown icon
+                  menuMaxHeight: screenHeight * 0.3, // Limit dropdown height
                   items: _categories.map((String category) {
                     return DropdownMenuItem<String>(
                       value: category,
-                      child: Text(category),
+                      child: Text(
+                        category,
+                        style: const TextStyle(
+                          color: Colors.white, // Ensure dropdown item text is white
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
@@ -187,4 +196,4 @@ class _TransactionAddExpensePageState extends State<TransactionAddExpensePage> {
       ),
     );
   }
-} 
+}
