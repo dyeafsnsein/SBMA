@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:collection/collection.dart';
 import '../Models/home_model.dart';
 import '../Models/transaction_model.dart';
+import '../Models/savings_goal.dart';
 
 class HomeController extends ChangeNotifier {
   final HomeModel model = HomeModel();
@@ -11,32 +13,35 @@ class HomeController extends ChangeNotifier {
   double _totalBalance = 0.0;
   double _totalExpense = 0.0;
   double _revenueLastWeek = 0.0;
-  double _foodLastWeek = 0.0; // We'll replace this with dynamic category spending
-  String _topCategoryLastWeek = ''; // New: Store the top category
-  double _topCategoryAmountLastWeek = 0.0; // New: Store the amount for the top category
-  String _topCategoryIconLastWeek = ''; // New: Store the icon for the top category
+  String _topCategoryLastWeek = '';
+  double _topCategoryAmountLastWeek = 0.0;
+  String _topCategoryIconLastWeek = '';
   List<TransactionModel> _allTransactions = [];
   List<TransactionModel> _filteredTransactions = [];
   int _selectedPeriodIndex = 2;
   final Map<String, String> _categoryIcons = {};
 
+  List<SavingsGoal> _savingsGoals = [];
+  SavingsGoal? _activeGoal;
   StreamSubscription<DocumentSnapshot>? _balanceSubscription;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
+  StreamSubscription<QuerySnapshot>? _savingsGoalsSubscription;
 
   HomeController() {
     _setupAuthListener();
   }
 
-  // Updated getters
   double get totalBalance => _totalBalance;
   double get totalExpense => _totalExpense;
   double get revenueLastWeek => _revenueLastWeek;
-  String get topCategoryLastWeek => _topCategoryLastWeek; // New getter
-  double get topCategoryAmountLastWeek => _topCategoryAmountLastWeek; // New getter
-  String get topCategoryIconLastWeek => _topCategoryIconLastWeek; // New getter
+  String get topCategoryLastWeek => _topCategoryLastWeek;
+  double get topCategoryAmountLastWeek => _topCategoryAmountLastWeek;
+  String get topCategoryIconLastWeek => _topCategoryIconLastWeek;
   int get selectedPeriodIndex => _selectedPeriodIndex;
   List<String> get periods => model.periods;
   List<TransactionModel> get transactions => _filteredTransactions;
+  List<SavingsGoal> get savingsGoals => _savingsGoals;
+  SavingsGoal? get activeGoal => _activeGoal;
 
   Future<void> _initializeCategories(String userId) async {
     final categoriesRef = FirebaseFirestore.instance
@@ -68,6 +73,61 @@ class HomeController extends ChangeNotifier {
     await batch.commit();
   }
 
+  Future<void> _initializeSavingsGoals(String userId) async {
+    final savingsGoalsRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('savings_goals');
+
+    final snapshot = await savingsGoalsRef.get();
+    if (snapshot.docs.isNotEmpty) {
+      return;
+    }
+
+    final defaultSavingsGoals = [
+      {
+        'name': 'Travel',
+        'icon': 'lib/assets/Travel.png',
+        'targetAmount': 2000.0,
+        'currentAmount': 0.0,
+        'isActive': false,
+      },
+      {
+        'name': 'New House',
+        'icon': 'lib/assets/New House.png',
+        'targetAmount': 50000.0,
+        'currentAmount': 0.0,
+        'isActive': false,
+      },
+      {
+        'name': 'Car',
+        'icon': 'lib/assets/Car.png',
+        'targetAmount': 10000.0,
+        'currentAmount': 0.0,
+        'isActive': true,
+      },
+      {
+        'name': 'Wedding',
+        'icon': 'lib/assets/Wedding.png',
+        'targetAmount': 15000.0,
+        'currentAmount': 0.0,
+        'isActive': false,
+      },
+    ];
+
+    final batch = FirebaseFirestore.instance.batch();
+    for (var goal in defaultSavingsGoals) {
+      final name = goal['name'];
+      if (name is String) {
+        final docRef = savingsGoalsRef.doc(name);
+        batch.set(docRef, goal);
+      } else {
+        debugPrint('Invalid name for savings goal: $name');
+      }
+    }
+    await batch.commit();
+  }
+
   Future<void> _loadCategories(String userId) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -76,7 +136,13 @@ class HomeController extends ChangeNotifier {
         .get();
     _categoryIcons.clear();
     for (var doc in snapshot.docs) {
-      _categoryIcons[doc['label'] as String] = doc['icon'] as String;
+      final label = doc['label'];
+      final icon = doc['icon'];
+      if (label is String && icon is String) {
+        _categoryIcons[label] = icon;
+      } else {
+        debugPrint('Invalid category data for doc ${doc.id}: label=$label, icon=$icon');
+      }
     }
   }
 
@@ -93,8 +159,10 @@ class HomeController extends ChangeNotifier {
         _clearState();
       } else {
         _initializeCategories(user.uid).then((_) {
-          _loadCategories(user.uid).then((_) {
-            _setupListeners();
+          _initializeSavingsGoals(user.uid).then((_) {
+            _loadCategories(user.uid).then((_) {
+              _setupListeners();
+            });
           });
         });
       }
@@ -104,8 +172,10 @@ class HomeController extends ChangeNotifier {
   void _clearState() {
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
+    _savingsGoalsSubscription?.cancel();
     _balanceSubscription = null;
     _transactionSubscription = null;
+    _savingsGoalsSubscription = null;
 
     _totalBalance = 0.0;
     _totalExpense = 0.0;
@@ -116,6 +186,8 @@ class HomeController extends ChangeNotifier {
     _allTransactions = [];
     _filteredTransactions = [];
     _categoryIcons.clear();
+    _savingsGoals = [];
+    _activeGoal = null;
 
     notifyListeners();
   }
@@ -154,9 +226,9 @@ class HomeController extends ChangeNotifier {
       _allTransactions = [];
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final category = data['category'] ?? 'Unknown';
-        final icon = data['icon'] ??
-            await _getIconForCategory(user.uid, category);
+        final categoryRaw = data['category'];
+        final category = categoryRaw is String ? categoryRaw : 'Unknown';
+        final icon = data['icon'] is String ? data['icon'] as String : await _getIconForCategory(user.uid, category);
         _allTransactions.add(TransactionModel(
           type: data['type'] ?? 'expense',
           amount: double.parse(data['amount'].toString()),
@@ -174,6 +246,19 @@ class HomeController extends ChangeNotifier {
     }, onError: (e) {
       debugPrint('Error listening to transactions: $e');
     });
+
+    _savingsGoalsSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .snapshots()
+        .listen((snapshot) {
+      _savingsGoals = snapshot.docs.map((doc) => SavingsGoal.fromFirestore(doc)).toList();
+      _activeGoal = _savingsGoals.firstWhereOrNull((goal) => goal.isActive);
+      notifyListeners();
+    }, onError: (e) {
+      debugPrint('Error listening to savings goals: $e');
+    });
   }
 
   Future<void> _calculateTotalExpense() async {
@@ -190,27 +275,23 @@ class HomeController extends ChangeNotifier {
           transaction.date.isAtSameMomentAs(lastWeekStart);
     }).toList();
 
-    // Calculate revenue last week
     _revenueLastWeek = lastWeekTransactions
         .where((t) => t.type == 'income')
         .fold(0.0, (total, t) => total + t.amount);
 
-    // Calculate the top spending category last week
     final categorySpending = <String, double>{};
     final categoryIcons = <String, String>{};
 
     for (var transaction in lastWeekTransactions) {
       if (transaction.type == 'expense') {
         final category = transaction.category;
-        categorySpending[category] =
-            (categorySpending[category] ?? 0) + transaction.amount.abs();
+        categorySpending[category] = (categorySpending[category] ?? 0) + transaction.amount.abs();
         categoryIcons[category] = transaction.icon;
       }
     }
 
     if (categorySpending.isNotEmpty) {
-      final topEntry = categorySpending.entries.reduce((a, b) =>
-          a.value > b.value ? a : b);
+      final topEntry = categorySpending.entries.reduce((a, b) => a.value > b.value ? a : b);
       _topCategoryLastWeek = topEntry.key;
       _topCategoryAmountLastWeek = topEntry.value;
       _topCategoryIconLastWeek = categoryIcons[topEntry.key] ?? 'lib/assets/Transaction.png';
@@ -239,8 +320,7 @@ class HomeController extends ChangeNotifier {
     }
 
     _filteredTransactions = _allTransactions.where((transaction) {
-      return transaction.date.isAfter(startDate) ||
-          transaction.date.isAtSameMomentAs(startDate);
+      return transaction.date.isAfter(startDate) || transaction.date.isAtSameMomentAs(startDate);
     }).toList();
   }
 
@@ -266,10 +346,93 @@ class HomeController extends ChangeNotifier {
     }
   }
 
+  Future<void> createSavingsGoal({
+    required String name,
+    required String icon,
+    required double targetAmount,
+    DateTime? deadline,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final goal = SavingsGoal(
+      id: name,
+      name: name,
+      icon: icon,
+      targetAmount: targetAmount,
+      currentAmount: 0.0,
+      deadline: deadline,
+      isActive: false,
+    );
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .doc(goal.id)
+        .set(goal.toFirestore());
+  }
+
+  Future<void> setActiveGoal(String goalId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = FirebaseFirestore.instance.batch();
+    for (var goal in _savingsGoals) {
+      final docRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('savings_goals')
+          .doc(goal.id);
+      batch.update(docRef, {'isActive': false});
+    }
+    await batch.commit();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .doc(goalId)
+        .update({'isActive': true});
+  }
+
+  Future<void> addDeposit(String goalId, double amount) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final deposit = Deposit(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: amount,
+      timestamp: DateTime.now(),
+    );
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .doc(goalId)
+        .collection('deposits')
+        .doc(deposit.id)
+        .set(deposit.toFirestore());
+
+    final goalRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .doc(goalId);
+    final goalDoc = await goalRef.get();
+    if (goalDoc.exists) {
+      final goal = SavingsGoal.fromFirestore(goalDoc);
+      final newAmount = goal.currentAmount + amount;
+      await goalRef.update({'currentAmount': newAmount});
+    }
+  }
+
   @override
   void dispose() {
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
+    _savingsGoalsSubscription?.cancel();
     super.dispose();
   }
 }

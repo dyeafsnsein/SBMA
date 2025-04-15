@@ -137,34 +137,7 @@ class _CategoryTemplatePageState extends State<CategoryTemplatePage> {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ProgressBar(
-                                  progress: 0.3,
-                                  goalAmount: 20000.00,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_box,
-                                      color: Colors.white,
-                                      size: width * 0.04,
-                                    ),
-                                    SizedBox(width: width * 0.02),
-                                    Text(
-                                      '30% Of Your Expenses, Looks Good.',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: width * 0.035,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                            
                           ),
                         ],
                       ),

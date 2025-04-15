@@ -2,15 +2,107 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../../Controllers/home_controller.dart'; // Import HomeController
-import 'saving_analysis.dart'; // Import the SavingsAnalysisPage
+import '../../Controllers/home_controller.dart';
+import 'saving_analysis.dart';
 
 class SavingsPage extends StatelessWidget {
   const SavingsPage({Key? key}) : super(key: key);
 
+  Future<void> _showAddGoalDialog(BuildContext context, HomeController controller) async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController targetAmountController = TextEditingController();
+    String? selectedIcon;
+
+    final List<Map<String, String>> availableIcons = [
+      {'label': 'Travel', 'icon': 'lib/assets/Travel.png'},
+      {'label': 'New House', 'icon': 'lib/assets/New House.png'},
+      {'label': 'Car', 'icon': 'lib/assets/Car.png'},
+      {'label': 'Wedding', 'icon': 'lib/assets/Wedding.png'},
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Add Savings Goal'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Goal Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: targetAmountController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Target Amount',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Select Icon',
+                    border: OutlineInputBorder(),
+                  ),
+                  value: selectedIcon,
+                  items: availableIcons.map((icon) {
+                    return DropdownMenuItem<String>(
+                      value: icon['icon'],
+                      child: Text(icon['label']!),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedIcon = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                final targetAmount = double.tryParse(targetAmountController.text);
+
+                if (name.isEmpty || targetAmount == null || targetAmount <= 0 || selectedIcon == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a valid name, target amount, and select an icon')),
+                  );
+                  return;
+                }
+
+                await controller.createSavingsGoal(
+                  name: name,
+                  icon: selectedIcon!,
+                  targetAmount: targetAmount,
+                );
+
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add Goal'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<HomeController>(context); // Access HomeController
+    final controller = Provider.of<HomeController>(context);
     final Size screenSize = MediaQuery.of(context).size;
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
@@ -94,11 +186,11 @@ class SavingsPage extends StatelessWidget {
                             children: [
                               _buildBalanceInfo(
                                 title: 'Total Balance',
-                                amount: '\$${controller.totalBalance.toStringAsFixed(2)}', // Use HomeController
+                                amount: '\$${controller.totalBalance.toStringAsFixed(2)}',
                               ),
                               _buildBalanceInfo(
                                 title: 'Total Expense',
-                                amount: '-\$${controller.totalExpense.toStringAsFixed(2)}', // Use HomeController
+                                amount: '-\$${controller.totalExpense.toStringAsFixed(2)}',
                               ),
                             ],
                           ),
@@ -125,87 +217,106 @@ class SavingsPage extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child: GridView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 20, bottom: 80),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 0.75,
-                        ),
-                        itemCount: 4, // Number of savings categories
-                        itemBuilder: (context, index) {
-                          final List<Map<String, String>> savingsCategories = [
-                            {
-                              'label': 'Travel',
-                              'icon': 'lib/assets/Travel.png',
-                            },
-                            {
-                              'label': 'New House',
-                              'icon': 'lib/assets/New House.png',
-                            },
-                            {'label': 'Car', 'icon': 'lib/assets/Car.png'},
-                            {
-                              'label': 'Wedding',
-                              'icon': 'lib/assets/Wedding.png',
-                            },
-                          ];
-
-                          final category = savingsCategories[index];
-                          return GestureDetector(
-                            onTap: () {
-                              final categoryName =
-                                  category['label'] ?? 'Unknown';
-                              final iconPath =
-                                  category['icon'] ?? 'lib/assets/default.png';
-
-                              print(
-                                'Navigating to SavingsAnalysisPage with: $categoryName, $iconPath',
-                              ); // Debug print
-                              context.push(
-                                '/savings-analysis',
-                                extra: {
-                                  'categoryName': categoryName,
-                                  'iconPath': iconPath,
-                                },
-                              );
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF202422),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      category['icon'] ??
-                                          'lib/assets/default.png',
-                                      width: 45,
-                                      height: 45,
-                                    ),
-                                  ),
+                      child: controller.savingsGoals.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No savings goals available',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  color: Color(0xFF202422),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  category['label'] ?? 'Unknown',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF202422),
+                              ),
+                            )
+                          : GridView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.only(top: 20, bottom: 80),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20,
+                                childAspectRatio: 0.75,
+                              ),
+                              itemCount: controller.savingsGoals.length,
+                              itemBuilder: (context, index) {
+                                final goal = controller.savingsGoals[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    context.push(
+                                      '/savings-analysis',
+                                      extra: {
+                                        'categoryName': goal.name,
+                                        'iconPath': goal.icon,
+                                        'goalId': goal.id,
+                                      },
+                                    );
+                                  },
+                                  onLongPress: () async {
+                                    await controller.setActiveGoal(goal.id);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('${goal.name} set as active goal')),
+                                    );
+                                  },
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Container(
+                                            width: 90,
+                                            height: 90,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF202422),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                goal.icon,
+                                                width: 45,
+                                                height: 45,
+                                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                                  Icons.error,
+                                                  color: Colors.white,
+                                                  size: 45,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (goal.isActive)
+                                            Positioned(
+                                              top: 0,
+                                              right: 0,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(2),
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.yellow,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.star,
+                                                  color: Colors.black,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        goal.name,
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF202422),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
                   ),
                 ),
@@ -217,9 +328,7 @@ class SavingsPage extends StatelessWidget {
               right: width * 0.05,
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    print('Add More tapped');
-                  },
+                  onPressed: () => _showAddGoalDialog(context, controller),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF202422),
                     foregroundColor: Colors.white,

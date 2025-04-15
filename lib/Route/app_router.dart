@@ -78,10 +78,17 @@ final router = GoRouter(
         GoRoute(
           path: '/savings-analysis',
           builder: (context, state) {
-            final args = state.extra as Map<String, String>;
+            final args = state.extra as Map<String, String>?;
+            if (args == null ||
+                !args.containsKey('categoryName') ||
+                !args.containsKey('iconPath') ||
+                !args.containsKey('goalId')) {
+              throw const FormatException('Missing required arguments for SavingsAnalysisPage');
+            }
             return SavingsAnalysisPage(
               categoryName: args['categoryName']!,
               iconPath: args['iconPath']!,
+              goalId: args['goalId']!,
             );
           },
         ),

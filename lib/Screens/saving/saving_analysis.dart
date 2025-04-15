@@ -1,25 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../Controllers/home_controller.dart';
+import '../../Models/savings_goal.dart';
 
 class SavingsAnalysisPage extends StatelessWidget {
   final String categoryName;
   final String iconPath;
+  final String goalId;
 
   const SavingsAnalysisPage({
     Key? key,
     required this.categoryName,
     required this.iconPath,
+    required this.goalId,
   }) : super(key: key);
+
+  Future<void> _showAddDepositDialog(BuildContext context, HomeController controller) async {
+    final TextEditingController amountController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add Deposit to $categoryName'),
+        content: TextField(
+          controller: amountController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Amount',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid amount')),
+                );
+                return;
+              }
+
+              await controller.addDeposit(goalId, amount);
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Deposit of \$${amount.toStringAsFixed(2)} added')),
+              );
+            },
+            child: const Text('Add Deposit'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<HomeController>(context);
+    final goal = controller.savingsGoals.firstWhere((g) => g.id == goalId, orElse: () => SavingsGoal(
+          id: goalId,
+          name: categoryName,
+          icon: iconPath,
+          targetAmount: 0.0,
+          currentAmount: 0.0,
+        ));
+
     return Scaffold(
       backgroundColor: const Color(0xFF202422),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(), // Enables smooth scrolling
+        physics: const BouncingScrollPhysics(),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Prevent unnecessary stretching
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Section (Header)
             Container(
               height: 120,
               color: const Color(0xFF202422),
@@ -58,13 +116,10 @@ class SavingsAnalysisPage extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Content Section
             ConstrainedBox(
               constraints: const BoxConstraints(
-                minHeight: 600, // Ensures the container expands properly
+                minHeight: 600,
               ),
               child: Container(
                 decoration: const BoxDecoration(
@@ -80,13 +135,11 @@ class SavingsAnalysisPage extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // Allows content to wrap
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Goal & Amount Saved Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Goal and Amount Saved
                         Padding(
                           padding: const EdgeInsets.only(left: 16),
                           child: Column(
@@ -102,9 +155,9 @@ class SavingsAnalysisPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                '\$1,962.93',
-                                style: TextStyle(
+                              Text(
+                                '\$${goal.targetAmount.toStringAsFixed(2)}',
+                                style: const TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -122,9 +175,9 @@ class SavingsAnalysisPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                '\$653.31',
-                                style: TextStyle(
+                              Text(
+                                '\$${goal.currentAmount.toStringAsFixed(2)}',
+                                style: const TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -134,8 +187,6 @@ class SavingsAnalysisPage extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // Black Box with Circular Progress and Icon
                         Container(
                           width: 120,
                           height: 120,
@@ -150,13 +201,12 @@ class SavingsAnalysisPage extends StatelessWidget {
                                 width: 80,
                                 height: 80,
                                 child: CircularProgressIndicator(
-                                  value: 0.3, // 30% progress
+                                  value: goal.targetAmount > 0
+                                      ? (goal.currentAmount / goal.targetAmount).clamp(0.0, 1.0)
+                                      : 0.0,
                                   strokeWidth: 3,
                                   backgroundColor: Colors.white,
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                        Colors.green,
-                                      ),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
                                 ),
                               ),
                               Image.asset(iconPath, width: 40, height: 40),
@@ -165,15 +215,8 @@ class SavingsAnalysisPage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Progress Bar
-                 
-
                     const SizedBox(height: 20),
-
-                    // Month and Calendar Picker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -186,35 +229,51 @@ class SavingsAnalysisPage extends StatelessWidget {
                             color: Color(0xFF202422),
                           ),
                         ),
-                    
                       ],
                     ),
-
                     const SizedBox(height: 16),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(FirebaseAuth.instance.currentUser?.uid)
+                          .collection('savings_goals')
+                          .doc(goalId)
+                          .collection('deposits')
+                          .orderBy('timestamp', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return const Center(child: Text('Error loading deposits'));
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(child: Text('No deposits yet'));
+                        }
 
-                    // Savings Deposits
-                    _buildSavingsItemWithIcon(
-                      'Travel Deposit',
-                      '19:56 - April 30',
-                    ),
-                    _buildSavingsItemWithIcon(
-                      'Travel Deposit',
-                      '17:42 - April 14',
-                    ),
-                    _buildSavingsItemWithIcon(
-                      'Travel Deposit',
-                      '12:30 - April 02',
-                    ),
+                        final deposits = snapshot.data!.docs.map((doc) => Deposit.fromFirestore(doc)).toList();
 
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: deposits.length,
+                          itemBuilder: (context, index) {
+                            final deposit = deposits[index];
+                            return _buildSavingsItemWithIcon(
+                              'Deposit',
+                              '${deposit.timestamp.toString().split(' ')[0]} ${deposit.timestamp.toString().split(' ')[1].substring(0, 5)}',
+                              '\$${deposit.amount.toStringAsFixed(2)}',
+                            );
+                          },
+                        );
+                      },
+                    ),
                     const SizedBox(height: 15),
-
-                    // Add Savings Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle adding savings
-                        },
+                        onPressed: () => _showAddDepositDialog(context, controller),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
@@ -242,8 +301,7 @@ class SavingsAnalysisPage extends StatelessWidget {
     );
   }
 
-  // Custom Savings Item
-  Widget _buildSavingsItemWithIcon(String title, String subtitle) {
+  Widget _buildSavingsItemWithIcon(String title, String subtitle, String amount) {
     return ListTile(
       leading: Container(
         width: 40,
@@ -270,6 +328,15 @@ class SavingsAnalysisPage extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: Colors.grey,
+        ),
+      ),
+      trailing: Text(
+        amount,
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF202422),
         ),
       ),
     );
