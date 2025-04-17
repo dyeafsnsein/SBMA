@@ -8,6 +8,7 @@ import 'Controllers/transaction_controller.dart';
 import 'Models/analysis_model.dart';
 import 'services/data_service.dart';
 import 'Route/app_router.dart';
+import 'Controllers/category_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class NewCategoryDialog extends StatefulWidget {
-  const NewCategoryDialog({Key? key}) : super(key: key);
+  final String? initialLabel;
+  final String? initialIcon;
+
+  const NewCategoryDialog({Key? key, this.initialLabel, this.initialIcon}) : super(key: key);
 
   @override
   State<NewCategoryDialog> createState() => _NewCategoryDialogState();
@@ -10,8 +13,8 @@ class NewCategoryDialog extends StatefulWidget {
 
 class _NewCategoryDialogState extends State<NewCategoryDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _categoryController = TextEditingController();
-  String _selectedIcon = 'lib/assets/star.png'; // Default icon
+  late final _categoryController = TextEditingController(text: widget.initialLabel);
+  late String _selectedIcon;
 
   final List<String> _availableIcons = [
     'lib/assets/Rent.png',
@@ -23,6 +26,15 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
     'lib/assets/Medicine.png',
     'lib/assets/star.png',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIcon = widget.initialIcon ?? 'lib/assets/star.png';
+    if (!_availableIcons.contains(_selectedIcon)) {
+      _availableIcons.add(_selectedIcon);
+    }
+  }
 
   @override
   void dispose() {
@@ -48,9 +60,9 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'New Category',
-                style: TextStyle(
+              Text(
+                widget.initialLabel != null ? 'Edit Category' : 'New Category',
+                style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -79,10 +91,9 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                         height: 60,
                         margin: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color:
-                              _selectedIcon == _availableIcons[index]
-                                  ? const Color(0xFF202422)
-                                  : Colors.white,
+                          color: _selectedIcon == _availableIcons[index]
+                              ? const Color(0xFF202422)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color: const Color(0xFF202422),
@@ -93,10 +104,9 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                           _availableIcons[index],
                           width: 30,
                           height: 30,
-                          color:
-                              _selectedIcon == _availableIcons[index]
-                                  ? Colors.white
-                                  : const Color(0xFF202422),
+                          color: _selectedIcon == _availableIcons[index]
+                              ? Colors.white
+                              : const Color(0xFF202422),
                         ),
                       ),
                     );
@@ -169,7 +179,6 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                       child: TextButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            // Return both category name and selected icon
                             context.pop({
                               'name': _categoryController.text,
                               'icon': _selectedIcon,

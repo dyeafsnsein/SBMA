@@ -3,13 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:test_app/Models/transaction_model.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../commons/income_expense_summary.dart';
 import '../../../commons/add_transaction_dialog.dart';
 import '../../../commons/transaction_list.dart'; // Import the shared TransactionList
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -50,65 +47,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
     }
   }
 
-  Future<void> _deleteTransaction(TransactionModel transaction) async {
-    if (!mounted) return;
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      // Find the transaction in Firestore by matching fields
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('transactions')
-          .where('timestamp', isEqualTo: Timestamp.fromDate(transaction.date))
-          .where('amount', isEqualTo: transaction.amount)
-          .where('category', isEqualTo: transaction.category)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        final docId = snapshot.docs.first.id;
-
-        // Use a batch to delete the transaction and update the balance
-        final batch = FirebaseFirestore.instance.batch();
-        final transactionRef = FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('transactions')
-            .doc(docId);
-        batch.delete(transactionRef);
-
-        // Update the user's balance
-        final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-        final userDoc = await userRef.get();
-        final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
-        // If expense, amount is negative; if income, amount is positive
-        final newBalance = currentBalance - transaction.amount;
-        batch.update(userRef, {'balance': newBalance});
-
-        await batch.commit();
-
-        if (mounted) {
-          // Show a snackbar for user feedback
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${transaction.category} transaction deleted'),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        // Handle error (e.g., show a snackbar)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error deleting transaction'),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import '../../../commons/progress_bar.dart';
 import '../../../commons/transaction_list.dart';
 import '../../../commons/balance_overview.dart';
 import '../../../Controllers/home_controller.dart';
