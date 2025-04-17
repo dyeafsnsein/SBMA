@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../Controllers/signup_controller.dart';
+import '../../../Controllers/auth_controller.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
@@ -9,8 +9,8 @@ class SignupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SignupController(),
-      child: Consumer<SignupController>(
+      create: (_) => AuthController(),
+      child: Consumer<AuthController>(
         builder: (context, controller, child) {
           return Scaffold(
             backgroundColor: const Color(0xFF202422),
@@ -114,7 +114,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNameField(SignupController controller) {
+  Widget _buildNameField(AuthController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,7 +157,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmailField(SignupController controller) {
+  Widget _buildEmailField(AuthController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +200,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordField(SignupController controller) {
+  Widget _buildPasswordField(AuthController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -244,7 +244,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmPasswordField(SignupController controller) {
+  Widget _buildConfirmPasswordField(AuthController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -288,7 +288,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDateOfBirthField(SignupController controller, BuildContext context) {
+  Widget _buildDateOfBirthField(AuthController controller, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -351,7 +351,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileNumberField(SignupController controller) {
+  Widget _buildMobileNumberField(AuthController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -360,7 +360,7 @@ class SignupPage extends StatelessWidget {
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             labelText: 'Mobile Number',
-            hintText: '12345678',
+            hintText: '+21612345678',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -395,7 +395,7 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSignUpButton(SignupController controller, BuildContext context) {
+  Widget _buildSignUpButton(AuthController controller, BuildContext context) {
     return SizedBox(
       width: 210,
       child: controller.isLoading

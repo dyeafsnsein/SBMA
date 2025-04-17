@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:test_app/Screens/settings/views/PasswordChangeSuccess.dart';
-import '../shared_components/main_container.dart';
+import '../commons/main_container.dart';
 import '../Screens/home/views/home.dart';
 import '../Screens/analysis/views/Analysis.dart';
 import '../Screens/transactions/views/transaction.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../Controllers/login_controller.dart';
+import '../../../Controllers/auth_controller.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -9,8 +9,8 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LoginController(),
-      child: Consumer<LoginController>(
+      create: (_) => AuthController(),
+      child: Consumer<AuthController>(
         builder: (context, controller, child) {
           return Scaffold(
             backgroundColor: const Color(0xFF202422),
@@ -118,60 +118,94 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmailField(LoginController controller) {
-    return TextField(
-      controller: controller.emailController,
-      decoration: InputDecoration(
-        labelText: 'Username or Email',
-        hintText: 'example@example.com',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color.fromRGBO(0, 0, 0, 0.45),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(LoginController controller) {
-    return TextField(
-      controller: controller.passwordController,
-      obscureText: !controller.isPasswordVisible,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: const Color.fromRGBO(0, 0, 0, 0.45),
+  Widget _buildEmailField(AuthController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.emailController,
+          decoration: InputDecoration(
+            labelText: 'Username or Email',
+            hintText: 'example@example.com',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(0, 0, 0, 0.45),
+            ),
           ),
-          onPressed: () => controller.togglePasswordVisibility(),
         ),
-      ),
+        if (controller.emailErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.emailErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildLoginButton(LoginController controller, BuildContext context) {
+  Widget _buildPasswordField(AuthController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller.passwordController,
+          obscureText: !controller.isPasswordVisible,
+          decoration: InputDecoration(
+            labelText: 'Password',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
+            labelStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                color: const Color.fromRGBO(0, 0, 0, 0.45),
+              ),
+              onPressed: () => controller.togglePasswordVisibility(),
+            ),
+          ),
+        ),
+        if (controller.passwordErrorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              controller.passwordErrorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontFamily: 'Poppins',
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildLoginButton(AuthController controller, BuildContext context) {
     return SizedBox(
       width: 210,
       child: controller.isLoading
@@ -242,7 +276,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialLoginSection(LoginController controller, BuildContext context) {
+  Widget _buildSocialLoginSection(AuthController controller, BuildContext context) {
     return Column(
       children: [
         const Text(

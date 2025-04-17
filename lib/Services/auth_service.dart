@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart'; // Add this import for debugPrint
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  Future<User?> signUp({
+  Future<UserCredential> signUp({
     required String name,
     required String email,
     required String password,
@@ -20,26 +20,13 @@ class AuthService {
         email: email,
         password: password,
       );
-      User? user = userCredential.user;
-
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
-          'name': name,
-          'email': email,
-          'dateOfBirth': dateOfBirth,
-          'mobileNumber': mobileNumber,
-          'createdAt': FieldValue.serverTimestamp(),
-          'balance': 0.0,
-          'hasSetBalance': false,
-        });
-      }
-      return user;
+      return userCredential;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<User?> signIn({
+  Future<UserCredential> signIn({
     required String email,
     required String password,
   }) async {
@@ -48,13 +35,13 @@ class AuthService {
         email: email,
         password: password,
       );
-      return userCredential.user;
+      return userCredential;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<User?> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -69,24 +56,7 @@ class AuthService {
       );
 
       UserCredential userCredential = await _auth.signInWithCredential(credential);
-      User? user = userCredential.user;
-
-      if (user != null) {
-        final userDoc = await _firestore.collection('users').doc(user.uid).get();
-        if (!userDoc.exists) {
-          await _firestore.collection('users').doc(user.uid).set({
-            'name': user.displayName ?? 'Unknown',
-            'email': user.email ?? '',
-            'dateOfBirth': '',
-            'mobileNumber': '',
-            'createdAt': FieldValue.serverTimestamp(),
-            'balance': 0.0,
-            'hasSetBalance': false,
-          });
-        }
-      }
-
-      return user;
+      return userCredential;
     } catch (e) {
       rethrow;
     }
@@ -102,7 +72,7 @@ class AuthService {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
       return doc.data() as Map<String, dynamic>?;
     } catch (e) {
-      debugPrint('Error fetching user data: $e'); // Now debugPrint is defined
+      debugPrint('Error fetching user data: $e');
       rethrow;
     }
   }

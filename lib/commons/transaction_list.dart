@@ -6,6 +6,23 @@ class TransactionList extends StatelessWidget {
 
   const TransactionList({Key? key, required this.transactions}) : super(key: key);
 
+  // Helper method to format DateTime into "Day, DD Month YYYY" format
+String _formatDate(DateTime date) {
+  const List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const List<String> months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  String dayName = days[date.weekday - 1];
+  String day = date.day.toString().padLeft(2, '0');
+  String month = months[date.month - 1];
+  String year = date.year.toString();
+  String time = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+  return '$dayName, $day $month $year, $time';
+}
+
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
@@ -66,7 +83,7 @@ class TransactionList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${transaction.date.hour.toString().padLeft(2, '0')}:${transaction.date.minute.toString().padLeft(2, '0')}',
+                      _formatDate(transaction.date),
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 12,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../shared_components/custom_header.dart';
-import '../../../shared_components/settings_form_field.dart';
-import '../../../shared_components/settings_toggle.dart';
+import '../../../commons/custom_header.dart';
+import '../../../commons/settings_form_field.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -89,21 +88,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
                                 // Toggles
-                                SettingsToggle(
-                                  label: 'Push Notifications',
-                                  value: isPushNotificationsEnabled,
-                                  onChanged: (value) {
-                                    setState(() => isPushNotificationsEnabled = value);
-                                  },
-                                ),
-                                SizedBox(height: screenHeight * 0.015),
-                                SettingsToggle(
-                                  label: 'Turn Dark Theme',
-                                  value: isDarkThemeEnabled,
-                                  onChanged: (value) {
-                                    setState(() => isDarkThemeEnabled = value);
-                                  },
-                                ),
+                               
+                                
+                              
+                                
                                 SizedBox(height: screenHeight * 0.03),
                                 // Update Profile Button
                                 Center(

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:test_app/commons/balance_overview.dart';
 import 'components/header.dart';
-import '../../../shared_components/balance_overview.dart';
-import '../../../shared_components/goal_overview.dart';
-import 'components/period_selector.dart';
-import '../../../shared_components/transaction_list.dart';
+import '../../../commons/goal_overview.dart';
+import '../../../commons/transaction_list.dart';
 import '../../../Controllers/home_controller.dart';
 
 class HomePage extends StatelessWidget {
@@ -72,20 +71,45 @@ class HomePage extends StatelessWidget {
                       padding: EdgeInsets.all(screenWidth * 0.05),
                       child: Column(
                         children: [
-                          GoalOverview(
-                            goalIcon: 'lib/assets/Car.png',
-                            goalText: 'Savings On Goals',
-                            revenueLastWeek: controller.revenueLastWeek,
-                            topCategoryLastWeek: controller.topCategoryLastWeek,
-                            topCategoryAmountLastWeek: controller.topCategoryAmountLastWeek,
-                            topCategoryIconLastWeek: controller.topCategoryIconLastWeek,
-                            goalAmount: 10000.0,
-                            currentBalance: controller.totalBalance,
-                            onTap: () => context.push('/analysis'),
-                          ),
+                          // Check if there's an active goal
+                          controller.activeGoal != null
+                              ? GoalOverview(
+                                  goalIcon: controller.activeGoal!.icon,
+                                  goalText: controller.activeGoal!.name,
+                                  revenueLastWeek: controller.revenueLastWeek,
+                                  topCategoryLastWeek:
+                                      controller.topCategoryLastWeek,
+                                  topCategoryAmountLastWeek:
+                                      controller.topCategoryAmountLastWeek,
+                                  topCategoryIconLastWeek:
+                                      controller.topCategoryIconLastWeek,
+                                  goalAmount: controller.activeGoal!.targetAmount,
+                                  currentBalance:
+                                      controller.activeGoal!.currentAmount,
+                                  onTap: () => context.push('/analysis'),
+                                )
+                              : GestureDetector(
+                                  onTap: () => context.push('/analysis'),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(255, 109, 42, 42),
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 10,
+                                          offset: Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                  
+                                  ),
+                                ),
                           SizedBox(height: screenHeight * 0.02),
                           Expanded(
-                            child: TransactionList(transactions: controller.transactions),
+                            child: TransactionList(
+                                transactions: controller.transactions),
                           ),
                         ],
                       ),

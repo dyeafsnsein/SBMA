@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared_components/balance_overview.dart';
+import '../../../../commons/balance_overview.dart';
 
 class AnalysisHeader extends StatelessWidget {
   final double totalBalance;

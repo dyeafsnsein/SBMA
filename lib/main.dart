@@ -1,62 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
-import 'Route/app_router.dart';
-import 'Controllers/signup_controller.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'Controllers/auth_controller.dart';
 import 'Controllers/home_controller.dart';
+import 'Controllers/analysis_controller.dart';
 import 'Controllers/transaction_controller.dart';
-import 'Controllers/login_controller.dart';
-
+import 'Models/analysis_model.dart';
+import 'services/data_service.dart';
+import 'Route/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+  await Firebase.initializeApp();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SignupController()),
-        ChangeNotifierProvider(create: (_) => HomeController()),
-        ChangeNotifierProvider(create: (_) => TransactionController()),
-        ChangeNotifierProvider(create: (_) => LoginController()),
+        Provider(create: (_) => DataService()),
+        ChangeNotifierProvider(create: (context) => AuthController()),
+        ChangeNotifierProvider(create: (context) => HomeController(context.read<DataService>())),
+        ChangeNotifierProvider(create: (context) => AnalysisController(AnalysisModel(), context.read<DataService>())),
+        ChangeNotifierProvider(create: (context) => TransactionController(context.read<DataService>())),
+        // Add other controllers like NotificationController if needed
       ],
-      child: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const MaterialApp(
-              home: Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              ),
-            );
-          }
-          if (snapshot.hasError) {
-            return MaterialApp(
-              home: Scaffold(
-                body: Center(child: Text('Error initializing Firebase: ${snapshot.error}')),
-              ),
-            );
-          }
-          return MaterialApp.router(
-            routerConfig: router,
-            title: 'SBMA',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-              useMaterial3: true,
-            ),
-          );
-        },
+      child: MaterialApp.router(
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark(),
       ),
     );
   }

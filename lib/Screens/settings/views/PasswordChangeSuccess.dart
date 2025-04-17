@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared_components/SuccessAnimation.dart';
+import '../../../commons/SuccessAnimation.dart';
 
 class PasswordChangeSuccess extends StatelessWidget {
   const PasswordChangeSuccess({Key? key}) : super(key: key);

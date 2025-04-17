@@ -22,7 +22,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedCategory = 'Food';
-  DateTime _selectedDate = DateTime.now(); // New field for selected date
+  DateTime _selectedDateTime = DateTime.now();
   bool _isExpense = true;
   bool _isLoading = false;
   String? _errorMessage;
@@ -62,19 +62,48 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     });
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDateTime() async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _selectedDateTime,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      lastDate: DateTime.now(), // Restrict to past dates
     );
 
-    if (pickedDate != null && mounted) {
+    if (pickedDate == null || !mounted) return;
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+    );
+
+    if (pickedTime != null && mounted) {
       setState(() {
-        _selectedDate = pickedDate;
+        _selectedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        debugPrint('Picked DateTime: $_selectedDateTime');
+      });
+    } else {
+      setState(() {
+        _selectedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          _selectedDateTime.hour,
+          _selectedDateTime.minute,
+        );
+        debugPrint('Picked DateTime (only date updated): $_selectedDateTime');
       });
     }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -102,8 +131,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         'category': _selectedCategory,
         'icon': selectedCategoryData['icon'],
         'description': _titleController.text,
-        'date': _selectedDate, // Include the selected date
+        'date': _selectedDateTime,
       };
+      debugPrint('Submitting transaction with date: $_selectedDateTime');
+      debugPrint('Transaction data: $transactionData');
 
       try {
         if (_isExpense) {
@@ -226,7 +257,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     ),
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _pickDate,
+                      onTap: _pickDateTime,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                         decoration: BoxDecoration(
@@ -237,7 +268,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Date: ${_selectedDate.toString().substring(0, 10)}',
+                              'Date & Time: ${_formatDateTime(_selectedDateTime)}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Poppins',

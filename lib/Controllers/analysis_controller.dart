@@ -1,22 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import '../Models/analysis_model.dart';
 import '../Models/transaction_model.dart';
-import 'home_controller.dart';
+import '../services/data_service.dart';
 
 class AnalysisController extends ChangeNotifier {
   final AnalysisModel model;
-  final HomeController homeController;
+  final DataService _dataService;
   double totalIncome = 0.0;
   double totalExpense = 0.0;
+  List<TransactionModel> _transactions = [];
+  StreamSubscription<QuerySnapshot>? _transactionSubscription;
 
-  AnalysisController(this.model, this.homeController) {
-    _computePeriodData();
+  AnalysisController(this.model, this._dataService) {
+    _setupAuthListener();
   }
 
   List<String> get periods => model.periods;
   int get selectedPeriodIndex => model.selectedPeriodIndex;
   Map<String, Map<String, dynamic>> get periodData => model.periodData;
   List<Map<String, dynamic>> get targets => model.targets;
+
+  void _setupAuthListener() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        _clearState();
+      } else {
+        _setupListeners(user.uid);
+      }
+    });
+  }
+
+  void _clearState() {
+    _transactionSubscription?.cancel();
+    _transactionSubscription = null;
+    _transactions = [];
+    totalIncome = 0.0;
+    totalExpense = 0.0;
+    _computePeriodData();
+    notifyListeners();
+  }
+
+  void _setupListeners(String userId) {
+    _transactionSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('transactions')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .listen((snapshot) async {
+      _transactions = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final categoryRaw = data['category'];
+        final category = categoryRaw is String ? categoryRaw : 'Unknown';
+        final icon = data['icon'] is String ? data['icon'] as String : await _dataService.getIconForCategory(category);
+        _transactions.add(TransactionModel(
+          type: data['type'] ?? 'expense',
+          amount: double.parse(data['amount'].toString()),
+          date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          description: data['description'] ?? '',
+          category: category,
+          icon: icon,
+        ));
+      }
+
+      _computePeriodData();
+      notifyListeners();
+    }, onError: (e) {
+      debugPrint('Error listening to transactions: $e');
+    });
+  }
 
   void onPeriodChanged(int index) {
     if (model.selectedPeriodIndex == index) return;
@@ -27,7 +83,6 @@ class AnalysisController extends ChangeNotifier {
 
   void _computePeriodData() {
     final now = DateTime.now();
-    final transactions = homeController.transactions;
 
     model.periodData = {
       'Daily': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
@@ -36,10 +91,10 @@ class AnalysisController extends ChangeNotifier {
       'Year': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
     };
 
-    totalIncome = transactions
+    totalIncome = _transactions
         .where((t) => t.type == 'income')
         .fold(0.0, (sum, t) => sum + t.amount);
-    totalExpense = transactions
+    totalExpense = _transactions
         .where((t) => t.type == 'expense')
         .fold(0.0, (sum, t) => sum + t.amount.abs());
 
@@ -51,7 +106,7 @@ class AnalysisController extends ChangeNotifier {
       for (int i = 6; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
         labels.add(_getDayLabel(date));
-        for (final transaction in transactions) {
+        for (final transaction in _transactions) {
           if (_isSameDay(transaction.date, date)) {
             if (transaction.type == 'expense') {
               expenses[6 - i] += transaction.amount.abs();
@@ -83,7 +138,7 @@ class AnalysisController extends ChangeNotifier {
         final label = "${_getMonthLabel(startOfWeek.month)} ${startOfWeek.day}";
         labels.add(label);
 
-        for (final transaction in transactions) {
+        for (final transaction in _transactions) {
           if (transaction.date.isAfter(startOfWeek) &&
               (transaction.date.isBefore(endOfWeek) || transaction.date.isAtSameMomentAs(endOfWeek))) {
             if (transaction.type == 'expense') {
@@ -115,10 +170,10 @@ class AnalysisController extends ChangeNotifier {
         final monthStart = DateTime(adjustedYear, month, 1);
         final monthEnd = DateTime(adjustedYear, month + 1, 1).subtract(const Duration(days: 1));
 
-        final label = _getMonthLabel(month); // Only the month name, e.g., "Apr"
+        final label = _getMonthLabel(month);
         labels.add(label);
 
-        for (final transaction in transactions) {
+        for (final transaction in _transactions) {
           if (transaction.date.isAfter(monthStart) &&
               (transaction.date.isBefore(monthEnd) || transaction.date.isAtSameMomentAs(monthEnd))) {
             if (transaction.type == 'expense') {
@@ -145,7 +200,7 @@ class AnalysisController extends ChangeNotifier {
         labels.add(year.toString());
         final yearStart = DateTime(year, 1, 1);
         final yearEnd = DateTime(year, 12, 31);
-        for (final transaction in transactions) {
+        for (final transaction in _transactions) {
           if (transaction.date.isAfter(yearStart) &&
               (transaction.date.isBefore(yearEnd) || transaction.date.isAtSameMomentAs(yearEnd))) {
             if (transaction.type == 'expense') {
@@ -176,5 +231,11 @@ class AnalysisController extends ChangeNotifier {
   String _getMonthLabel(int month) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[month - 1];
+  }
+
+  @override
+  void dispose() {
+    _transactionSubscription?.cancel();
+    super.dispose();
   }
 }

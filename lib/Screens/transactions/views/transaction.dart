@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:test_app/Models/transaction_model.dart';
 import '../../../Controllers/transaction_controller.dart';
-import '../../../shared_components/income_expense_summary.dart';
-import '../../../shared_components/add_transaction_dialog.dart';
-import '../../../shared_components/transaction_list.dart'; // Import the shared TransactionList
+import '../../../commons/income_expense_summary.dart';
+import '../../../commons/add_transaction_dialog.dart';
+import '../../../commons/transaction_list.dart'; // Import the shared TransactionList
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -19,22 +19,22 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
-  void _showAddTransactionDialog() {
-    final controller = Provider.of<TransactionController>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (context) => AddTransactionDialog(
-        onAddExpense: (expense) {
-          controller.addExpense(expense);
-          Navigator.pop(context);
-        },
-        onAddIncome: (income) {
-          controller.addIncome(income);
-          Navigator.pop(context);
-        },
-      ),
-    );
-  }
+ void _showAddTransactionDialog() {
+  final controller = Provider.of<TransactionController>(context, listen: false);
+  showDialog(
+    context: context,
+    builder: (context) => AddTransactionDialog(
+      onAddExpense: (expense) {
+        controller.addExpense(expense);
+        Navigator.pop(context);
+      },
+      onAddIncome: (income) {
+        controller.addIncome(income);
+        Navigator.pop(context);
+      },
+    ),
+  );
+}
 
   Future<void> _showDatePicker() async {
     final controller = Provider.of<TransactionController>(context, listen: false);
