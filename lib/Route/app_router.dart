@@ -9,7 +9,6 @@ import '../Screens/analysis/views/Analysis.dart';
 import '../Screens/transactions/views/transaction.dart';
 import '../Screens/categories/views/categories.dart';
 import '../Screens/notification/views/Notification.dart';
-import '../Screens/categoryTemplate/views/categoryTemplate.dart';
 import '../Screens/login/views/login.dart';
 import '../Screens/signup/views/signup.dart';
 import '../Screens/login/views/forgot_password.dart';
@@ -124,15 +123,7 @@ final router = GoRouter(
           path: '/categories',
           builder: (context, state) => const CategoryPage(),
           routes: [
-            GoRoute(
-              path: 'template/:categoryName/:categoryIcon',
-              builder: (context, state) => CategoryTemplatePage(
-                categoryName: state.pathParameters['categoryName']!,
-                categoryIcon: Uri.decodeComponent(
-                  state.pathParameters['categoryIcon']!,
-                ),
-              ),
-            ),
+       
           ],
         ),
 

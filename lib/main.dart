@@ -9,6 +9,7 @@ import 'Models/analysis_model.dart';
 import 'services/data_service.dart';
 import 'Route/app_router.dart';
 import 'Controllers/category_controller.dart';
+import 'Controllers/savings_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -25,6 +26,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => HomeController(context.read<DataService>())),
         ChangeNotifierProvider(create: (context) => AnalysisController(AnalysisModel(), context.read<DataService>())),
         ChangeNotifierProvider(create: (context) => TransactionController(context.read<DataService>())),
+        ChangeNotifierProvider(create: (_) => CategoryController()),
+        ChangeNotifierProvider(create: (_) => SavingsController()),
+
         // Add other controllers like NotificationController if needed
       ],
       child: MaterialApp.router(

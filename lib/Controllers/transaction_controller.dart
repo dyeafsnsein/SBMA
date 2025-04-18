@@ -66,24 +66,7 @@ class TransactionController extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snapshot) async {
-      _transactions = [];
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final category = data['category'] ?? 'Unknown';
-        final icon = data['icon'] ?? await _dataService.getIconForCategory(category);
-        final timestamp = data['timestamp'] as Timestamp?;
-        final transactionDate = timestamp != null ? timestamp.toDate().toLocal() : DateTime.now();
-        debugPrint('Retrieved Transaction Date: $transactionDate');
-        _transactions.add(TransactionModel(
-          type: data['type'] ?? 'expense',
-          amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
-          date: transactionDate,
-          description: data['description'] ?? '',
-          category: category,
-          icon: icon,
-        ));
-      }
-
+      _transactions = snapshot.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
       _calculateTotals();
       notifyListeners();
     }, onError: (e) {
@@ -101,38 +84,34 @@ class TransactionController extends ChangeNotifier {
         .fold(0.0, (total, t) => total + t.amount.abs());
   }
 
-  Future<void> addExpense(Map<String, dynamic> expenseData) async {
+  Future<void> addExpense(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     try {
-      debugPrint('Received expenseData: $expenseData');
-      debugPrint('Raw date value: ${expenseData['date']}');
-      debugPrint('Raw date type: ${expenseData['date'].runtimeType}');
-      final amount = double.parse(expenseData['amount'].toString());
-      final category = expenseData['category'] ?? 'Unknown';
-      final icon = expenseData['icon'] ?? await _dataService.getIconForCategory(category);
-      final date = expenseData['date'] as DateTime? ?? DateTime.now();
-      debugPrint('Processed Date: $date');
-      final transaction = {
-        'type': 'expense',
-        'amount': -amount,
-        'timestamp': Timestamp.fromDate(date),
-        'description': expenseData['description'] ?? '',
-        'category': category,
-        'icon': icon,
-      };
-
       final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
           .doc();
-      batch.set(transactionRef, transaction);
+      
+      // Adjust amount for expense (negative)
+      final expense = TransactionModel(
+        id: transactionRef.id,
+        type: 'expense',
+        amount: -transaction.amount.abs(),
+        date: transaction.date,
+        description: transaction.description,
+        category: transaction.category,
+        categoryId: transaction.categoryId,
+        icon: transaction.icon,
+      );
+
+      batch.set(transactionRef, expense.toFirestore());
 
       // Update balance via DataService
-      await _dataService.updateBalance(user.uid, amount, true);
+      await _dataService.updateBalance(user.uid, transaction.amount, true);
 
       await batch.commit();
       _selectedDate = null; // Reset the date filter after adding a transaction
@@ -143,38 +122,34 @@ class TransactionController extends ChangeNotifier {
     }
   }
 
-  Future<void> addIncome(Map<String, dynamic> incomeData) async {
+  Future<void> addIncome(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     try {
-      debugPrint('Received incomeData: $incomeData');
-      debugPrint('Raw date value: ${incomeData['date']}');
-      debugPrint('Raw date type: ${incomeData['date'].runtimeType}');
-      final amount = double.parse(incomeData['amount'].toString());
-      final category = 'Income';
-      final icon = await _dataService.getIconForCategory(category);
-      final date = incomeData['date'] as DateTime? ?? DateTime.now();
-      debugPrint('Processed Date: $date');
-      final transaction = {
-        'type': 'income',
-        'amount': amount,
-        'timestamp': Timestamp.fromDate(date),
-        'description': incomeData['description'] ?? '',
-        'category': category,
-        'icon': icon,
-      };
-
       final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
           .doc();
-      batch.set(transactionRef, transaction);
+
+      // Use "Income" category for income transactions
+      final income = TransactionModel(
+        id: transactionRef.id,
+        type: 'income',
+        amount: transaction.amount,
+        date: transaction.date,
+        description: transaction.description,
+        category: 'Income',
+        categoryId: 'income',
+        icon: transaction.icon,
+      );
+
+      batch.set(transactionRef, income.toFirestore());
 
       // Update balance via DataService
-      await _dataService.updateBalance(user.uid, amount, false);
+      await _dataService.updateBalance(user.uid, transaction.amount, false);
 
       await batch.commit();
       _selectedDate = null; // Reset the date filter after adding a transaction

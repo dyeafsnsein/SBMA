@@ -7,14 +7,16 @@ import 'components/header.dart';
 import '../../../commons/goal_overview.dart';
 import '../../../commons/transaction_list.dart';
 import '../../../Controllers/home_controller.dart';
+import '../../../Controllers/savings_controller.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<HomeController>(context);
-    debugPrint('HomePage rebuilt with totalBalance: ${controller.totalBalance}');
+    final homeController = Provider.of<HomeController>(context);
+    final savingsController = Provider.of<SavingsController>(context);
+    debugPrint('HomePage rebuilt with totalBalance: ${homeController.totalBalance}');
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -49,8 +51,8 @@ class HomePage extends StatelessWidget {
                           ),
                           SizedBox(height: screenHeight * 0.02),
                           BalanceOverview(
-                            totalBalance: controller.totalBalance,
-                            totalExpense: controller.totalExpense,
+                            totalBalance: homeController.totalBalance,
+                            totalExpense: homeController.totalExpense,
                           ),
                         ],
                       ),
@@ -72,20 +74,22 @@ class HomePage extends StatelessWidget {
                       child: Column(
                         children: [
                           // Check if there's an active goal
-                          controller.activeGoal != null
+                          savingsController.activeGoal != null &&
+                                  savingsController.activeGoal!.id != 'none'
                               ? GoalOverview(
-                                  goalIcon: controller.activeGoal!.icon,
-                                  goalText: controller.activeGoal!.name,
-                                  revenueLastWeek: controller.revenueLastWeek,
+                                  goalIcon: savingsController.activeGoal!.icon,
+                                  goalText: savingsController.activeGoal!.name,
+                                  revenueLastWeek: homeController.revenueLastWeek,
                                   topCategoryLastWeek:
-                                      controller.topCategoryLastWeek,
+                                      homeController.topCategoryLastWeek,
                                   topCategoryAmountLastWeek:
-                                      controller.topCategoryAmountLastWeek,
+                                      homeController.topCategoryAmountLastWeek,
                                   topCategoryIconLastWeek:
-                                      controller.topCategoryIconLastWeek,
-                                  goalAmount: controller.activeGoal!.targetAmount,
+                                      homeController.topCategoryIconLastWeek,
+                                  goalAmount:
+                                      savingsController.activeGoal!.targetAmount,
                                   currentBalance:
-                                      controller.activeGoal!.currentAmount,
+                                      savingsController.activeGoal!.currentAmount,
                                   onTap: () => context.push('/analysis'),
                                 )
                               : GestureDetector(
@@ -103,13 +107,20 @@ class HomePage extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                  
+                                    child: const Text(
+                                      'No Active Goal - Tap to Analyze',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ),
                           SizedBox(height: screenHeight * 0.02),
                           Expanded(
                             child: TransactionList(
-                                transactions: controller.transactions),
+                                transactions: homeController.transactions),
                           ),
                         ],
                       ),

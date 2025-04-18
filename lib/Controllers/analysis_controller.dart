@@ -56,13 +56,16 @@ class AnalysisController extends ChangeNotifier {
         final data = doc.data();
         final categoryRaw = data['category'];
         final category = categoryRaw is String ? categoryRaw : 'Unknown';
+        final categoryId = data['categoryId'] as String? ?? 'unknown';
         final icon = data['icon'] is String ? data['icon'] as String : await _dataService.getIconForCategory(category);
         _transactions.add(TransactionModel(
+          id: doc.id,
           type: data['type'] ?? 'expense',
           amount: double.parse(data['amount'].toString()),
           date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
           description: data['description'] ?? '',
           category: category,
+          categoryId: categoryId,
           icon: icon,
         ));
       }
@@ -93,10 +96,10 @@ class AnalysisController extends ChangeNotifier {
 
     totalIncome = _transactions
         .where((t) => t.type == 'income')
-        .fold(0.0, (sum, t) => sum + t.amount);
+        .fold(0.0, (total, t) => total + t.amount);
     totalExpense = _transactions
         .where((t) => t.type == 'expense')
-        .fold(0.0, (sum, t) => sum + t.amount.abs());
+        .fold(0.0, (total, t) => total + t.amount.abs());
 
     // Daily: Last 7 days
     if (selectedPeriodIndex == 0) {

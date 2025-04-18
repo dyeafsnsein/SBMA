@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 
 class NewCategoryDialog extends StatefulWidget {
   final String? initialLabel;
-  final String? initialIcon;
 
-  const NewCategoryDialog({Key? key, this.initialLabel, this.initialIcon}) : super(key: key);
+  const NewCategoryDialog({Key? key, this.initialLabel}) : super(key: key);
 
   @override
   State<NewCategoryDialog> createState() => _NewCategoryDialogState();
@@ -14,27 +13,7 @@ class NewCategoryDialog extends StatefulWidget {
 class _NewCategoryDialogState extends State<NewCategoryDialog> {
   final _formKey = GlobalKey<FormState>();
   late final _categoryController = TextEditingController(text: widget.initialLabel);
-  late String _selectedIcon;
-
-  final List<String> _availableIcons = [
-    'lib/assets/Rent.png',
-    'lib/assets/Food.png',
-    'lib/assets/Transport.png',
-    'lib/assets/Entertainment.png',
-    'lib/assets/Gift.png',
-    'lib/assets/Groceries.png',
-    'lib/assets/Medicine.png',
-    'lib/assets/star.png',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedIcon = widget.initialIcon ?? 'lib/assets/star.png';
-    if (!_availableIcons.contains(_selectedIcon)) {
-      _availableIcons.add(_selectedIcon);
-    }
-  }
+  final String _defaultIcon = 'lib/assets/star.png';
 
   @override
   void dispose() {
@@ -67,50 +46,6 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF202422),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1FFF3),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _availableIcons.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedIcon = _availableIcons[index];
-                        });
-                      },
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        margin: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: _selectedIcon == _availableIcons[index]
-                              ? const Color(0xFF202422)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: const Color(0xFF202422),
-                            width: 2,
-                          ),
-                        ),
-                        child: Image.asset(
-                          _availableIcons[index],
-                          width: 30,
-                          height: 30,
-                          color: _selectedIcon == _availableIcons[index]
-                              ? Colors.white
-                              : const Color(0xFF202422),
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ),
               const SizedBox(height: 20),
@@ -180,8 +115,9 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             context.pop({
+                              'id': _categoryController.text.toLowerCase(),
                               'name': _categoryController.text,
-                              'icon': _selectedIcon,
+                              'icon': _defaultIcon,
                             });
                           }
                         },

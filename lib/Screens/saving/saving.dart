@@ -3,11 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../Controllers/home_controller.dart';
+import '../../Controllers/savings_controller.dart';
 
-class SavingsPage extends StatelessWidget {
+class SavingsPage extends StatefulWidget {
   const SavingsPage({Key? key}) : super(key: key);
 
-  Future<void> _showAddGoalDialog(BuildContext context, HomeController controller) async {
+  @override
+  _SavingsPageState createState() => _SavingsPageState();
+}
+
+class _SavingsPageState extends State<SavingsPage> {
+  Future<void> _showAddGoalDialog(BuildContext context, SavingsController controller) async {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController targetAmountController = TextEditingController();
     String? selectedIcon;
@@ -77,9 +83,11 @@ class SavingsPage extends StatelessWidget {
                 final targetAmount = double.tryParse(targetAmountController.text);
 
                 if (name.isEmpty || targetAmount == null || targetAmount <= 0 || selectedIcon == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid name, target amount, and select an icon')),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter a valid name, target amount, and select an icon')),
+                    );
+                  }
                   return;
                 }
 
@@ -89,7 +97,9 @@ class SavingsPage extends StatelessWidget {
                   targetAmount: targetAmount,
                 );
 
-                Navigator.of(context).pop();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Add Goal'),
             ),
@@ -101,7 +111,8 @@ class SavingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<HomeController>(context);
+    final homeController = Provider.of<HomeController>(context);
+    final savingsController = Provider.of<SavingsController>(context);
     final Size screenSize = MediaQuery.of(context).size;
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
@@ -185,11 +196,11 @@ class SavingsPage extends StatelessWidget {
                             children: [
                               _buildBalanceInfo(
                                 title: 'Total Balance',
-                                amount: '\$${controller.totalBalance.toStringAsFixed(2)}',
+                                amount: '\$${homeController.totalBalance.toStringAsFixed(2)}',
                               ),
                               _buildBalanceInfo(
                                 title: 'Total Expense',
-                                amount: '-\$${controller.totalExpense.toStringAsFixed(2)}',
+                                amount: '-\$${homeController.totalExpense.toStringAsFixed(2)}',
                               ),
                             ],
                           ),
@@ -216,7 +227,7 @@ class SavingsPage extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child: controller.savingsGoals.isEmpty
+                      child: savingsController.savingsGoals.isEmpty
                           ? const Center(
                               child: Text(
                                 'No savings goals available',
@@ -236,9 +247,9 @@ class SavingsPage extends StatelessWidget {
                                 mainAxisSpacing: 20,
                                 childAspectRatio: 0.75,
                               ),
-                              itemCount: controller.savingsGoals.length,
+                              itemCount: savingsController.savingsGoals.length,
                               itemBuilder: (context, index) {
-                                final goal = controller.savingsGoals[index];
+                                final goal = savingsController.savingsGoals[index];
                                 return GestureDetector(
                                   onTap: () {
                                     context.push(
@@ -251,10 +262,12 @@ class SavingsPage extends StatelessWidget {
                                     );
                                   },
                                   onLongPress: () async {
-                                    await controller.setActiveGoal(goal.id);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('${goal.name} set as active goal')),
-                                    );
+                                    await savingsController.setActiveGoal(goal.id);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('${goal.name} set as active goal')),
+                                      );
+                                    }
                                   },
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -327,7 +340,7 @@ class SavingsPage extends StatelessWidget {
               right: width * 0.05,
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () => _showAddGoalDialog(context, controller),
+                  onPressed: () => _showAddGoalDialog(context, savingsController),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF202422),
                     foregroundColor: Colors.white,

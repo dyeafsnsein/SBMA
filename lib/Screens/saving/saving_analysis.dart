@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../Controllers/home_controller.dart';
+import '../../Controllers/savings_controller.dart';
 import '../../Models/savings_goal.dart';
 
-class SavingsAnalysisPage extends StatelessWidget {
+class SavingsAnalysisPage extends StatefulWidget {
   final String categoryName;
   final String iconPath;
   final String goalId;
@@ -17,13 +17,18 @@ class SavingsAnalysisPage extends StatelessWidget {
     required this.goalId,
   }) : super(key: key);
 
-  Future<void> _showAddDepositDialog(BuildContext context, HomeController controller) async {
+  @override
+  _SavingsAnalysisPageState createState() => _SavingsAnalysisPageState();
+}
+
+class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
+  Future<void> _showAddDepositDialog(BuildContext context, SavingsController controller) async {
     final TextEditingController amountController = TextEditingController();
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add Deposit to $categoryName'),
+        title: Text('Add Deposit to ${widget.categoryName}'),
         content: TextField(
           controller: amountController,
           keyboardType: TextInputType.number,
@@ -41,17 +46,21 @@ class SavingsAnalysisPage extends StatelessWidget {
             onPressed: () async {
               final amount = double.tryParse(amountController.text);
               if (amount == null || amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid amount')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a valid amount')),
+                  );
+                }
                 return;
               }
 
-              await controller.addDeposit(goalId, amount);
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Deposit of \$${amount.toStringAsFixed(2)} added')),
-              );
+              await controller.addDeposit(widget.goalId, amount);
+              if (mounted) {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Deposit of \$${amount.toStringAsFixed(2)} added')),
+                );
+              }
             },
             child: const Text('Add Deposit'),
           ),
@@ -62,14 +71,17 @@ class SavingsAnalysisPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<HomeController>(context);
-    final goal = controller.savingsGoals.firstWhere((g) => g.id == goalId, orElse: () => SavingsGoal(
-          id: goalId,
-          name: categoryName,
-          icon: iconPath,
-          targetAmount: 0.0,
-          currentAmount: 0.0,
-        ));
+    final controller = Provider.of<SavingsController>(context);
+    final goal = controller.savingsGoals.firstWhere(
+      (g) => g.id == widget.goalId,
+      orElse: () => SavingsGoal(
+        id: widget.goalId,
+        name: widget.categoryName,
+        icon: widget.iconPath,
+        targetAmount: 0.0,
+        currentAmount: 0.0,
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF202422),
@@ -90,7 +102,7 @@ class SavingsAnalysisPage extends StatelessWidget {
                     child: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                   Text(
-                    categoryName,
+                    widget.categoryName,
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 20,
@@ -200,16 +212,14 @@ class SavingsAnalysisPage extends StatelessWidget {
                               SizedBox(
                                 width: 80,
                                 height: 80,
-                                child: CircularProgressIndicator(
-                                  value: goal.targetAmount > 0
-                                      ? (goal.currentAmount / goal.targetAmount).clamp(0.0, 1.0)
-                                      : 0.0,
+                                child: const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                  value: 0.0,
                                   strokeWidth: 3,
                                   backgroundColor: Colors.white,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
                                 ),
                               ),
-                              Image.asset(iconPath, width: 40, height: 40),
+                              Image.asset(widget.iconPath, width: 40, height: 40),
                             ],
                           ),
                         ),
@@ -237,7 +247,7 @@ class SavingsAnalysisPage extends StatelessWidget {
                           .collection('users')
                           .doc(FirebaseAuth.instance.currentUser?.uid)
                           .collection('savings_goals')
-                          .doc(goalId)
+                          .doc(widget.goalId)
                           .collection('deposits')
                           .orderBy('timestamp', descending: true)
                           .snapshots(),
@@ -310,7 +320,7 @@ class SavingsAnalysisPage extends StatelessWidget {
           color: Colors.black,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Center(child: Image.asset(iconPath, width: 20, height: 20)),
+        child: Center(child: Image.asset(widget.iconPath, width: 20, height: 20)),
       ),
       title: Text(
         title,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../Controllers/category_controller.dart';
+import '../Models/category_model.dart';
+import '../Models/transaction_model.dart';
 
 class AddTransactionDialog extends StatefulWidget {
-  final Function(Map<String, dynamic>) onAddExpense;
-  final Function(Map<String, dynamic>) onAddIncome;
+  final Function(TransactionModel) onAddExpense;
+  final Function(TransactionModel) onAddIncome;
 
   const AddTransactionDialog({
     Key? key,
@@ -14,60 +16,25 @@ class AddTransactionDialog extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AddTransactionDialogState createState() => _AddTransactionDialogState();
+  AddTransactionDialogState createState() => AddTransactionDialogState();
 }
 
-class _AddTransactionDialogState extends State<AddTransactionDialog> {
+class AddTransactionDialogState extends State<AddTransactionDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
-  String _selectedCategory = 'Food';
+  String? _selectedCategory;
   DateTime _selectedDateTime = DateTime.now();
   bool _isExpense = true;
   bool _isLoading = false;
   String? _errorMessage;
-
-  List<Map<String, String>> _categories = [];
-  bool _isCategoriesLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('categories')
-        .get();
-
-    setState(() {
-      _categories = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .where((category) => category['label'] != 'More')
-          .map((data) => {
-                'label': data['label'] as String,
-                'icon': data['icon'] as String,
-              })
-          .toList();
-      if (_categories.isNotEmpty) {
-        _selectedCategory = _categories.first['label']!;
-      }
-      _isCategoriesLoading = false;
-    });
-  }
 
   Future<void> _pickDateTime() async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateTime,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(), // Restrict to past dates
+      lastDate: DateTime.now(),
     );
 
     if (pickedDate == null || !mounted) return;
@@ -86,7 +53,6 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           pickedTime.hour,
           pickedTime.minute,
         );
-        debugPrint('Picked DateTime: $_selectedDateTime');
       });
     } else {
       setState(() {
@@ -97,7 +63,6 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           _selectedDateTime.hour,
           _selectedDateTime.minute,
         );
-        debugPrint('Picked DateTime (only date updated): $_selectedDateTime');
       });
     }
   }
@@ -113,34 +78,39 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     super.dispose();
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
+  void _submitForm() {
+    if (_formKey.currentState!.validate() && _selectedCategory != null) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
-      final selectedCategoryData = _categories.firstWhere(
-        (category) => category['label'] == _selectedCategory,
-        orElse: () => {'label': _selectedCategory, 'icon': 'lib/assets/Transaction.png'},
-      );
-
-      final transactionData = {
-        'title': _titleController.text,
-        'amount': _amountController.text,
-        'category': _selectedCategory,
-        'icon': selectedCategoryData['icon'],
-        'description': _titleController.text,
-        'date': _selectedDateTime,
-      };
-      debugPrint('Submitting transaction with date: $_selectedDateTime');
-      debugPrint('Transaction data: $transactionData');
-
       try {
+        final categoryController = Provider.of<CategoryController>(context, listen: false);
+        final selectedCategoryData = categoryController.categories.firstWhere(
+          (category) => category.label == _selectedCategory,
+          orElse: () =>  CategoryModel(
+            id: 'unknown',
+            label: 'Unknown',
+            icon: 'lib/assets/Transaction.png',
+          ),
+        );
+
+        final transaction = TransactionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
+          type: _isExpense ? 'expense' : 'income',
+          amount: double.parse(_amountController.text),
+          date: _selectedDateTime,
+          description: _titleController.text,
+          category: selectedCategoryData.label,
+          categoryId: selectedCategoryData.id,
+          icon: selectedCategoryData.icon,
+        );
+
         if (_isExpense) {
-          await widget.onAddExpense(transactionData);
+          widget.onAddExpense(transaction);
         } else {
-          await widget.onAddIncome(transactionData);
+          widget.onAddIncome(transaction);
         }
       } catch (e) {
         setState(() {
@@ -156,14 +126,22 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final categoryController = Provider.of<CategoryController>(context);
+    final filteredCategories = categoryController.categories
+        .where((category) => category.label != 'More')
+        .toList();
+
+    if (_selectedCategory == null && filteredCategories.isNotEmpty) {
+      _selectedCategory = filteredCategories.first.label;
+    }
+
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return AlertDialog(
       backgroundColor: const Color(0xFF202422),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       content: SingleChildScrollView(
-        child: _isCategoriesLoading
+        child: filteredCategories.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : Form(
                 key: _formKey,
@@ -304,13 +282,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                         dropdownColor: const Color(0xFF202422),
                         icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
                         menuMaxHeight: screenHeight * 0.3,
-                        items: _categories.map((category) {
+                        items: filteredCategories.map((category) {
                           return DropdownMenuItem<String>(
-                            value: category['label'],
+                            value: category.label,
                             child: Row(
                               children: [
                                 Image.asset(
-                                  category['icon']!,
+                                  category.icon,
                                   width: 24,
                                   height: 24,
                                   errorBuilder: (context, error, stackTrace) => const Icon(
@@ -320,7 +298,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  category['label']!,
+                                  category.label,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'Poppins',
