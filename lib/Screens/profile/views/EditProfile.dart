@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../commons/custom_header.dart';
+import 'custom_header.dart';
 import '../../../commons/settings_form_field.dart';
 
 class EditProfilePage extends StatefulWidget {

@@ -119,7 +119,7 @@ class _SetBalancePageState extends State<SetBalancePage> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[200],
+                  fillColor: const Color.fromARGB(255, 5, 4, 4),
                   labelStyle: const TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w500,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../commons/custom_header.dart';
+import '../../profile/views/custom_header.dart';
 
 class Settings extends StatelessWidget {
   const Settings({Key? key}) : super(key: key);

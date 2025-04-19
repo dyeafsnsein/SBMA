@@ -28,12 +28,10 @@ class FlBarChart extends StatelessWidget {
     maxValue = maxValue * 1.2;
     maxValue = maxValue < 10 ? 10 : maxValue;
 
-    double interval = 5;
-    if (maxValue > 1000) interval = 500;
-    else if (maxValue > 100) interval = 200;
-    else if (maxValue > 50) interval = 20;
-    else if (maxValue > 20) interval = 10;
-    else interval = 5;
+    // Aim for approximately 5 labels on the Y-axis
+    const desiredLabelCount = 5;
+    final interval = (maxValue / (desiredLabelCount - 1)).ceilToDouble();
+    final adjustedMaxValue = interval * (desiredLabelCount - 1);
 
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.04),
@@ -79,9 +77,10 @@ class FlBarChart extends StatelessWidget {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: maxValue,
+                maxY: adjustedMaxValue,
                 minY: 0,
                 barTouchData: BarTouchData(
+                  enabled: true,
                   touchTooltipData: BarTouchTooltipData(
                     tooltipRoundedRadius: 8,
                     tooltipPadding: EdgeInsets.all(screenWidth * 0.02),
@@ -115,15 +114,15 @@ class FlBarChart extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: screenWidth * 0.025,
                               ),
-                              textAlign: TextAlign.center, // Center the text
-                              maxLines: 2, // Allow two lines for month and year
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
                               overflow: TextOverflow.visible,
                             ),
                           );
                         }
                         return const SizedBox();
                       },
-                      reservedSize: screenHeight * 0.05, // Increased to accommodate two lines
+                      reservedSize: screenHeight * 0.05,
                     ),
                   ),
                   leftTitles: AxisTitles(
@@ -134,6 +133,7 @@ class FlBarChart extends StatelessWidget {
                       interval: interval,
                       getTitlesWidget: (value, meta) {
                         if (value == 0) return const SizedBox();
+                        if (value > adjustedMaxValue) return const SizedBox();
                         String displayValue = value >= 1000 ? '${(value/1000).toStringAsFixed(0)}k' : value.toStringAsFixed(0);
                         return Padding(
                           padding: EdgeInsets.only(right: screenWidth * 0.01),
@@ -141,7 +141,7 @@ class FlBarChart extends StatelessWidget {
                             displayValue,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: screenWidth * 0.025,
+                              fontSize: screenWidth * 0.03,
                             ),
                             textAlign: TextAlign.right,
                           ),
@@ -189,7 +189,7 @@ class FlBarChart extends StatelessWidget {
                         borderRadius: BorderRadius.circular(2),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: maxValue,
+                          toY: adjustedMaxValue,
                           color: Colors.white.withOpacity(0.1),
                         ),
                       ),
@@ -202,7 +202,7 @@ class FlBarChart extends StatelessWidget {
                         borderRadius: BorderRadius.circular(2),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: maxValue,
+                          toY: adjustedMaxValue,
                           color: Colors.white.withOpacity(0.1),
                         ),
                       ),

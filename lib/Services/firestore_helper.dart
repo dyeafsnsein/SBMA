@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../Models/category_model.dart'; // Import CategoryModel
 
 class FirestoreHelper {
   static Future<void> initializeCategories(String userId) async {
@@ -14,36 +15,36 @@ class FirestoreHelper {
       return; // Categories already exist, no need to seed
     }
 
-    // Default categories
+    // Default categories using CategoryModel
     final defaultCategories = [
-      {'label': 'Food', 'icon': 'lib/assets/Food.png'},
-      {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
-      {'label': 'Rent', 'icon': 'lib/assets/Rent.png'},
-      {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
-      {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
-      {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
-      {'label': 'More', 'icon': 'lib/assets/More.png'},
+      CategoryModel(id: '', label: 'Food', icon: 'lib/assets/Food.png'),
+      CategoryModel(id: '', label: 'Transport', icon: 'lib/assets/Transport.png'),
+      CategoryModel(id: '', label: 'Rent', icon: 'lib/assets/Rent.png'),
+      CategoryModel(id: '', label: 'Entertainment', icon: 'lib/assets/Entertainment.png'),
+      CategoryModel(id: '', label: 'Medicine', icon: 'lib/assets/Medicine.png'),
+      CategoryModel(id: '', label: 'Groceries', icon: 'lib/assets/Groceries.png'),
     ];
 
-    // Add default categories to Firestore
+    // Add default categories to Firestore with auto-generated IDs
     final batch = FirebaseFirestore.instance.batch();
     for (var category in defaultCategories) {
-      final docRef = categoriesRef.doc(category['label']);
-      batch.set(docRef, category);
+      final docRef = categoriesRef.doc(); // Auto-generate ID
+      batch.set(docRef, category.toFirestore());
     }
     await batch.commit();
   }
 
   static Future<String> getIconForCategory(String userId, String category) async {
-    final categoryDoc = await FirebaseFirestore.instance
+    final categoryDocs = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('categories')
-        .doc(category)
+        .where('label', isEqualTo: category)
+        .limit(1)
         .get();
 
-    if (categoryDoc.exists) {
-      final data = categoryDoc.data() as Map<String, dynamic>;
+    if (categoryDocs.docs.isNotEmpty) {
+      final data = categoryDocs.docs.first.data();
       return data['icon'] as String;
     }
     return 'lib/assets/Transaction.png'; // Fallback icon

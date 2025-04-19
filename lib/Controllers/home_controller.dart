@@ -17,6 +17,7 @@ class HomeController extends ChangeNotifier {
   List<TransactionModel> _filteredTransactions = [];
   int _selectedPeriodIndex = 2;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
+  String? _errorMessage;
 
   HomeController(this._dataService) {
     _setupAuthListener();
@@ -30,6 +31,7 @@ class HomeController extends ChangeNotifier {
   String get topCategoryIconLastWeek => _topCategoryIconLastWeek;
   int get selectedPeriodIndex => _selectedPeriodIndex;
   List<TransactionModel> get transactions => _filteredTransactions;
+  String? get errorMessage => _errorMessage;
 
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -52,6 +54,7 @@ class HomeController extends ChangeNotifier {
     _topCategoryIconLastWeek = '';
     _allTransactions = [];
     _filteredTransactions = [];
+    _errorMessage = null;
 
     notifyListeners();
   }
@@ -68,16 +71,17 @@ class HomeController extends ChangeNotifier {
         .doc(user.uid)
         .collection('transactions')
         .orderBy('timestamp', descending: true)
-        .limit(5) // Limit to recent transactions for the home page
+        .limit(10)
         .snapshots()
-        .listen((snapshot) async {
+        .listen((snapshot) {
+      _errorMessage = null;
       _allTransactions = [];
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final categoryRaw = data['category'];
         final category = categoryRaw is String ? categoryRaw : 'Unknown';
         final categoryId = data['categoryId'] as String? ?? 'unknown';
-        final icon = data['icon'] is String ? data['icon'] as String : await _dataService.getIconForCategory(category);
+        final icon = _dataService.getIconForCategory(category);
         _allTransactions.add(TransactionModel(
           id: doc.id,
           type: data['type'] ?? 'expense',
@@ -95,7 +99,9 @@ class HomeController extends ChangeNotifier {
       _filterTransactions();
       notifyListeners();
     }, onError: (e) {
+      _errorMessage = 'Failed to load transactions: $e';
       debugPrint('Error listening to transactions: $e');
+      notifyListeners();
     });
   }
 
@@ -177,9 +183,10 @@ class HomeController extends ChangeNotifier {
           .collection('users')
           .doc(user.uid)
           .set({'balance': balance}, SetOptions(merge: true));
-      // Balance will be updated via DataService listener
     } catch (e) {
+      _errorMessage = 'Error setting balance: $e';
       debugPrint('Error setting balance: $e');
+      notifyListeners();
     }
   }
 

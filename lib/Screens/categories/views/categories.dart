@@ -20,6 +20,37 @@ class CategoryPage extends StatelessWidget {
     }
   }
 
+  void _showDeleteConfirmation(BuildContext context, String categoryId, String categoryName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Category'),
+          content: Text('Are you sure you want to delete the category "$categoryName"?'),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final controller = Provider.of<CategoryController>(context, listen: false);
+                await controller.deleteCategory(categoryId);
+                if (context.mounted) {
+                  context.pop();
+                }
+              },
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Provider.of<CategoryController>(context);
@@ -32,8 +63,8 @@ class CategoryPage extends StatelessWidget {
     final double horizontalPadding = width * 0.06;
     final double verticalPadding = height * 0.02;
 
-    // Filter out the "More" category since we're moving the functionality to a button
-    final categories = controller.categories
+    // Use expenseCategories and filter out "More"
+    final categories = controller.expenseCategories
         .where((category) => category.label != 'More')
         .toList();
 
@@ -66,7 +97,11 @@ class CategoryPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap: () => context.pop(),
+                                onTap: () {
+                                  if (context.mounted) {
+                                    context.pop();
+                                  }
+                                },
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
@@ -98,7 +133,9 @@ class CategoryPage extends StatelessWidget {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  context.push('/notification');
+                                  if (context.mounted) {
+                                    context.push('/notification');
+                                  }
                                 },
                                 child: Container(
                                   width: width * 0.08,
@@ -152,7 +189,13 @@ class CategoryPage extends StatelessWidget {
                                 final category = categories[index];
                                 return GestureDetector(
                                   onTap: () {
-                                    // Add navigation to TransactionsPage with filter if needed
+                                    // Navigate to TransactionsPage with category filter
+                                    if (context.mounted) {
+                                      context.push('/transactions', extra: {'category': category.label});
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    _showDeleteConfirmation(context, category.id, category.label);
                                   },
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,

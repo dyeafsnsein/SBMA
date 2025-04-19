@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/transaction_model.dart';
 import '../services/data_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TransactionController extends ChangeNotifier {
   final DataService _dataService;
@@ -12,6 +12,8 @@ class TransactionController extends ChangeNotifier {
   double _totalExpenses = 0.0;
   DateTime? _selectedDate;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
+  String? _errorMessage;
+  bool _isLoading = false;
 
   List<TransactionModel> get transactions {
     if (_selectedDate == null) return _transactions;
@@ -25,6 +27,10 @@ class TransactionController extends ChangeNotifier {
   double get totalBalance => _dataService.totalBalance;
   double get totalIncome => _totalIncome;
   double get totalExpenses => _totalExpenses;
+  DateTime? get selectedDate => _selectedDate;
+  bool get isDateFiltered => _selectedDate != null;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   TransactionController(this._dataService) {
     _setupAuthListener();
@@ -48,6 +54,8 @@ class TransactionController extends ChangeNotifier {
     _totalIncome = 0.0;
     _totalExpenses = 0.0;
     _selectedDate = null;
+    _errorMessage = null;
+    _isLoading = false;
 
     notifyListeners();
   }
@@ -59,6 +67,10 @@ class TransactionController extends ChangeNotifier {
       return;
     }
 
+    _isLoading = true;
+    notifyListeners();
+
+    _transactionSubscription?.cancel(); // Prevent duplicate listeners
     _transactionSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -68,9 +80,13 @@ class TransactionController extends ChangeNotifier {
         .listen((snapshot) async {
       _transactions = snapshot.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
       _calculateTotals();
+      _isLoading = false;
       notifyListeners();
     }, onError: (e) {
+      _errorMessage = 'Failed to load transactions: $e';
+      _isLoading = false;
       debugPrint('Error listening to transactions: $e');
+      notifyListeners();
     });
   }
 
@@ -86,7 +102,15 @@ class TransactionController extends ChangeNotifier {
 
   Future<void> addExpense(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      _errorMessage = 'User not authenticated';
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
     try {
       final batch = FirebaseFirestore.instance.batch();
@@ -117,14 +141,25 @@ class TransactionController extends ChangeNotifier {
       _selectedDate = null; // Reset the date filter after adding a transaction
       notifyListeners();
     } catch (e) {
+      _errorMessage = 'Failed to add expense: $e';
       debugPrint('Error adding expense: $e');
+      _isLoading = false;
+      notifyListeners();
       throw Exception('Failed to add expense: $e');
     }
   }
 
   Future<void> addIncome(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      _errorMessage = 'User not authenticated';
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
     try {
       final batch = FirebaseFirestore.instance.batch();
@@ -155,9 +190,17 @@ class TransactionController extends ChangeNotifier {
       _selectedDate = null; // Reset the date filter after adding a transaction
       notifyListeners();
     } catch (e) {
+      _errorMessage = 'Failed to add income: $e';
       debugPrint('Error adding income: $e');
+      _isLoading = false;
+      notifyListeners();
       throw Exception('Failed to add income: $e');
     }
+  }
+
+  Future<void> retryLoading() async {
+    _clearState();
+    _setupListeners();
   }
 
   void setFilterDate(DateTime date) {

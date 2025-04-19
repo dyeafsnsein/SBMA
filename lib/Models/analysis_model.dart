@@ -11,17 +11,4 @@ class AnalysisModel {
     'Monthly': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
     'Year': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
   };
-
-  final List<Map<String, dynamic>> targets = [
-    {
-      'name': 'Travel',
-      'progress': 0.3,
-      'color': const Color(0xFF00FF94),
-    },
-    {
-      'name': 'Car',
-      'progress': 0.5,
-      'color': const Color(0xFF00A3FF),
-    },
-  ];
 }

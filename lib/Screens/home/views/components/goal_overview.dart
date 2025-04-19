@@ -32,7 +32,7 @@ class GoalOverview extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(18.0),
+        padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF202422), Color(0xFF2C3639)],
@@ -91,18 +91,19 @@ class GoalOverview extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFFFCFCFC),
+                    
                   ),
                 ),
               ],
             ),
             Container(
-              width: 1,
+              width: 80,
               height: 120,
-              color: const Color(0xFFFCFCFC).withOpacity(0.3),
+              color: const Color.fromARGB(0, 255, 255, 255).withOpacity(0),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(left: 16.0),
+                padding: const EdgeInsets.only(left: 18.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

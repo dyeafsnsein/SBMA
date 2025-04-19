@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../commons/income_expense_summary.dart';
 import '../../../commons/add_transaction_dialog.dart';
-import '../../../commons/transaction_list.dart'; // Import the shared TransactionList
+import '../../../commons/transaction_list.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -16,22 +16,24 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
- void _showAddTransactionDialog() {
-  final controller = Provider.of<TransactionController>(context, listen: false);
-  showDialog(
-    context: context,
-    builder: (context) => AddTransactionDialog(
-      onAddExpense: (expense) {
-        controller.addExpense(expense);
-        Navigator.pop(context);
-      },
-      onAddIncome: (income) {
-        controller.addIncome(income);
-        Navigator.pop(context);
-      },
-    ),
-  );
-}
+  void _showAddTransactionDialog() {
+    final controller = Provider.of<TransactionController>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (context) => AddTransactionDialog(
+        onAddExpense: (expense) {
+          controller.addExpense(expense);
+          if (!context.mounted) return;
+          Navigator.pop(context);
+        },
+        onAddIncome: (income) {
+          controller.addIncome(income);
+          if (!context.mounted) return;
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
 
   Future<void> _showDatePicker() async {
     final controller = Provider.of<TransactionController>(context, listen: false);
@@ -46,7 +48,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
       controller.setFilterDate(pickedDate);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -159,14 +160,40 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(
-                            top: 60,
+                            top: controller.isDateFiltered ? 100 : 60,
                             left: screenWidth * 0.05,
                             right: screenWidth * 0.05,
                             bottom: screenWidth * 0.05,
                           ),
-                          child: TransactionList(
-                            transactions: controller.transactions,
-                          ),
+                          child: controller.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : controller.errorMessage != null
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            controller.errorMessage!,
+                                            style: const TextStyle(
+                                              fontFamily: 'Poppins',
+                                              fontSize: 16,
+                                              color: Colors.red,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              controller.retryLoading();
+                                            },
+                                            child: const Text('Retry'),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : TransactionList(
+                                      transactions: controller.transactions,
+                                    ),
                         ),
                         Positioned(
                           top: 20,
@@ -213,6 +240,39 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             ],
                           ),
                         ),
+                        if (controller.isDateFiltered)
+                          Positioned(
+                            top: 60,
+                            left: 20,
+                            right: 20,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Chip(
+                                  label: Text(
+                                    '${controller.selectedDate!.day}/${controller.selectedDate!.month}/${controller.selectedDate!.year}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    controller.clearFilter();
+                                  },
+                                  child: const Text(
+                                    'Clear Filter',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),

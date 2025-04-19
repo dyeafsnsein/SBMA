@@ -4,24 +4,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/analysis_model.dart';
 import '../Models/transaction_model.dart';
+import '../Models/savings_goal.dart';
 import '../services/data_service.dart';
+import '../Controllers/savings_controller.dart';
 
 class AnalysisController extends ChangeNotifier {
   final AnalysisModel model;
   final DataService _dataService;
+  final SavingsController _savingsController;
   double totalIncome = 0.0;
   double totalExpense = 0.0;
   List<TransactionModel> _transactions = [];
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
+  bool _isLoading = false;
+  String? _errorMessage;
+  Map<String, double> _categoryBreakdown = {};
 
-  AnalysisController(this.model, this._dataService) {
+  AnalysisController(this.model, this._dataService, this._savingsController) {
     _setupAuthListener();
   }
 
   List<String> get periods => model.periods;
   int get selectedPeriodIndex => model.selectedPeriodIndex;
   Map<String, Map<String, dynamic>> get periodData => model.periodData;
-  List<Map<String, dynamic>> get targets => model.targets;
+  List<SavingsGoal> get savingsGoals => _savingsController.savingsGoals;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  Map<String, double> get categoryBreakdown => _categoryBreakdown;
 
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -39,11 +48,19 @@ class AnalysisController extends ChangeNotifier {
     _transactions = [];
     totalIncome = 0.0;
     totalExpense = 0.0;
+    _categoryBreakdown = {};
+    _isLoading = false;
+    _errorMessage = null;
     _computePeriodData();
     notifyListeners();
   }
 
   void _setupListeners(String userId) {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    _transactionSubscription?.cancel();
     _transactionSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -57,7 +74,9 @@ class AnalysisController extends ChangeNotifier {
         final categoryRaw = data['category'];
         final category = categoryRaw is String ? categoryRaw : 'Unknown';
         final categoryId = data['categoryId'] as String? ?? 'unknown';
-        final icon = data['icon'] is String ? data['icon'] as String : await _dataService.getIconForCategory(category);
+        final icon = data['icon'] is String
+            ? data['icon'] as String
+            : await _dataService.getIconForCategory(category);
         _transactions.add(TransactionModel(
           id: doc.id,
           type: data['type'] ?? 'expense',
@@ -71,10 +90,31 @@ class AnalysisController extends ChangeNotifier {
       }
 
       _computePeriodData();
+      _computeCategoryBreakdown();
+      _isLoading = false;
       notifyListeners();
     }, onError: (e) {
+      _errorMessage = 'Failed to load transactions: $e';
+      _isLoading = false;
       debugPrint('Error listening to transactions: $e');
+      notifyListeners();
     });
+
+    // Listen to savings goals changes
+    _savingsController.addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void _computeCategoryBreakdown() {
+    _categoryBreakdown.clear();
+    for (var transaction in _transactions) {
+      if (transaction.type == 'expense') {
+        final category = transaction.category;
+        _categoryBreakdown[category] =
+            (_categoryBreakdown[category] ?? 0.0) + transaction.amount.abs();
+      }
+    }
   }
 
   void onPeriodChanged(int index) {
@@ -101,7 +141,7 @@ class AnalysisController extends ChangeNotifier {
         .where((t) => t.type == 'expense')
         .fold(0.0, (total, t) => total + t.amount.abs());
 
-    // Daily: Last 7 days
+    // Daily: Last 7 days (oldest to newest)
     if (selectedPeriodIndex == 0) {
       List<double> expenses = List.filled(7, 0.0);
       List<double> income = List.filled(7, 0.0);
@@ -119,12 +159,12 @@ class AnalysisController extends ChangeNotifier {
           }
         }
       }
-      model.periodData['Daily']!['expenses'] = expenses;
-      model.periodData['Daily']!['income'] = income;
-      model.periodData['Daily']!['labels'] = labels;
+      model.periodData['Daily']!['expenses'] = expenses.reversed.toList();
+      model.periodData['Daily']!['income'] = income.reversed.toList();
+      model.periodData['Daily']!['labels'] = labels.reversed.toList();
     }
 
-    // Weekly: Last 4 weeks (Monday to Sunday), newest to oldest
+    // Weekly: Last 4 weeks (oldest to newest)
     else if (selectedPeriodIndex == 1) {
       List<double> expenses = List.filled(4, 0.0);
       List<double> income = List.filled(4, 0.0);
@@ -134,7 +174,7 @@ class AnalysisController extends ChangeNotifier {
       final daysSinceMonday = today.weekday - 1;
       final startOfCurrentWeek = today.subtract(Duration(days: daysSinceMonday));
 
-      for (int i = 0; i <= 3; i++) {
+      for (int i = 3; i >= 0; i--) {
         final startOfWeek = startOfCurrentWeek.subtract(Duration(days: i * 7));
         final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
@@ -145,9 +185,9 @@ class AnalysisController extends ChangeNotifier {
           if (transaction.date.isAfter(startOfWeek) &&
               (transaction.date.isBefore(endOfWeek) || transaction.date.isAtSameMomentAs(endOfWeek))) {
             if (transaction.type == 'expense') {
-              expenses[i] += transaction.amount.abs();
+              expenses[3 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
-              income[i] += transaction.amount;
+              income[3 - i] += transaction.amount;
             }
           }
         }
@@ -158,13 +198,13 @@ class AnalysisController extends ChangeNotifier {
       model.periodData['Weekly']!['labels'] = labels;
     }
 
-    // Monthly: Last 12 months, newest to oldest
+    // Monthly: Last 12 months (oldest to newest)
     else if (selectedPeriodIndex == 2) {
       List<double> expenses = List.filled(12, 0.0);
       List<double> income = List.filled(12, 0.0);
       List<String> labels = [];
 
-      for (int i = 0; i <= 11; i++) {
+      for (int i = 11; i >= 0; i--) {
         final monthsAgo = now.month - i;
         final year = now.year + (monthsAgo ~/ 12);
         final month = monthsAgo % 12 == 0 ? 12 : monthsAgo % 12;
@@ -180,9 +220,9 @@ class AnalysisController extends ChangeNotifier {
           if (transaction.date.isAfter(monthStart) &&
               (transaction.date.isBefore(monthEnd) || transaction.date.isAtSameMomentAs(monthEnd))) {
             if (transaction.type == 'expense') {
-              expenses[i] += transaction.amount.abs();
+              expenses[11 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
-              income[i] += transaction.amount;
+              income[11 - i] += transaction.amount;
             }
           }
         }
@@ -193,12 +233,12 @@ class AnalysisController extends ChangeNotifier {
       model.periodData['Monthly']!['labels'] = labels;
     }
 
-    // Yearly: Last 4 years, newest to oldest
+    // Yearly: Last 4 years (oldest to newest)
     else if (selectedPeriodIndex == 3) {
       List<double> expenses = List.filled(4, 0.0);
       List<double> income = List.filled(4, 0.0);
       List<String> labels = [];
-      for (int i = 0; i <= 3; i++) {
+      for (int i = 3; i >= 0; i--) {
         final year = now.year - i;
         labels.add(year.toString());
         final yearStart = DateTime(year, 1, 1);
@@ -207,9 +247,9 @@ class AnalysisController extends ChangeNotifier {
           if (transaction.date.isAfter(yearStart) &&
               (transaction.date.isBefore(yearEnd) || transaction.date.isAtSameMomentAs(yearEnd))) {
             if (transaction.type == 'expense') {
-              expenses[i] += transaction.amount.abs();
+              expenses[3 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
-              income[i] += transaction.amount;
+              income[3 - i] += transaction.amount;
             }
           }
         }
@@ -234,6 +274,13 @@ class AnalysisController extends ChangeNotifier {
   String _getMonthLabel(int month) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[month - 1];
+  }
+
+  Future<void> retryLoading() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    _clearState();
+    _setupListeners(user.uid);
   }
 
   @override

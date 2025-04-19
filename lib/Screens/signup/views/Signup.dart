@@ -127,7 +127,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -170,7 +170,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -213,7 +213,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -257,7 +257,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -302,7 +302,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -317,7 +317,7 @@ class SignupPage extends StatelessWidget {
             suffixIcon: IconButton(
               icon: const Icon(
                 Icons.calendar_today,
-                color: Color.fromRGBO(0, 0, 0, 0.45),
+                color: Color.fromRGBO(255, 255, 255, 1),
               ),
               onPressed: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -365,7 +365,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 12, 7, 7),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,

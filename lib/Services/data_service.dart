@@ -22,10 +22,8 @@ class DataService {
       if (user == null) {
         _clearState();
       } else {
-        _initializeCategories(user.uid).then((_) {
-          _loadCategories(user.uid).then((_) {
-            _setupListeners(user.uid);
-          });
+        _loadCategories(user.uid).then((_) {
+          _setupListeners(user.uid);
         });
       }
     });
@@ -54,36 +52,6 @@ class DataService {
     });
   }
 
-  Future<void> _initializeCategories(String userId) async {
-    final categoriesRef = _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('categories');
-
-    final snapshot = await categoriesRef.get();
-    if (snapshot.docs.isNotEmpty) {
-      return;
-    }
-
-    final defaultCategories = [
-      {'label': 'Food', 'icon': 'lib/assets/Food.png'},
-      {'label': 'Transport', 'icon': 'lib/assets/Transport.png'},
-      {'label': 'Rent', 'icon': 'lib/assets/Rent.png'},
-      {'label': 'Entertainment', 'icon': 'lib/assets/Entertainment.png'},
-      {'label': 'Medicine', 'icon': 'lib/assets/Medicine.png'},
-      {'label': 'Groceries', 'icon': 'lib/assets/Groceries.png'},
-      {'label': 'More', 'icon': 'lib/assets/More.png'},
-      {'label': 'Income', 'icon': 'lib/assets/Salary.png'},
-    ];
-
-    final batch = _firestore.batch();
-    for (var category in defaultCategories) {
-      final docRef = categoriesRef.doc(category['label']);
-      batch.set(docRef, category);
-    }
-    await batch.commit();
-  }
-
   Future<void> _loadCategories(String userId) async {
     final snapshot = await _firestore
         .collection('users')
@@ -102,7 +70,7 @@ class DataService {
     }
   }
 
-  Future<String> getIconForCategory(String category) async {
+  String getIconForCategory(String category) {
     return _categoryIcons[category] ?? 'lib/assets/Transaction.png';
   }
 

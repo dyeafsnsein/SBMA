@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:test_app/commons/balance_overview.dart';
 import 'components/header.dart';
-import '../../../commons/goal_overview.dart';
-import '../../../commons/transaction_list.dart';
+import 'components/goal_overview.dart';
+import  '../../../commons/transaction_list.dart';
 import '../../../Controllers/home_controller.dart';
 import '../../../Controllers/savings_controller.dart';
 

@@ -131,7 +131,7 @@ class LoginPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 0, 0, 0),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -174,7 +174,7 @@ class LoginPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: const Color.fromARGB(255, 0, 0, 0),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
