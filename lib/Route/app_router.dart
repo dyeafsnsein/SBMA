@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart'; // For debugPrint
-import 'package:test_app/Screens/settings/views/PasswordChangeSuccess.dart';
 import '../commons/main_container.dart';
 import '../Screens/home/views/home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -41,10 +40,7 @@ final router = GoRouter(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
     ),
-    GoRoute(
-      path: '/success3',
-      builder: (context, state) => const PasswordChangeSuccess(),
-    ),
+  
     GoRoute(
       path: '/set-balance',
       builder: (context, state) => const SetBalancePage(),
@@ -185,8 +181,8 @@ final router = GoRouter(
       return '/';
     }
 
-    // If logged in, check user data and balance setup
-    if (isLoggedIn) {
+    // Only check for balance setup if user is logged in and not on an auth route
+    if (isLoggedIn && !isOnAuthRoute) {
       final authService = AuthService();
 
       // Fetch user data
@@ -218,10 +214,6 @@ final router = GoRouter(
         debugPrint('Redirect: Balance not set, redirecting to /set-balance');
         return '/set-balance';
       }
-
-      // If balance is set, allow the user to proceed to their intended route
-      debugPrint('Redirect: Balance is set, proceeding to ${state.matchedLocation}');
-      return null;
     }
 
     // Default case: no redirect needed

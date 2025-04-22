@@ -288,7 +288,7 @@ class SavingsPageState extends State<SavingsPage> {
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
+                                  children: [
                               _buildBalanceInfo(
                                 title: 'Total Saved',
                                 amount: '\$${totalSaved.toStringAsFixed(2)}',
@@ -416,32 +416,32 @@ class SavingsPageState extends State<SavingsPage> {
                                             ),
                                           )
                                         : GridView.builder(
-                                            physics: const AlwaysScrollableScrollPhysics(),
-                                            padding: const EdgeInsets.only(top: 20, bottom: 80),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(top: 20, bottom: 80),
                                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: 3,
-                                              crossAxisSpacing: 20,
-                                              mainAxisSpacing: 20,
-                                              childAspectRatio: 0.75,
-                                            ),
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20,
+                              childAspectRatio: 0.75,
+                            ),
                                             itemCount: displayedGoals.length,
-                                            itemBuilder: (context, index) {
+                        itemBuilder: (context, index) {
                                               final goal = displayedGoals[index];
                                               final progress = goal.targetAmount > 0
                                                   ? goal.currentAmount / goal.targetAmount
                                                   : 0.0;
-                                              return GestureDetector(
-                                                onTap: () {
+                          return GestureDetector(
+                            onTap: () {
                                                   if (!mounted) return;
-                                                  context.push(
-                                                    '/savings-analysis',
-                                                    extra: {
+                              context.push(
+                                '/savings-analysis',
+                                extra: {
                                                       'categoryName': goal.name,
                                                       'iconPath': goal.icon,
                                                       'goalId': goal.id,
-                                                    },
-                                                  );
-                                                },
+                                },
+                              );
+                            },
                                                 onLongPress: () async {
                                                   await savingsController.setActiveGoal(goal.id);
                                                   if (!mounted) return;
@@ -452,19 +452,19 @@ class SavingsPageState extends State<SavingsPage> {
                                                 child: Stack(
                                                   children: [
                                                     Column(
-                                                      mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Stack(
                                                           alignment: Alignment.center,
-                                                          children: [
-                                                            Container(
-                                                              width: 90,
-                                                              height: 90,
-                                                              decoration: BoxDecoration(
-                                                                color: const Color(0xFF202422),
-                                                                borderRadius: BorderRadius.circular(20),
-                                                              ),
-                                                              child: Center(
+                              children: [
+                                Container(
+                                  width: 90,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF202422),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Center(
                                                                 child: Stack(
                                                                   alignment: Alignment.center,
                                                                   children: [
@@ -480,8 +480,8 @@ class SavingsPageState extends State<SavingsPage> {
                                                                     ),
                                                                     Image.asset(
                                                                       goal.icon,
-                                                                      width: 45,
-                                                                      height: 45,
+                                      width: 45,
+                                      height: 45,
                                                                       errorBuilder: (context, error, stackTrace) =>
                                                                           const Icon(
                                                                         Icons.error,
@@ -511,15 +511,15 @@ class SavingsPageState extends State<SavingsPage> {
                                                                 ),
                                                               ),
                                                           ],
-                                                        ),
-                                                        const SizedBox(height: 8),
-                                                        Text(
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
                                                           goal.name,
-                                                          style: const TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            fontSize: 12,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: Color(0xFF202422),
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF202422),
                                                           ),
                                                         ),
                                                         Text(
@@ -571,12 +571,12 @@ class SavingsPageState extends State<SavingsPage> {
                                                             size: 16,
                                                           ),
                                                         ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                                           ),
                           ),
                         ],
@@ -648,3 +648,4 @@ class SavingsPageState extends State<SavingsPage> {
     );
   }
 }
+

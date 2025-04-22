@@ -179,8 +179,15 @@ class AuthController extends ChangeNotifier {
         await _firestore
             .collection('users')
             .doc(userModel.id)
-            .set(userModel.toMap());
+            .set({
+              ...userModel.toMap(),
+              'hasSetBalance': false, // Explicitly set to false
+            });
       }
+
+      // Sign out the user after successful signup
+      await _auth.signOut();
+      await _authService.signOut();
 
       if (context.mounted) {
         context.go('/login');
