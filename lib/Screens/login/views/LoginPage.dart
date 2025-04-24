@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:test_app/Screens/login/views/Login.dart';
 import 'package:test_app/Screens/signup/views/Signup.dart';
 
-
 class LaunchPage extends StatefulWidget {
   const LaunchPage({Key? key}) : super(key: key);
 
@@ -32,7 +31,7 @@ class _LaunchPageState extends State<LaunchPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Icon(
+              const Icon(
                 Icons.bar_chart_outlined,
                 size: 80,
                 color: Colors.black,
@@ -64,7 +63,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   // Navigate to the LoginPage
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  const LoginPage()),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                   );
                 },
                 onTapCancel: () {
@@ -74,7 +73,8 @@ class _LaunchPageState extends State<LaunchPage> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 100),
-                  padding: const EdgeInsets.symmetric(horizontal: 65, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 65, vertical: 15),
                   decoration: BoxDecoration(
                     color: _isLoginPressed ? Colors.black54 : Colors.black87,
                     borderRadius: BorderRadius.circular(24),
@@ -104,7 +104,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   });
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  const SignupPage()),
+                    MaterialPageRoute(builder: (context) => const SignupPage()),
                   );
                   // Add your signup functionality here
                 },
@@ -115,9 +115,11 @@ class _LaunchPageState extends State<LaunchPage> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 100),
-                  padding: const EdgeInsets.symmetric(horizontal: 65, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 65, vertical: 15),
                   decoration: BoxDecoration(
-                    color: _isSignUpPressed ? Colors.grey[100] : Colors.grey[300],
+                    color:
+                        _isSignUpPressed ? Colors.grey[100] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Text(

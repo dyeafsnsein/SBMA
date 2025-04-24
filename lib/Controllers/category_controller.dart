@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/category_model.dart';
-import '../services/data_service.dart';
 import '../services/firestore_helper.dart';
 
 class CategoryController extends ChangeNotifier {
@@ -18,11 +17,13 @@ class CategoryController extends ChangeNotifier {
 
   List<CategoryModel> get categories => _categories;
 
-  List<CategoryModel> get expenseCategories =>
-      _categories.where((category) => !_incomeCategoryLabels.contains(category.label)).toList();
+  List<CategoryModel> get expenseCategories => _categories
+      .where((category) => !_incomeCategoryLabels.contains(category.label))
+      .toList();
 
-  List<CategoryModel> get incomeCategories =>
-      _categories.where((category) => _incomeCategoryLabels.contains(category.label)).toList();
+  List<CategoryModel> get incomeCategories => _categories
+      .where((category) => _incomeCategoryLabels.contains(category.label))
+      .toList();
 
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -52,7 +53,8 @@ class CategoryController extends ChangeNotifier {
         .collection('categories')
         .snapshots()
         .listen((snapshot) {
-      _categories = snapshot.docs.map((doc) => CategoryModel.fromFirestore(doc)).toList();
+      _categories =
+          snapshot.docs.map((doc) => CategoryModel.fromFirestore(doc)).toList();
       notifyListeners();
     }, onError: (e) {
       debugPrint('Error listening to categories: $e');
@@ -64,7 +66,8 @@ class CategoryController extends ChangeNotifier {
     if (user == null) return;
 
     // Prevent adding reserved categories
-    if (_incomeCategoryLabels.contains(name) || _reservedCategoryLabels.contains(name)) {
+    if (_incomeCategoryLabels.contains(name) ||
+        _reservedCategoryLabels.contains(name)) {
       debugPrint('Cannot add reserved category: $name');
       return;
     }

@@ -21,7 +21,8 @@ import '../Screens/transactions/views/add_expenses_page.dart';
 import '../Screens/transactions/views/add_income_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -38,9 +39,9 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordPage(),
+      builder: (context, state) => ForgotPasswordPage(),
     ),
-  
+
     GoRoute(
       path: '/set-balance',
       builder: (context, state) => const SetBalancePage(),
@@ -60,7 +61,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: 'analysis',
-              builder: (context, state) => AnalysisPage(),
+              builder: (context, state) => const AnalysisPage(),
             ),
           ],
         ),
@@ -78,7 +79,8 @@ final router = GoRouter(
                 !args.containsKey('categoryName') ||
                 !args.containsKey('iconPath') ||
                 !args.containsKey('goalId')) {
-              throw const FormatException('Missing required arguments for SavingsAnalysisPage');
+              throw const FormatException(
+                  'Missing required arguments for SavingsAnalysisPage');
             }
             return SavingsAnalysisPage(
               categoryName: args['categoryName']!,
@@ -91,12 +93,13 @@ final router = GoRouter(
         // Transactions section
         GoRoute(
           path: '/transactions',
-          builder: (context, state) => TransactionsPage(),
+          builder: (context, state) => const TransactionsPage(),
           routes: [
             GoRoute(
               path: 'add-expense',
               builder: (context, state) {
-                final addNewExpense = state.extra as Function(Map<String, String>);
+                final addNewExpense =
+                    state.extra as Function(Map<String, String>);
                 return TransactionAddExpensePage(
                   onSave: addNewExpense,
                 );
@@ -105,7 +108,8 @@ final router = GoRouter(
             GoRoute(
               path: 'add-income',
               builder: (context, state) {
-                final addNewIncome = state.extra as Function(Map<String, String>);
+                final addNewIncome =
+                    state.extra as Function(Map<String, String>);
                 return TransactionAddIncomePage(
                   onSave: addNewIncome,
                 );
@@ -118,9 +122,7 @@ final router = GoRouter(
         GoRoute(
           path: '/categories',
           builder: (context, state) => const CategoryPage(),
-          routes: [
-       
-          ],
+          routes: const [],
         ),
 
         // Profile section and its sub-routes
@@ -171,7 +173,8 @@ final router = GoRouter(
 
     // If not logged in and not on an auth route, redirect to login
     if (!isLoggedIn && !isOnAuthRoute) {
-      debugPrint('Redirect: Not logged in and not on auth route, redirecting to /login');
+      debugPrint(
+          'Redirect: Not logged in and not on auth route, redirecting to /login');
       return '/login';
     }
 
@@ -200,7 +203,8 @@ final router = GoRouter(
 
       // If user data is null, sign out and redirect to login
       if (userData == null) {
-        debugPrint('Redirect: User data is null, signing out and redirecting to /login');
+        debugPrint(
+            'Redirect: User data is null, signing out and redirecting to /login');
         await FirebaseAuth.instance.signOut();
         await authService.signOut();
         debugPrint('Redirect: Signed out, redirecting to /login');
@@ -217,7 +221,8 @@ final router = GoRouter(
     }
 
     // Default case: no redirect needed
-    debugPrint('Redirect: No redirect needed, proceeding to ${state.matchedLocation}');
+    debugPrint(
+        'Redirect: No redirect needed, proceeding to ${state.matchedLocation}');
     return null;
   },
 );

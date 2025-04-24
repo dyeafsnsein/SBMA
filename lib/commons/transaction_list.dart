@@ -1,58 +1,88 @@
 import 'package:flutter/material.dart';
-import '../../Models/transaction_model.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../Controllers/transaction_controller.dart';
+import '../Models/transaction_model.dart';
+import 'add_transaction_dialog.dart';
 
 class TransactionList extends StatelessWidget {
   final List<TransactionModel> transactions;
+  final bool isHomePage;
 
-  const TransactionList({Key? key, required this.transactions}) : super(key: key);
-
-  // Helper method to format DateTime into "Day, DD Month YYYY" format
-String _formatDate(DateTime date) {
-  const List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const List<String> months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-
-  String dayName = days[date.weekday - 1];
-  String day = date.day.toString().padLeft(2, '0');
-  String month = months[date.month - 1];
-  String year = date.year.toString();
-  String time = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-  return '$dayName, $day $month $year, $time';
-}
+  const TransactionList({
+    super.key,
+    required this.transactions,
+    this.isHomePage = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (transactions.isEmpty) {
-      return const Expanded(
-        child: Center(
-          child: Text(
-            'No transactions yet',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
+    final transactionController = Provider.of<TransactionController>(context);
+
+    return ListView.builder(
+      itemCount: transactions.length,
+      itemBuilder: (context, index) {
+        final transaction = transactions[index];
+        final isExpense = transaction.type == 'expense';
+
+        return GestureDetector(
+          onTap: () {
+            if (!isHomePage) {
+              showDialog(
+                context: context,
+                builder: (context) => AddTransactionDialog(
+                  initialTransaction: transaction,
+                  onAddExpense: (expense) {
+                    transactionController.updateTransaction(expense);
+                    Navigator.pop(context);
+                  },
+                  onAddIncome: (income) {
+                    transactionController.updateTransaction(income);
+                    Navigator.pop(context);
+                  },
+                ),
+              );
+            }
+          },
+          onLongPress: () {
+            if (!isHomePage) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Delete Transaction'),
+                  content: const Text(
+                      'Are you sure you want to delete this transaction?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        transactionController.deleteTransaction(transaction);
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Delete'),
+                    ),
+                  ],
         ),
       );
     }
-
-    return Expanded(
-      child: ListView.builder(
-        padding: const EdgeInsets.only(
-          top: 0,
-          bottom: 80,
-        ),
-        itemCount: transactions.length,
-        itemBuilder: (context, index) {
-          final transaction = transactions[index];
-          final isExpense = transaction.type.toLowerCase() == 'expense';
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 7.0),
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 Container(
@@ -68,7 +98,8 @@ String _formatDate(DateTime date) {
                       width: 31,
                       height: 28,
                       errorBuilder: (context, error, stackTrace) {
-                        debugPrint('Failed to load icon: ${transaction.icon}, error: $error');
+                        debugPrint(
+                            'Failed to load icon: ${transaction.icon}, error: $error');
                         return Icon(
                           isExpense ? Icons.arrow_downward : Icons.arrow_upward,
                           color: Colors.white,
@@ -79,44 +110,57 @@ String _formatDate(DateTime date) {
                   ),
                 ),
                 const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.category,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        transaction.description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _formatDate(transaction.date),
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 12,
+                      '${isExpense ? '-' : '+'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF202422),
+                        color: isExpense ? Colors.red : Colors.green,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      transaction.category,
+                      '${transaction.date.day}/${transaction.date.month}/${transaction.date.year}',
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFF202422),
+                        fontSize: 12,
+                        color: Colors.grey,
                       ),
                     ),
                   ],
                 ),
-                const Spacer(),
-                Text(
-                  '\$${transaction.amount.abs().toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: isExpense ? Colors.red : Colors.green,
-                  ),
-                ),
               ],
+            ),
             ),
           );
         },
-      ),
     );
   }
 }

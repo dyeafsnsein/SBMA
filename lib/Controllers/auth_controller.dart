@@ -26,7 +26,8 @@ class AuthController extends ChangeNotifier {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final TextEditingController dateOfBirthController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
 
@@ -65,7 +66,8 @@ class AuthController extends ChangeNotifier {
   }
 
   void _validatePasswordRealTime() {
-    final passwordPattern = RegExp(r'^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#\$%^&*]).{6,}$');
+    final passwordPattern =
+        RegExp(r'^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#\$%^&*]).{6,}$');
     if (passwordController.text.trim().isEmpty) {
       passwordErrorMessage = 'Password is required';
     } else if (!passwordPattern.hasMatch(passwordController.text.trim())) {
@@ -81,7 +83,8 @@ class AuthController extends ChangeNotifier {
   void _validateConfirmPasswordRealTime() {
     if (confirmPasswordController.text.trim().isEmpty) {
       confirmPasswordErrorMessage = 'Confirm password is required';
-    } else if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+    } else if (passwordController.text.trim() !=
+        confirmPasswordController.text.trim()) {
       confirmPasswordErrorMessage = 'Passwords do not match';
     } else {
       confirmPasswordErrorMessage = null;
@@ -94,7 +97,8 @@ class AuthController extends ChangeNotifier {
     if (dateOfBirthController.text.trim().isEmpty) {
       dateOfBirthErrorMessage = 'Date of birth is required';
     } else if (!datePattern.hasMatch(dateOfBirthController.text.trim())) {
-      dateOfBirthErrorMessage = 'Please enter a valid date of birth (DD/MM/YYYY)';
+      dateOfBirthErrorMessage =
+          'Please enter a valid date of birth (DD/MM/YYYY)';
     } else {
       final dobParts = dateOfBirthController.text.trim().split('/');
       final dob = DateTime(
@@ -118,7 +122,8 @@ class AuthController extends ChangeNotifier {
     if (mobileNumberController.text.trim().isEmpty) {
       mobileNumberErrorMessage = 'Mobile number is required';
     } else if (!mobilePattern.hasMatch(mobileNumberController.text.trim())) {
-      mobileNumberErrorMessage = 'Please enter a valid Tunisian mobile number (e.g., +21612345678)';
+      mobileNumberErrorMessage =
+          'Please enter a valid Tunisian mobile number (e.g., +21612345678)';
     } else {
       mobileNumberErrorMessage = null;
     }
@@ -176,13 +181,10 @@ class AuthController extends ChangeNotifier {
 
       // Store user data in Firestore only if sign-up succeeds
       if (userModel.id != null) {
-        await _firestore
-            .collection('users')
-            .doc(userModel.id)
-            .set({
-              ...userModel.toMap(),
-              'hasSetBalance': false, // Explicitly set to false
-            });
+        await _firestore.collection('users').doc(userModel.id).set({
+          ...userModel.toMap(),
+          'hasSetBalance': false, // Explicitly set to false
+        });
       }
 
       // Sign out the user after successful signup
@@ -239,8 +241,29 @@ class AuthController extends ChangeNotifier {
         password: userModel.password,
       );
 
-      if (userCredential.user != null && context.mounted) {
-        context.go('/');
+      if (userCredential.user != null) {
+        debugPrint(
+            'User signed in successfully with UID: ${userCredential.user!.uid}');
+
+        // Load user data from Firestore
+        final userData = await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        debugPrint('Firestore user data: ${userData.data()}');
+
+        if (userData.exists) {
+          userModel = UserModel.fromMap(userData.data() as Map<String, dynamic>,
+              id: userCredential.user!.uid);
+          debugPrint('UserModel updated with name: ${userModel.name}');
+        } else {
+          debugPrint('No user data found in Firestore');
+        }
+
+        if (context.mounted) {
+          context.go('/');
+        }
       }
     } on FirebaseAuthException catch (e) {
       errorMessage = _getErrorMessage(e.code);
@@ -274,8 +297,12 @@ class AuthController extends ChangeNotifier {
         userModel.email = user.email ?? '';
         userModel.name = user.displayName ?? '';
         // Default values for other fields if signing in with Google
-        userModel.dateOfBirth = userModel.dateOfBirth.isEmpty ? '01/01/2000' : userModel.dateOfBirth;
-        userModel.mobileNumber = userModel.mobileNumber.isEmpty ? '+21612345678' : userModel.mobileNumber;
+        userModel.dateOfBirth = userModel.dateOfBirth.isEmpty
+            ? '01/01/2000'
+            : userModel.dateOfBirth;
+        userModel.mobileNumber = userModel.mobileNumber.isEmpty
+            ? '+21612345678'
+            : userModel.mobileNumber;
 
         await _firestore
             .collection('users')

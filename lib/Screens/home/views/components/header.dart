@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../Controllers/auth_controller.dart';
 
 class Header extends StatelessWidget {
   final VoidCallback? onNotificationTap;
@@ -14,6 +16,13 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authController = Provider.of<AuthController>(context);
+    final userName = authController.userModel.name;
+
+    debugPrint('Header widget - User name: $userName');
+    debugPrint(
+        'Header widget - UserModel: ${authController.userModel.toMap()}');
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,9 +38,9 @@ class Header extends StatelessWidget {
           children: [
             // Conditionally show the greeting message based on `hideGreeting`
             if (!hideGreeting)
-              const Text(
-                'Hi, Welcome Back',
-                style: TextStyle(
+              Text(
+                'Hi, ${userName.isEmpty ? 'User' : userName}',
+                style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -52,17 +61,19 @@ class Header extends StatelessWidget {
               ),
           ],
         ),
+        // Notification icon
         GestureDetector(
           onTap: onNotificationTap,
           child: Container(
-            width: 30,
-            height: 30,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: const Color(0xFF050505),
-              borderRadius: BorderRadius.circular(25.71),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Center(
-              child: Icon(Icons.notifications, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.notifications,
+              color: Colors.white,
+              size: 24,
             ),
           ),
         ),

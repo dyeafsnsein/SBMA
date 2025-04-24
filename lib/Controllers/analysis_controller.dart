@@ -76,7 +76,7 @@ class AnalysisController extends ChangeNotifier {
         final categoryId = data['categoryId'] as String? ?? 'unknown';
         final icon = data['icon'] is String
             ? data['icon'] as String
-            : await _dataService.getIconForCategory(category);
+            : _dataService.getIconForCategory(category);
         _transactions.add(TransactionModel(
           id: doc.id,
           type: data['type'] ?? 'expense',
@@ -128,10 +128,26 @@ class AnalysisController extends ChangeNotifier {
     final now = DateTime.now();
 
     model.periodData = {
-      'Daily': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
-      'Weekly': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
-      'Monthly': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
-      'Year': {'expenses': <double>[], 'income': <double>[], 'labels': <String>[]},
+      'Daily': {
+        'expenses': <double>[],
+        'income': <double>[],
+        'labels': <String>[]
+      },
+      'Weekly': {
+        'expenses': <double>[],
+        'income': <double>[],
+        'labels': <String>[]
+      },
+      'Monthly': {
+        'expenses': <double>[],
+        'income': <double>[],
+        'labels': <String>[]
+      },
+      'Year': {
+        'expenses': <double>[],
+        'income': <double>[],
+        'labels': <String>[]
+      },
     };
 
     totalIncome = _transactions
@@ -172,7 +188,8 @@ class AnalysisController extends ChangeNotifier {
 
       final today = now;
       final daysSinceMonday = today.weekday - 1;
-      final startOfCurrentWeek = today.subtract(Duration(days: daysSinceMonday));
+      final startOfCurrentWeek =
+          today.subtract(Duration(days: daysSinceMonday));
 
       for (int i = 3; i >= 0; i--) {
         final startOfWeek = startOfCurrentWeek.subtract(Duration(days: i * 7));
@@ -183,7 +200,8 @@ class AnalysisController extends ChangeNotifier {
 
         for (final transaction in _transactions) {
           if (transaction.date.isAfter(startOfWeek) &&
-              (transaction.date.isBefore(endOfWeek) || transaction.date.isAtSameMomentAs(endOfWeek))) {
+              (transaction.date.isBefore(endOfWeek) ||
+                  transaction.date.isAtSameMomentAs(endOfWeek))) {
             if (transaction.type == 'expense') {
               expenses[3 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
@@ -211,14 +229,16 @@ class AnalysisController extends ChangeNotifier {
         final adjustedYear = monthsAgo < 0 ? year - 1 : year;
 
         final monthStart = DateTime(adjustedYear, month, 1);
-        final monthEnd = DateTime(adjustedYear, month + 1, 1).subtract(const Duration(days: 1));
+        final monthEnd = DateTime(adjustedYear, month + 1, 1)
+            .subtract(const Duration(days: 1));
 
         final label = _getMonthLabel(month);
         labels.add(label);
 
         for (final transaction in _transactions) {
           if (transaction.date.isAfter(monthStart) &&
-              (transaction.date.isBefore(monthEnd) || transaction.date.isAtSameMomentAs(monthEnd))) {
+              (transaction.date.isBefore(monthEnd) ||
+                  transaction.date.isAtSameMomentAs(monthEnd))) {
             if (transaction.type == 'expense') {
               expenses[11 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
@@ -245,7 +265,8 @@ class AnalysisController extends ChangeNotifier {
         final yearEnd = DateTime(year, 12, 31);
         for (final transaction in _transactions) {
           if (transaction.date.isAfter(yearStart) &&
-              (transaction.date.isBefore(yearEnd) || transaction.date.isAtSameMomentAs(yearEnd))) {
+              (transaction.date.isBefore(yearEnd) ||
+                  transaction.date.isAtSameMomentAs(yearEnd))) {
             if (transaction.type == 'expense') {
               expenses[3 - i] += transaction.amount.abs();
             } else if (transaction.type == 'income') {
@@ -272,7 +293,20 @@ class AnalysisController extends ChangeNotifier {
   }
 
   String _getMonthLabel(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return months[month - 1];
   }
 

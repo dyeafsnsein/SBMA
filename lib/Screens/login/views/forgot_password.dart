@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ✅ Add this import
 
 @RoutePage()
 class ForgotPasswordPage extends StatelessWidget {
-  const ForgotPasswordPage({Key? key}) : super(key: key);
+  ForgotPasswordPage({Key? key}) : super(key: key);
+
+  final TextEditingController _emailController =
+      TextEditingController(); // ✅ Email controller
+
+  // ✅ Reset password method
+  void _sendResetLink(BuildContext context) async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset link sent!')),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Something went wrong')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +43,7 @@ class ForgotPasswordPage extends StatelessWidget {
               physics: const ClampingScrollPhysics(),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
@@ -62,16 +87,19 @@ class ForgotPasswordPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 14),
                                 Text(
-                                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
-                                    color: const Color(0xFF202422).withOpacity(0.7),
+                                    color: const Color(0xFF202422)
+                                        .withOpacity(0.7),
                                     fontFamily: 'League Spartan',
                                   ),
                                 ),
                                 const SizedBox(height: 50),
                                 TextField(
+                                  controller:
+                                      _emailController, // ✅ Connect controller
                                   style: const TextStyle(
                                     color: Colors.black,
                                     fontFamily: 'Poppins',
@@ -94,7 +122,8 @@ class ForgotPasswordPage extends StatelessWidget {
                                       fontSize: 16,
                                       fontFamily: 'Poppins',
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
                                   ),
                                 ),
                                 const SizedBox(height: 45),
@@ -103,13 +132,14 @@ class ForgotPasswordPage extends StatelessWidget {
                                     width: 169,
                                     height: 32,
                                     child: ElevatedButton(
-                                        onPressed: () {
-                                 
-                                    },
+                                      onPressed: () => _sendResetLink(
+                                          context), // ✅ Logic call
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF202422),
+                                        backgroundColor:
+                                            const Color(0xFF202422),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                         padding: EdgeInsets.zero,
                                       ),
@@ -135,7 +165,8 @@ class ForgotPasswordPage extends StatelessWidget {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[300],
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                         padding: EdgeInsets.zero,
                                       ),
@@ -166,7 +197,8 @@ class ForgotPasswordPage extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 20),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           IconButton(
                                             icon: Image.asset(
@@ -174,9 +206,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                               width: 32.71,
                                               height: 32.65,
                                             ),
-                                            onPressed: () {
-                                              // Facebook login logic
-                                            },
+                                            onPressed: () {},
                                           ),
                                           const SizedBox(width: 16),
                                           IconButton(
@@ -185,9 +215,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                               width: 32.71,
                                               height: 32.71,
                                             ),
-                                            onPressed: () {
-                                              // Google login logic
-                                            },
+                                            onPressed: () {},
                                           ),
                                         ],
                                       ),

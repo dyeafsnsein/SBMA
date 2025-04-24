@@ -78,7 +78,9 @@ class TransactionController extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snapshot) async {
-      _transactions = snapshot.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
+      _transactions = snapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
       _calculateTotals();
       _isLoading = false;
       notifyListeners();
@@ -119,7 +121,7 @@ class TransactionController extends ChangeNotifier {
           .doc(user.uid)
           .collection('transactions')
           .doc();
-      
+
       // Adjust amount for expense (negative)
       final expense = TransactionModel(
         id: transactionRef.id,
@@ -211,6 +213,85 @@ class TransactionController extends ChangeNotifier {
   void clearFilter() {
     _selectedDate = null;
     notifyListeners();
+  }
+
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _errorMessage = 'User not authenticated';
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      final transactionRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .doc(transaction.id);
+
+      // Get the old transaction to calculate balance difference
+      final oldTransaction =
+          _transactions.firstWhere((t) => t.id == transaction.id);
+      final balanceDifference = transaction.amount - oldTransaction.amount;
+
+      batch.update(transactionRef, transaction.toFirestore());
+
+      // Update balance via DataService
+      await _dataService.updateBalance(
+          user.uid, balanceDifference, transaction.type == 'expense');
+
+      await batch.commit();
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Failed to update transaction: $e';
+      debugPrint('Error updating transaction: $e');
+      _isLoading = false;
+      notifyListeners();
+      throw Exception('Failed to update transaction: $e');
+    }
+  }
+
+  Future<void> deleteTransaction(TransactionModel transaction) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _errorMessage = 'User not authenticated';
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      final transactionRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .doc(transaction.id);
+
+      batch.delete(transactionRef);
+
+      // Update balance via DataService (reverse the transaction amount)
+      await _dataService.updateBalance(
+          user.uid, -transaction.amount, transaction.type == 'expense');
+
+      await batch.commit();
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Failed to delete transaction: $e';
+      debugPrint('Error deleting transaction: $e');
+      _isLoading = false;
+      notifyListeners();
+      throw Exception('Failed to delete transaction: $e');
+    }
   }
 
   @override

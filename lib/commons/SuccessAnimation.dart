@@ -14,7 +14,8 @@ class SuccessAnimation extends StatefulWidget {
   _SuccessAnimationState createState() => _SuccessAnimationState();
 }
 
-class _SuccessAnimationState extends State<SuccessAnimation> with TickerProviderStateMixin {
+class _SuccessAnimationState extends State<SuccessAnimation>
+    with TickerProviderStateMixin {
   late AnimationController _dotsController;
   late AnimationController _checkmarkController;
   late Animation<double> _dotsAnimation;
@@ -25,7 +26,7 @@ class _SuccessAnimationState extends State<SuccessAnimation> with TickerProvider
   @override
   void initState() {
     super.initState();
-    
+
     // Dots animation controller
     _dotsController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -39,13 +40,15 @@ class _SuccessAnimationState extends State<SuccessAnimation> with TickerProvider
     );
 
     _dotsAnimation = Tween<double>(begin: 0, end: 1).animate(_dotsController);
-    
-    _checkmarkAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+
+    _checkmarkAnimation =
+        Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
       parent: _checkmarkController,
       curve: Curves.elasticOut,
     ));
-    
-    _textOpacityAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+
+    _textOpacityAnimation =
+        Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
       parent: _checkmarkController,
       curve: Curves.easeIn,
     ));
@@ -143,8 +146,8 @@ class _SuccessAnimationState extends State<SuccessAnimation> with TickerProvider
       child: Container(
         width: 10,
         height: 10,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1FFF3),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF1FFF3),
           shape: BoxShape.circle,
         ),
       ),

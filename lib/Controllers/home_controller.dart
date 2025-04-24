@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
-import 'package:collection/collection.dart';
 import '../Models/transaction_model.dart';
 import '../services/data_service.dart';
 
@@ -129,16 +128,19 @@ class HomeController extends ChangeNotifier {
     for (var transaction in lastWeekTransactions) {
       if (transaction.type == 'expense') {
         final category = transaction.category;
-        categorySpending[category] = (categorySpending[category] ?? 0) + transaction.amount.abs();
+        categorySpending[category] =
+            (categorySpending[category] ?? 0) + transaction.amount.abs();
         categoryIcons[category] = transaction.icon;
       }
     }
 
     if (categorySpending.isNotEmpty) {
-      final topEntry = categorySpending.entries.reduce((a, b) => a.value > b.value ? a : b);
+      final topEntry =
+          categorySpending.entries.reduce((a, b) => a.value > b.value ? a : b);
       _topCategoryLastWeek = topEntry.key;
       _topCategoryAmountLastWeek = topEntry.value;
-      _topCategoryIconLastWeek = categoryIcons[topEntry.key] ?? 'lib/assets/Transaction.png';
+      _topCategoryIconLastWeek =
+          categoryIcons[topEntry.key] ?? 'lib/assets/Transaction.png';
     } else {
       _topCategoryLastWeek = 'None';
       _topCategoryAmountLastWeek = 0.0;
@@ -164,7 +166,8 @@ class HomeController extends ChangeNotifier {
     }
 
     _filteredTransactions = _allTransactions.where((transaction) {
-      return transaction.date.isAfter(startDate) || transaction.date.isAtSameMomentAs(startDate);
+      return transaction.date.isAfter(startDate) ||
+          transaction.date.isAtSameMomentAs(startDate);
     }).toList();
   }
 

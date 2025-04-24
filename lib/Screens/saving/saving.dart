@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../Controllers/home_controller.dart';
 import '../../Controllers/savings_controller.dart';
 import '../../Models/savings_goal.dart'; // Import the SavingsGoal model
@@ -40,7 +39,8 @@ class SavingsPageState extends State<SavingsPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) => AlertDialog(
-          title: Text(existingGoal == null ? 'Add Savings Goal' : 'Edit Savings Goal'),
+          title: Text(
+              existingGoal == null ? 'Add Savings Goal' : 'Edit Savings Goal'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -94,12 +94,18 @@ class SavingsPageState extends State<SavingsPage> {
             ElevatedButton(
               onPressed: () async {
                 final name = nameController.text.trim();
-                final targetAmount = double.tryParse(targetAmountController.text);
+                final targetAmount =
+                    double.tryParse(targetAmountController.text);
 
-                if (name.isEmpty || targetAmount == null || targetAmount <= 0 || selectedIcon == null) {
+                if (name.isEmpty ||
+                    targetAmount == null ||
+                    targetAmount <= 0 ||
+                    selectedIcon == null) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid name, target amount, and select an icon')),
+                    const SnackBar(
+                        content: Text(
+                            'Please enter a valid name, target amount, and select an icon')),
                   );
                   return;
                 }
@@ -130,8 +136,8 @@ class SavingsPageState extends State<SavingsPage> {
     );
   }
 
-  Future<void> _showDeleteConfirmationDialog(
-      BuildContext context, SavingsController controller, String goalId, String goalName) async {
+  Future<void> _showDeleteConfirmationDialog(BuildContext context,
+      SavingsController controller, String goalId, String goalName) async {
     await showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -180,18 +186,21 @@ class SavingsPageState extends State<SavingsPage> {
       0.0,
       (sum, goal) => sum + goal.currentAmount,
     );
-    final activeGoalsCount = savingsController.savingsGoals.where((goal) => goal.isActive).length;
+    final activeGoalsCount =
+        savingsController.savingsGoals.where((goal) => goal.isActive).length;
 
     List<SavingsGoal> displayedGoals = List.from(savingsController.savingsGoals)
         .whereType<SavingsGoal>()
-        .toList(); // Ensure only non-null SavingsGoal objects
+        .toList();
     if (_showActiveOnly) {
       displayedGoals = displayedGoals.where((goal) => goal.isActive).toList();
     }
     if (_sortBy == 'progress') {
       displayedGoals.sort((a, b) {
-        final progressA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0.0;
-        final progressB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0.0;
+        final progressA =
+            a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0.0;
+        final progressB =
+            b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0.0;
         return progressB.compareTo(progressA);
       });
     } else if (_sortBy == 'target') {
@@ -207,20 +216,18 @@ class SavingsPageState extends State<SavingsPage> {
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFF202422),
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                SizedBox(
-                  height: topSectionHeight,
-                  child: Container(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Container(
+                    height: topSectionHeight,
                     color: const Color(0xFF202422),
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        horizontalPadding,
-                        paddingTop + verticalPadding,
-                        horizontalPadding,
-                        verticalPadding,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: verticalPadding,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -242,33 +249,20 @@ class SavingsPageState extends State<SavingsPage> {
                               Text(
                                 'Savings',
                                 style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: width * 0.06,
-                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
+                                  fontSize: width * 0.06,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  if (!mounted) return;
-                                  context.push('/notification');
+                                  _showAddOrEditGoalDialog(
+                                      context, savingsController);
                                 },
-                                child: Container(
-                                  width: width * 0.08,
-                                  height: width * 0.08,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF050505),
-                                    borderRadius: BorderRadius.circular(
-                                      width * 0.04,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.notifications,
-                                      color: Colors.white,
-                                      size: width * 0.05,
-                                    ),
-                                  ),
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: width * 0.06,
                                 ),
                               ),
                             ],
@@ -276,26 +270,40 @@ class SavingsPageState extends State<SavingsPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildBalanceInfo(
-                                title: 'Total Balance',
-                                amount: '\$${homeController.totalBalance.toStringAsFixed(2)}',
+                              Text(
+                                'Total Saved',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: width * 0.04,
+                                ),
                               ),
-                              _buildBalanceInfo(
-                                title: 'Total Expense',
-                                amount: '-\$${homeController.totalExpense.toStringAsFixed(2)}',
+                              Text(
+                                '\$$totalSaved',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: width * 0.06,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                              _buildBalanceInfo(
-                                title: 'Total Saved',
-                                amount: '\$${totalSaved.toStringAsFixed(2)}',
+                            children: [
+                              Text(
+                                'Active Goals',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: width * 0.04,
+                                ),
                               ),
-                              _buildBalanceInfo(
-                                title: 'Active Goals',
-                                amount: '$activeGoalsCount',
+                              Text(
+                                '$activeGoalsCount',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: width * 0.06,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -303,349 +311,338 @@ class SavingsPageState extends State<SavingsPage> {
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 255, 255, 255),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1FFF3),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
+                        ),
                       ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    'Filter:',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 14,
-                                      color: Color(0xFF202422),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: const Text('All'),
-                                    selected: !_showActiveOnly,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        _showActiveOnly = false;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: const Text('Active'),
-                                    selected: _showActiveOnly,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        _showActiveOnly = true;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                              DropdownButton<String>(
-                                value: _sortBy,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'name',
-                                    child: Text('Sort by Name'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'progress',
-                                    child: Text('Sort by Progress'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'target',
-                                    child: Text('Sort by Target'),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _sortBy = value!;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: savingsController.isLoading
-                                ? const Center(child: CircularProgressIndicator())
-                                : savingsController.errorMessage != null
-                                    ? Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              savingsController.errorMessage!,
-                                              style: const TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontSize: 16,
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                savingsController.retryLoading();
-                                              },
-                                              child: const Text('Retry'),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : displayedGoals.isEmpty
-                                        ? const Center(
-                                            child: Text(
-                                              'No savings goals yet. Add one to get started!',
-                                              style: TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontSize: 16,
-                                                color: Color(0xFF202422),
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          )
-                                        : GridView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 20, bottom: 80),
-                                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
-                                            itemCount: displayedGoals.length,
-                        itemBuilder: (context, index) {
-                                              final goal = displayedGoals[index];
-                                              final progress = goal.targetAmount > 0
-                                                  ? goal.currentAmount / goal.targetAmount
-                                                  : 0.0;
-                          return GestureDetector(
-                            onTap: () {
-                                                  if (!mounted) return;
-                              context.push(
-                                '/savings-analysis',
-                                extra: {
-                                                      'categoryName': goal.name,
-                                                      'iconPath': goal.icon,
-                                                      'goalId': goal.id,
-                                },
-                              );
-                            },
-                                                onLongPress: () async {
-                                                  await savingsController.setActiveGoal(goal.id);
-                                                  if (!mounted) return;
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('${goal.name} set as active goal')),
-                                                  );
-                                                },
-                                                child: Stack(
-                                                  children: [
-                                                    Column(
-                              mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Stack(
-                                                          alignment: Alignment.center,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                          vertical: verticalPadding,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF202422),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Center(
-                                                                child: Stack(
-                                                                  alignment: Alignment.center,
-                                                                  children: [
-                                                                    SizedBox(
-                                                                      width: 60,
-                                                                      height: 60,
-                                                                      child: CircularProgressIndicator(
-                                                                        value: progress,
-                                                                        backgroundColor: Colors.grey[300],
-                                                                        valueColor: const AlwaysStoppedAnimation<
-                                                                            Color>(Colors.green),
-                                                                      ),
-                                                                    ),
-                                                                    Image.asset(
-                                                                      goal.icon,
-                                      width: 45,
-                                      height: 45,
-                                                                      errorBuilder: (context, error, stackTrace) =>
-                                                                          const Icon(
-                                                                        Icons.error,
-                                                                        color: Colors.white,
-                                                                        size: 45,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            if (goal.isActive)
-                                                              Positioned(
-                                                                top: 0,
-                                                                right: 0,
-                                                                child: Container(
-                                                                  padding: const EdgeInsets.all(2),
-                                                                  decoration: const BoxDecoration(
-                                                                    color: Colors.yellow,
-                                                                    shape: BoxShape.circle,
-                                                                  ),
-                                                                  child: const Icon(
-                                                                    Icons.star,
-                                                                    color: Colors.black,
-                                                                    size: 16,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                          ],
+                                Row(
+                                  children: [
+                                    _buildFilterButton(
+                                      'All',
+                                      !_showActiveOnly,
+                                      () => setState(
+                                          () => _showActiveOnly = false),
+                                    ),
+                                    SizedBox(width: width * 0.02),
+                                    _buildFilterButton(
+                                      'Active',
+                                      _showActiveOnly,
+                                      () => setState(
+                                          () => _showActiveOnly = true),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                                          goal.name,
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF202422),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          '${(progress * 100).toStringAsFixed(1)}%',
-                                                          style: const TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            fontSize: 10,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Positioned(
-                                                      top: 0,
-                                                      left: 0,
-                                                      child: GestureDetector(
-                                                        onTap: () => _showAddOrEditGoalDialog(
-                                                            context, savingsController,
-                                                            existingGoal: goal),
-                                                        child: Container(
-                                                          padding: const EdgeInsets.all(2),
-                                                          decoration: const BoxDecoration(
-                                                            color: Colors.blue,
-                                                            shape: BoxShape.circle,
-                                                          ),
-                                                          child: const Icon(
-                                                            Icons.edit,
-                                                            color: Colors.white,
-                                                            size: 16,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Positioned(
-                                                      top: 0,
-                                                      right: 0,
-                                                      child: GestureDetector(
-                                                        onTap: () => _showDeleteConfirmationDialog(
-                                                            context, savingsController, goal.id, goal.name),
-                                                        child: Container(
-                                                          padding: const EdgeInsets.all(2),
-                                                          decoration: const BoxDecoration(
-                                                            color: Colors.red,
-                                                            shape: BoxShape.circle,
-                                                          ),
-                                                          child: const Icon(
-                                                            Icons.delete,
-                                                            color: Colors.white,
-                                                            size: 16,
-                                                          ),
-                                                        ),
+                                PopupMenuButton<String>(
+                                  onSelected: (value) {
+                                    setState(() => _sortBy = value);
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'name',
+                                      child: Text('Sort by Name'),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'progress',
+                                      child: Text('Sort by Progress'),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'target',
+                                      child: Text('Sort by Target'),
+                                    ),
+                                  ],
+                                  child: Icon(
+                                    Icons.sort,
+                                    size: width * 0.06,
+                                    color: const Color(0xFF202422),
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        },
+                            SizedBox(height: height * 0.02),
+                            Expanded(
+                              child: displayedGoals.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                        'No savings goals yet',
+                                        style: TextStyle(
+                                          fontSize: width * 0.04,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    )
+                                  : GridView.builder(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      padding: EdgeInsets.only(
+                                        top: height * 0.02,
+                                        bottom: height * 0.1,
+                                      ),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        crossAxisSpacing: width * 0.04,
+                                        mainAxisSpacing: height * 0.02,
+                                        childAspectRatio: 0.75,
+                                      ),
+                                      itemCount: displayedGoals.length,
+                                      itemBuilder: (context, index) {
+                                        final goal = displayedGoals[index];
+                                        final progress = goal.targetAmount > 0
+                                            ? goal.currentAmount /
+                                                goal.targetAmount
+                                            : 0.0;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            if (!mounted) return;
+                                            context.push(
+                                              '/savings-analysis',
+                                              extra: {
+                                                'categoryName': goal.name,
+                                                'iconPath': goal.icon,
+                                                'goalId': goal.id,
+                                              },
+                                            );
+                                          },
+                                          onLongPress: () async {
+                                            await savingsController
+                                                .setActiveGoal(goal.id);
+                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    '${goal.name} set as active goal'),
+                                              ),
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Container(
+                                                        width: width * 0.2,
+                                                        height: width * 0.2,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: const Color(
+                                                              0xFF202422),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(20),
+                                                        ),
+                                                        child: Center(
+                                                          child: Stack(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            children: [
+                                                              SizedBox(
+                                                                width: width *
+                                                                    0.15,
+                                                                height: width *
+                                                                    0.15,
+                                                                child:
+                                                                    CircularProgressIndicator(
+                                                                  value:
+                                                                      progress,
+                                                                  backgroundColor:
+                                                                      Colors.grey[
+                                                                          300],
+                                                                  valueColor: const AlwaysStoppedAnimation<
+                                                                          Color>(
+                                                                      Colors
+                                                                          .green),
+                                                                ),
+                                                              ),
+                                                              Image.asset(
+                                                                goal.icon,
+                                                                width: width *
+                                                                    0.12,
+                                                                height: width *
+                                                                    0.12,
+                                                                errorBuilder:
+                                                                    (context,
+                                                                            error,
+                                                                            stackTrace) =>
+                                                                        Icon(
+                                                                  Icons.error,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: width *
+                                                                      0.12,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (goal.isActive)
+                                                        Positioned(
+                                                          top: 0,
+                                                          right: 0,
+                                                          child: Container(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    width *
+                                                                        0.01),
+                                                            decoration:
+                                                                const BoxDecoration(
+                                                              color:
+                                                                  Colors.yellow,
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.star,
+                                                              color:
+                                                                  Colors.black,
+                                                              size:
+                                                                  width * 0.04,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                      height: height * 0.01),
+                                                  Text(
+                                                    goal.name,
+                                                    style: TextStyle(
+                                                      fontSize: width * 0.035,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: const Color(
+                                                          0xFF202422),
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  Text(
+                                                    '${(progress * 100).toStringAsFixed(1)}%',
+                                                    style: TextStyle(
+                                                      fontSize: width * 0.03,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Positioned(
+                                                top: 0,
+                                                left: 0,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showAddOrEditGoalDialog(
+                                                    context,
+                                                    savingsController,
+                                                    existingGoal: goal,
+                                                  ),
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(
+                                                        width * 0.01),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                      color: Colors.blue,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.edit,
+                                                      color: Colors.white,
+                                                      size: width * 0.04,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                top: 0,
+                                                right: 0,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showDeleteConfirmationDialog(
+                                                    context,
+                                                    savingsController,
+                                                    goal.id,
+                                                    goal.name,
+                                                  ),
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(
+                                                        width * 0.01),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                      color: Colors.red,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.delete,
+                                                      color: Colors.white,
+                                                      size: width * 0.04,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                          ),
-                        ],
+                                        );
+                                      },
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            Positioned(
-              bottom: height * 0.12,
-              left: width * 0.05,
-              right: width * 0.05,
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: () => _showAddOrEditGoalDialog(context, savingsController),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF202422),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      vertical: height * 0.015,
-                      horizontal: width * 0.06,
-                    ),
-                    minimumSize: Size(width * 0.3, height * 0.06),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: Text(
-                    'Add More',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: width * 0.04,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBalanceInfo({required String title, required String amount}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+  Widget _buildFilterButton(String text, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.04,
+          vertical: MediaQuery.of(context).size.height * 0.01,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF202422) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF202422),
+            width: 1,
           ),
         ),
-        Text(
-          amount,
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF202422),
+            fontSize: MediaQuery.of(context).size.width * 0.035,
           ),
         ),
-      ],
+      ),
     );
   }
 }
-

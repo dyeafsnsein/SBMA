@@ -22,7 +22,8 @@ class SavingsAnalysisPage extends StatefulWidget {
 }
 
 class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
-  Future<void> _showAddDepositDialog(BuildContext context, SavingsController controller) async {
+  Future<void> _showAddDepositDialog(
+      BuildContext context, SavingsController controller) async {
     final TextEditingController amountController = TextEditingController();
 
     await showDialog(
@@ -48,7 +49,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
               if (amount == null || amount <= 0) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid amount')),
+                    const SnackBar(
+                        content: Text('Please enter a valid amount')),
                   );
                 }
                 return;
@@ -58,7 +60,9 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
               if (mounted) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Deposit of \$${amount.toStringAsFixed(2)} added')),
+                  SnackBar(
+                      content: Text(
+                          'Deposit of \$${amount.toStringAsFixed(2)} added')),
                 );
               }
             },
@@ -209,17 +213,19 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 80,
                                 height: 80,
-                                child: const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.green),
                                   value: 0.0,
                                   strokeWidth: 3,
                                   backgroundColor: Colors.white,
                                 ),
                               ),
-                              Image.asset(widget.iconPath, width: 40, height: 40),
+                              Image.asset(widget.iconPath,
+                                  width: 40, height: 40),
                             ],
                           ),
                         ),
@@ -227,10 +233,10 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                     ),
                     const SizedBox(height: 20),
                     const SizedBox(height: 20),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'April',
                           style: TextStyle(
                             fontFamily: 'Poppins',
@@ -252,17 +258,22 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                           .orderBy('timestamp', descending: true)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
                         if (snapshot.hasError) {
-                          return const Center(child: Text('Error loading deposits'));
+                          return const Center(
+                              child: Text('Error loading deposits'));
                         }
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                           return const Center(child: Text('No deposits yet'));
                         }
 
-                        final deposits = snapshot.data!.docs.map((doc) => Deposit.fromFirestore(doc)).toList();
+                        final deposits = snapshot.data!.docs
+                            .map((doc) => Deposit.fromFirestore(doc))
+                            .toList();
 
                         return ListView.builder(
                           shrinkWrap: true,
@@ -283,7 +294,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => _showAddDepositDialog(context, controller),
+                        onPressed: () =>
+                            _showAddDepositDialog(context, controller),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
@@ -311,7 +323,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
     );
   }
 
-  Widget _buildSavingsItemWithIcon(String title, String subtitle, String amount) {
+  Widget _buildSavingsItemWithIcon(
+      String title, String subtitle, String amount) {
     return ListTile(
       leading: Container(
         width: 40,
@@ -320,7 +333,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
           color: Colors.black,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Center(child: Image.asset(widget.iconPath, width: 20, height: 20)),
+        child:
+            Center(child: Image.asset(widget.iconPath, width: 20, height: 20)),
       ),
       title: Text(
         title,

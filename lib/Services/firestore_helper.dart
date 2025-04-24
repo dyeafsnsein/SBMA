@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../Models/category_model.dart'; // Import CategoryModel
 
 class FirestoreHelper {
@@ -18,11 +17,14 @@ class FirestoreHelper {
     // Default categories using CategoryModel
     final defaultCategories = [
       CategoryModel(id: '', label: 'Food', icon: 'lib/assets/Food.png'),
-      CategoryModel(id: '', label: 'Transport', icon: 'lib/assets/Transport.png'),
+      CategoryModel(
+          id: '', label: 'Transport', icon: 'lib/assets/Transport.png'),
       CategoryModel(id: '', label: 'Rent', icon: 'lib/assets/Rent.png'),
-      CategoryModel(id: '', label: 'Entertainment', icon: 'lib/assets/Entertainment.png'),
+      CategoryModel(
+          id: '', label: 'Entertainment', icon: 'lib/assets/Entertainment.png'),
       CategoryModel(id: '', label: 'Medicine', icon: 'lib/assets/Medicine.png'),
-      CategoryModel(id: '', label: 'Groceries', icon: 'lib/assets/Groceries.png'),
+      CategoryModel(
+          id: '', label: 'Groceries', icon: 'lib/assets/Groceries.png'),
     ];
 
     // Add default categories to Firestore with auto-generated IDs
@@ -34,7 +36,8 @@ class FirestoreHelper {
     await batch.commit();
   }
 
-  static Future<String> getIconForCategory(String userId, String category) async {
+  static Future<String> getIconForCategory(
+      String userId, String category) async {
     final categoryDocs = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)

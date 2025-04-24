@@ -18,13 +18,16 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         Provider(create: (_) => DataService()),
         ChangeNotifierProvider(create: (context) => AuthController()),
-        ChangeNotifierProvider(create: (context) => HomeController(context.read<DataService>())),
+        ChangeNotifierProvider(
+            create: (context) => HomeController(context.read<DataService>())),
         ChangeNotifierProvider(create: (context) => SavingsController()),
         ChangeNotifierProvider(
           create: (context) => AnalysisController(
@@ -33,7 +36,9 @@ class MyApp extends StatelessWidget {
             context.read<SavingsController>(),
           ),
         ),
-        ChangeNotifierProvider(create: (context) => TransactionController(context.read<DataService>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                TransactionController(context.read<DataService>())),
         ChangeNotifierProvider(create: (_) => CategoryController()),
         // Add other controllers like NotificationController if needed
       ],

@@ -71,7 +71,8 @@ class _NewPasswordWidgetState extends State<ForgotPasswordPage> {
                         isVisible: _isConfirmPasswordVisible,
                         onVisibilityToggle: () {
                           setState(() {
-                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            _isConfirmPasswordVisible =
+                                !_isConfirmPasswordVisible;
                           });
                         },
                       ),
@@ -85,12 +86,11 @@ class _NewPasswordWidgetState extends State<ForgotPasswordPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (context) => const PasswordChangedWidget(),
+                                builder: (context) =>
+                                    const PasswordChangedWidget(),
                               ),
                             );
                           },
-                          
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF202422),
                             shape: RoundedRectangleBorder(
