@@ -39,6 +39,18 @@ class AuthController extends ChangeNotifier {
     confirmPasswordController.addListener(_validateConfirmPasswordRealTime);
     dateOfBirthController.addListener(_validateDateOfBirthRealTime);
     mobileNumberController.addListener(_validateMobileNumberRealTime);
+    
+    // Load current user data when controller is initialized
+    loadCurrentUser();
+    
+    // Listen for auth state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        loadCurrentUser();
+      } else {
+        userModel = UserModel();
+      }
+    });
   }
 
   void _validateNameRealTime() {
@@ -252,7 +264,6 @@ class AuthController extends ChangeNotifier {
             .get();
 
         debugPrint('Firestore user data: ${userData.data()}');
-
         if (userData.exists) {
           userModel = UserModel.fromMap(userData.data() as Map<String, dynamic>,
               id: userCredential.user!.uid);
@@ -373,5 +384,36 @@ class AuthController extends ChangeNotifier {
     dateOfBirthController.dispose();
     mobileNumberController.dispose();
     super.dispose();
+  }
+  
+  // Method to load current user data
+  Future<void> loadCurrentUser() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      try {
+        final userData = await _firestore.collection('users').doc(currentUser.uid).get();
+        if (userData.exists) {
+          userModel = UserModel.fromMap(
+            userData.data() as Map<String, dynamic>,
+            id: currentUser.uid,
+          );
+          debugPrint('User data loaded: ${userModel.name}');
+        } else {
+          // If user exists in auth but not in Firestore, create basic record
+          userModel = UserModel(
+            id: currentUser.uid,
+            email: currentUser.email ?? '',
+            name: currentUser.displayName ?? '',
+          );
+          await _firestore.collection('users').doc(currentUser.uid).set(
+            userModel.toMap(),
+            SetOptions(merge: true),
+          );
+        }
+        notifyListeners();
+      } catch (e) {
+        debugPrint('Error loading user data: $e');
+      }
+    }
   }
 }

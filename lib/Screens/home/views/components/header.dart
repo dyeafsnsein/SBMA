@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../Controllers/auth_controller.dart';
+import '../../../../Controllers/home_controller.dart';
 
 class Header extends StatelessWidget {
   final VoidCallback? onNotificationTap;
@@ -16,13 +17,30 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth controller changes to update when user data changes
     final authController = Provider.of<AuthController>(context);
-    final userName = authController.userModel.name;
-
+    final homeController = Provider.of<HomeController>(context, listen: false);
+    
+    // Get username from auth controller
+    String userName = authController.userModel.name;
+    
+    // Force refresh user data if name is empty
+    if (userName.isEmpty) {
+      Future.microtask(() => authController.loadCurrentUser());
+    }
+    
+    // For debugging purposes
     debugPrint('Header widget - User name: $userName');
-    debugPrint(
-        'Header widget - UserModel: ${authController.userModel.toMap()}');
-
+    
+    // Get time of day to display appropriate greeting
+    final hour = DateTime.now().hour;
+    String greeting = 'Good Morning';
+    if (hour >= 12 && hour < 17) {
+      greeting = 'Good Afternoon';
+    } else if (hour >= 17) {
+      greeting = 'Good Evening';
+    }
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,9 +68,9 @@ class Header extends StatelessWidget {
               ),
             if (!hideGreeting) const SizedBox(height: 4),
             if (!hideGreeting)
-              const Text(
-                'Good Morning',
-                style: TextStyle(
+              Text(
+                greeting,
+                style: const TextStyle(
                   fontFamily: 'League Spartan',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

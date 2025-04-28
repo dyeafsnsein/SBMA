@@ -177,6 +177,7 @@ class SavingsPageState extends State<SavingsPage> {
     final double paddingTop = MediaQuery.of(context).padding.top;
     final double height = screenSize.height;
     final double width = screenSize.width;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     final double topSectionHeight = height * 0.32;
     final double horizontalPadding = width * 0.06;
@@ -217,6 +218,7 @@ class SavingsPageState extends State<SavingsPage> {
       child: Scaffold(
         backgroundColor: const Color(0xFF202422),
         body: SafeArea(
+          bottom: false, // Let the container handle bottom padding
           child: Stack(
             children: [
               Column(
@@ -313,17 +315,20 @@ class SavingsPageState extends State<SavingsPage> {
                   ),
                   Expanded(
                     child: Container(
+                      width: double.infinity,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF1FFF3),
+                        color: Color.fromARGB(255, 255, 255, 255),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(40),
                           topRight: Radius.circular(40),
                         ),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
-                          vertical: verticalPadding,
+                        padding: EdgeInsets.only(
+                          left: horizontalPadding,
+                          right: horizontalPadding,
+                          top: verticalPadding,
+                          bottom: bottomPadding, // Add bottom padding to account for system navigation
                         ),
                         child: Column(
                           children: [
@@ -390,7 +395,7 @@ class SavingsPageState extends State<SavingsPage> {
                                           const AlwaysScrollableScrollPhysics(),
                                       padding: EdgeInsets.only(
                                         top: height * 0.02,
-                                        bottom: height * 0.1,
+                                        bottom: height * 0.02, // Reduced to avoid extra space
                                       ),
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(

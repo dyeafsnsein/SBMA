@@ -72,7 +72,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     screenWidth * 0.06,
                     screenHeight * 0.08,
                     screenWidth * 0.06,
-                    screenHeight * 0.04,
+                    screenHeight * 0.02,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,7 +150,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 Expanded(
                   child: Container(
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF1FFF3),
+                      color: Color.fromARGB(255, 255, 255, 255),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(40),
                         topRight: Radius.circular(40),

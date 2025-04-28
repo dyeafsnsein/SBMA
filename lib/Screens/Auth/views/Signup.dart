@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
-
+import 'login.dart';
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
 
@@ -119,6 +119,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          style: TextStyle(color: Colors.black),
           controller: controller.nameController,
           decoration: InputDecoration(
             labelText: 'Full Name',
@@ -127,7 +128,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -137,7 +138,7 @@ class SignupPage extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(0, 0, 0, 0.45),
+              color: Color.fromRGBO(148, 146, 146, 1),
             ),
           ),
         ),
@@ -162,6 +163,8 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+                    style: TextStyle(color: Colors.black),
+
           controller: controller.emailController,
           decoration: InputDecoration(
             labelText: 'Email',
@@ -170,7 +173,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -180,7 +183,7 @@ class SignupPage extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(0, 0, 0, 0.45),
+              color: Color.fromRGBO(148, 146, 146, 1),
             ),
           ),
         ),
@@ -205,15 +208,17 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+           style: TextStyle(color: Colors.black),
           controller: controller.passwordController,
           obscureText: !controller.isPasswordVisible,
           decoration: InputDecoration(
             labelText: 'Password',
+            hintText: '**********',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -222,7 +227,7 @@ class SignupPage extends StatelessWidget {
             suffixIcon: IconButton(
               icon: Icon(
                 controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: const Color.fromRGBO(0, 0, 0, 0.45),
+                color: const Color.fromARGB(255, 0, 0, 0),
               ),
               onPressed: controller.togglePasswordVisibility,
             ),
@@ -249,15 +254,17 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+           style: TextStyle(color: Colors.black),
           controller: controller.confirmPasswordController,
           obscureText: !controller.isConfirmPasswordVisible,
           decoration: InputDecoration(
             labelText: 'Confirm Password',
+            hintText: '**********',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -266,7 +273,7 @@ class SignupPage extends StatelessWidget {
             suffixIcon: IconButton(
               icon: Icon(
                 controller.isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: const Color.fromRGBO(0, 0, 0, 0.45),
+                color: const Color.fromARGB(255, 0, 0, 0),
               ),
               onPressed: controller.toggleConfirmPasswordVisibility,
             ),
@@ -293,6 +300,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+           style: TextStyle(color: Colors.black),
           controller: controller.dateOfBirthController,
           readOnly: true, // Make it read-only to use the date picker
           decoration: InputDecoration(
@@ -302,7 +310,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -312,12 +320,12 @@ class SignupPage extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(0, 0, 0, 0.45),
+              color: Color.fromRGBO(148, 146, 146, 1),
             ),
             suffixIcon: IconButton(
               icon: const Icon(
                 Icons.calendar_today,
-                color: Color.fromRGBO(255, 255, 255, 1),
+                color: Color.fromRGBO(0, 0, 0, 1),
               ),
               onPressed: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -356,6 +364,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+           style: TextStyle(color: Colors.black),
           controller: controller.mobileNumberController,
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
@@ -365,7 +374,7 @@ class SignupPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 12, 7, 7),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -375,7 +384,8 @@ class SignupPage extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(0, 0, 0, 0.45),
+              color: Color.fromRGBO(148, 146, 146, 1),
+
             ),
           ),
         ),
@@ -425,10 +435,13 @@ class SignupPage extends StatelessWidget {
   Widget _buildLoginLink(BuildContext context) {
     return TextButton(
       onPressed: () {
-        context.go('/login');
-      },
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const LoginPage()),
+  );      },
       child: const Text(
         'Already have an account? Log In',
+        
         style: TextStyle(
           color: Colors.black,
           fontFamily: 'League Spartan',
@@ -437,5 +450,6 @@ class SignupPage extends StatelessWidget {
         ),
       ),
     );
+    
   }
 }

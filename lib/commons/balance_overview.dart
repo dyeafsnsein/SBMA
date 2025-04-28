@@ -61,9 +61,9 @@ class BalanceOverview extends StatelessWidget {
               ),
             ),
             Container(
-              width: 1,
+              width: 105,
               height: screenHeight * 0.05,
-              color: const Color(0xFFFCFCFC),
+              color: const Color.fromARGB(0, 252, 252, 252),
             ),
             Expanded(
               child: Column(

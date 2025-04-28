@@ -8,9 +8,9 @@ import '../Screens/analysis/views/Analysis.dart';
 import '../Screens/transactions/views/transaction.dart';
 import '../Screens/categories/views/categories.dart';
 import '../Screens/notification/views/Notification.dart';
-import '../Screens/login/views/login.dart';
-import '../Screens/signup/views/signup.dart';
-import '../Screens/login/views/forgot_password.dart';
+import '../Screens/Auth/views/login.dart';
+import '../Screens/Auth/views/signup.dart';
+import '../Screens/Auth/views/forgot_password.dart';
 import '../Screens/profile/views/profile.dart';
 import '../Screens/profile/views/editprofile.dart';
 import '../Screens/saving/saving.dart';
@@ -19,16 +19,18 @@ import '../Screens/set_balance/views/set_balance.dart';
 import '../services/auth_service.dart';
 import '../Screens/transactions/views/add_expenses_page.dart';
 import '../Screens/transactions/views/add_income_page.dart';
-
+import '../Screens/Auth/views/LaunchPage.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/login',
+  initialLocation: '/', // Set LaunchPage as the initial page
   routes: [
     // Auth routes (outside shell, no bottom nav)
+   GoRoute(path: '/launchPage', 
+   builder: (context, state)  => const LaunchPage()),
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
@@ -150,9 +152,9 @@ final router = GoRouter(
   // Global redirect for auth and balance setup
   redirect: (BuildContext context, GoRouterState state) async {
     // Define routes that don't require authentication checks
-    final bool isOnAuthRoute = state.matchedLocation == '/login' ||
+    final bool isOnAuthRoute = state.matchedLocation == '/Login' ||
         state.matchedLocation == '/signup' ||
-        state.matchedLocation == '/forgot-password';
+        state.matchedLocation == '/forgot-password' || state.matchedLocation == '/LaunchPage' ;
     final bool isOnSetBalanceRoute = state.matchedLocation == '/set-balance';
     final bool isOnSuccessRoute = state.matchedLocation == '/success3';
 
@@ -175,7 +177,7 @@ final router = GoRouter(
     if (!isLoggedIn && !isOnAuthRoute) {
       debugPrint(
           'Redirect: Not logged in and not on auth route, redirecting to /login');
-      return '/login';
+      return '/LaunchPage'; // Redirect to login page
     }
 
     // If logged in and on an auth route, redirect to root

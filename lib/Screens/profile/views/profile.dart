@@ -22,7 +22,7 @@ class ProfilePage extends StatelessWidget {
                 Container(
                   margin: EdgeInsets.only(top: screenHeight * 0.04),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF1FFF3),
+                    color: Color.fromARGB(255, 255, 255, 255),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -36,7 +36,7 @@ class ProfilePage extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF1FFF3),
+                        color: Color.fromARGB(255, 255, 255, 255),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(30),

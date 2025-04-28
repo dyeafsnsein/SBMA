@@ -72,15 +72,7 @@ class LoginPage extends StatelessWidget {
                                       _buildSignUpButton(context),
                                       const SizedBox(height: 20),
                                       // Fingerprint Access Text
-                                      const Text(
-                                        'Use Fingerprint to Access',
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
+                                     
                                       const SizedBox(height: 20),
                                       // Social Login Section (with Google Login)
                                       _buildSocialLoginSection(controller, context),
@@ -123,6 +115,7 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          style: TextStyle(color: Colors.black),
           controller: controller.emailController,
           decoration: InputDecoration(
             labelText: 'Username or Email',
@@ -131,7 +124,7 @@ class LoginPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 0, 0, 0),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -141,7 +134,7 @@ class LoginPage extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(0, 0, 0, 0.45),
+              color: Color.fromRGBO(101, 96, 96, 1),
             ),
           ),
         ),
@@ -166,15 +159,19 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          style: TextStyle(color: Colors.black),
+
           controller: controller.passwordController,
           obscureText: !controller.isPasswordVisible,
           decoration: InputDecoration(
             labelText: 'Password',
+            hintText: '**********',
+
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
             ),
             filled: true,
-            fillColor: const Color.fromARGB(255, 0, 0, 0),
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             labelStyle: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -292,14 +289,14 @@ class LoginPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
+           /* IconButton(
               icon: Image.asset(
                 'lib/assets/Facebook.png',
                 width: 32.71,
                 height: 32.65,
               ),
               onPressed: () {},
-            ),
+            ),*/
             const SizedBox(width: 16),
             IconButton(
               icon: Image.asset(
@@ -311,21 +308,7 @@ class LoginPage extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        TextButton(
-          onPressed: () {
-            context.go('/signup');
-          },
-          child: const Text(
-            'Don’t have an account? Sign Up',
-            style: TextStyle(
-              color: Colors.black,
-              fontFamily: 'League Spartan',
-              fontWeight: FontWeight.w300,
-              fontSize: 13,
-            ),
-          ),
-        ),
+       
       ],
     );
   }

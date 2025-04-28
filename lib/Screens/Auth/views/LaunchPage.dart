@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Screens/login/views/Login.dart';
-import 'package:test_app/Screens/signup/views/Signup.dart';
+import 'package:test_app/Screens/Auth/views/Login.dart';
+import 'package:test_app/Screens/Auth/views/Signup.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({Key? key}) : super(key: key);
@@ -23,7 +23,7 @@ class _LaunchPageState extends State<LaunchPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Flousi',
+                'SBMA',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
@@ -40,7 +40,7 @@ class _LaunchPageState extends State<LaunchPage> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.',
+                  'Hey There.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -134,19 +134,7 @@ class _LaunchPageState extends State<LaunchPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  // Add your forgot password functionality here
-                },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
+            
             ],
           ),
         ),

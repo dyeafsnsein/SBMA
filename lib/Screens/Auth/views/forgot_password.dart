@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ✅ Add this import
-
+import 'Login.dart';
 @RoutePage()
 class ForgotPasswordPage extends StatelessWidget {
   ForgotPasswordPage({Key? key}) : super(key: key);
@@ -87,7 +87,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 14),
                                 Text(
-                                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
+                                  'We will send you a link to reset your password.',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
@@ -161,7 +161,10 @@ class ForgotPasswordPage extends StatelessWidget {
                                     width: 169,
                                     height: 32,
                                     child: ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () {  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const LoginPage()),
+  );},
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[300],
                                         shape: RoundedRectangleBorder(
@@ -171,7 +174,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                         padding: EdgeInsets.zero,
                                       ),
                                       child: const Text(
-                                        'Sign Up',
+                                        'Login',
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w600,
@@ -186,49 +189,20 @@ class ForgotPasswordPage extends StatelessWidget {
                                 Center(
                                   child: Column(
                                     children: [
-                                      const Text(
-                                        'or sign up with',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w300,
-                                          color: Color(0xFF202422),
-                                          fontFamily: 'League Spartan',
-                                        ),
-                                      ),
+                                   
                                       const SizedBox(height: 20),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          IconButton(
-                                            icon: Image.asset(
-                                              'lib/assets/Facebook.png',
-                                              width: 32.71,
-                                              height: 32.65,
-                                            ),
-                                            onPressed: () {},
-                                          ),
-                                          const SizedBox(width: 16),
-                                          IconButton(
-                                            icon: Image.asset(
-                                              'lib/assets/Google.png',
-                                              width: 32.71,
-                                              height: 32.71,
-                                            ),
-                                            onPressed: () {},
-                                          ),
+                                         
+                                         
                                         ],
                                       ),
-                                      const SizedBox(height: 20),
-                                      const Text(
-                                        'Don\'t have an account? Sign Up',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w300,
-                                          color: Color(0xFF202422),
-                                          fontFamily: 'League Spartan',
-                                        ),
-                                      ),
+                                      
+                                      
+                                     
+                                      
                                     ],
                                   ),
                                 ),
