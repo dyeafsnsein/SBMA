@@ -322,8 +322,8 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                             ? [
                                 const DropdownMenuItem<String>(
                                   value: 'loading',
-                                  child: Text('Loading...'),
                                   enabled: false,
+                                  child: Text('Loading...'),
                                 ),
                               ]
                             : filteredCategories.map((category) {

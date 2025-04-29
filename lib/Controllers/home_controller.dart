@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/transaction_model.dart';
-import '../services/data_service.dart';
+import '../Services/data_service.dart';
 
 class HomeController extends ChangeNotifier {
   final DataService _dataService;

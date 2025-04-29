@@ -22,17 +22,39 @@ class TransactionModel {
   });
 
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('Firestore document data is null for ID: ${doc.id}');
+    }
+
     final timestamp = data['timestamp'] as Timestamp?;
+    final type = data['type'] as String? ?? 'expense';
+    final amountRaw = data['amount'] as num?;
+    final amount = amountRaw?.toDouble() ?? 0.0;
+
+    // Validate data
+    if (!['income', 'expense'].contains(type)) {
+      print(
+          'TransactionModel: Invalid type "$type" for doc ID: ${doc.id}, defaulting to expense');
+    }
+    if (amount.isNaN || amount.isInfinite) {
+      print(
+          'TransactionModel: Invalid amount "$amount" for doc ID: ${doc.id}, defaulting to 0.0');
+    }
+    if (timestamp == null) {
+      print(
+          'TransactionModel: Missing timestamp for doc ID: ${doc.id}, using current time');
+    }
+
     return TransactionModel(
       id: doc.id,
-      type: data['type'] ?? 'expense',
-      amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+      type: ['income', 'expense'].contains(type) ? type : 'expense',
+      amount: amount.isNaN || amount.isInfinite ? 0.0 : amount,
       date: timestamp != null ? timestamp.toDate().toLocal() : DateTime.now(),
-      description: data['description'] ?? '',
-      category: data['category'] ?? 'Unknown',
-      categoryId: data['categoryId'] ?? 'unknown',
-      icon: data['icon'] ?? '',
+      description: data['description'] as String? ?? '',
+      category: data['category'] as String? ?? 'Unknown',
+      categoryId: data['categoryId'] as String? ?? 'unknown',
+      icon: data['icon'] as String? ?? '',
     );
   }
 

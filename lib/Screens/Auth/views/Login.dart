@@ -19,7 +19,8 @@ class LoginPage extends StatelessWidget {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
@@ -42,7 +43,8 @@ class LoginPage extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       const SizedBox(height: 90),
                                       // Email Field
@@ -72,10 +74,11 @@ class LoginPage extends StatelessWidget {
                                       _buildSignUpButton(context),
                                       const SizedBox(height: 20),
                                       // Fingerprint Access Text
-                                     
+
                                       const SizedBox(height: 20),
                                       // Social Login Section (with Google Login)
-                                      _buildSocialLoginSection(controller, context),
+                                      _buildSocialLoginSection(
+                                          controller, context),
                                     ],
                                   ),
                                 ),
@@ -115,7 +118,7 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.emailController,
           decoration: InputDecoration(
             labelText: 'Username or Email',
@@ -159,14 +162,12 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          style: TextStyle(color: Colors.black),
-
+          style: const TextStyle(color: Colors.black),
           controller: controller.passwordController,
           obscureText: !controller.isPasswordVisible,
           decoration: InputDecoration(
             labelText: 'Password',
             hintText: '**********',
-
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -179,7 +180,9 @@ class LoginPage extends StatelessWidget {
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                controller.isPasswordVisible
+                    ? Icons.visibility
+                    : Icons.visibility_off,
                 color: const Color.fromRGBO(0, 0, 0, 0.45),
               ),
               onPressed: () => controller.togglePasswordVisibility(),
@@ -273,7 +276,8 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialLoginSection(AuthController controller, BuildContext context) {
+  Widget _buildSocialLoginSection(
+      AuthController controller, BuildContext context) {
     return Column(
       children: [
         const Text(
@@ -289,7 +293,7 @@ class LoginPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-           /* IconButton(
+            /* IconButton(
               icon: Image.asset(
                 'lib/assets/Facebook.png',
                 width: 32.71,
@@ -308,7 +312,6 @@ class LoginPage extends StatelessWidget {
             ),
           ],
         ),
-       
       ],
     );
   }

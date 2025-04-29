@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/category_model.dart';
-import '../services/firestore_helper.dart';
+import '../Services/firestore_helper.dart';
 
 class CategoryController extends ChangeNotifier {
   List<CategoryModel> _categories = [];

@@ -1,17 +1,22 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../Models/analysis_model.dart';
 import '../Models/transaction_model.dart';
 import '../Models/savings_goal.dart';
-import '../services/data_service.dart';
+import '../Services/data_service.dart';
+import '../Services/ai_service.dart';
+import '../Services/notification_service.dart';
 import '../Controllers/savings_controller.dart';
 
 class AnalysisController extends ChangeNotifier {
   final AnalysisModel model;
   final DataService _dataService;
   final SavingsController _savingsController;
+  final AiService _aiService;
+  final NotificationService _notificationService;
   double totalIncome = 0.0;
   double totalExpense = 0.0;
   List<TransactionModel> _transactions = [];
@@ -19,8 +24,17 @@ class AnalysisController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   Map<String, double> _categoryBreakdown = {};
+  bool _isAnalyzingTips = false;
+  String? _tipErrorMessage;
+  List<String> _budgetTips = [];
 
-  AnalysisController(this.model, this._dataService, this._savingsController) {
+  AnalysisController(
+    this.model,
+    this._dataService,
+    this._savingsController,
+    this._aiService,
+    this._notificationService,
+  ) {
     _setupAuthListener();
   }
 
@@ -31,6 +45,9 @@ class AnalysisController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, double> get categoryBreakdown => _categoryBreakdown;
+  bool get isAnalyzingTips => _isAnalyzingTips;
+  String? get tipErrorMessage => _tipErrorMessage;
+  List<String> get budgetTips => _budgetTips;
 
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -51,6 +68,9 @@ class AnalysisController extends ChangeNotifier {
     _categoryBreakdown = {};
     _isLoading = false;
     _errorMessage = null;
+    _isAnalyzingTips = false;
+    _tipErrorMessage = null;
+    _budgetTips = [];
     _computePeriodData();
     notifyListeners();
   }
@@ -100,7 +120,6 @@ class AnalysisController extends ChangeNotifier {
       notifyListeners();
     });
 
-    // Listen to savings goals changes
     _savingsController.addListener(() {
       notifyListeners();
     });
@@ -317,9 +336,83 @@ class AnalysisController extends ChangeNotifier {
     _setupListeners(user.uid);
   }
 
+  Future<void> generateBudgetTips() async {
+    if (_isAnalyzingTips) {
+      debugPrint(
+          'AnalysisController: Budget tips generation already in progress');
+      return;
+    }
+    _isAnalyzingTips = true;
+    _tipErrorMessage = null;
+    notifyListeners();
+
+    try {
+      final now = DateTime.now();
+      final startDate = now.subtract(const Duration(days: 7));
+      final recentTransactions = _transactions
+          .where((t) =>
+              t.date.isAfter(startDate) &&
+              (t.date.isBefore(now) || t.date.isAtSameMomentAs(now)))
+          .toList();
+
+      debugPrint(
+          'AnalysisController: Found ${recentTransactions.length} recent transactions');
+
+      // Validate transactions
+      for (var t in recentTransactions) {
+        if (!['income', 'expense'].contains(t.type)) {
+          debugPrint('AnalysisController: Invalid transaction type: ${t.type}');
+          throw Exception('Invalid transaction type: ${t.type}');
+        }
+        if (t.amount.isNaN || t.amount.isInfinite) {
+          debugPrint(
+              'AnalysisController: Invalid amount in transaction: ${t.amount}');
+          throw Exception('Invalid amount in transaction: ${t.amount}');
+        }
+      }
+
+      // Check SavingsController availability
+      if (_savingsController.savingsGoals.isEmpty) {
+        debugPrint(
+            'AnalysisController: No savings goals available, proceeding with budget tips');
+      }
+
+      if (recentTransactions.isEmpty) {
+        debugPrint(
+            'AnalysisController: No transactions found, using default tips');
+        _budgetTips = [
+          'No transactions found this week. Start tracking your expenses!',
+          'Set a weekly budget to manage your finances.',
+          'Consider adding income or expense transactions to get personalized tips.',
+        ];
+      } else {
+        debugPrint('AnalysisController: Calling AiService.generateBudgetTips');
+        _budgetTips = await _aiService.generateBudgetTips(recentTransactions);
+        debugPrint('AnalysisController: Received tips: $_budgetTips');
+      }
+
+      debugPrint('AnalysisController: Showing notifications for tips');
+      await _notificationService.showBudgetTips(_budgetTips);
+    } catch (e, stackTrace) {
+      _tipErrorMessage = 'Failed to generate tips: $e';
+      debugPrint('AnalysisController: Error generating tips: $e\n$stackTrace');
+      _budgetTips = [
+        'Error generating tips. Try again later.',
+        'Ensure your transactions are up to date.',
+        'Contact support if the issue persists.',
+      ];
+      await _notificationService.showBudgetTips(_budgetTips);
+    } finally {
+      _isAnalyzingTips = false;
+      notifyListeners();
+      debugPrint('AnalysisController: Budget tips generation completed');
+    }
+  }
+
   @override
   void dispose() {
     _transactionSubscription?.cancel();
+    _savingsController.removeListener(notifyListeners);
     super.dispose();
   }
 }

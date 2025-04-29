@@ -84,6 +84,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
         icon: widget.iconPath,
         targetAmount: 0.0,
         currentAmount: 0.0,
+        deadline: null,
+        isActive: false,
       ),
     );
 

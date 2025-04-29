@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ✅ Add this import
 import 'Login.dart';
+
 @RoutePage()
 class ForgotPasswordPage extends StatelessWidget {
   ForgotPasswordPage({Key? key}) : super(key: key);
@@ -161,10 +162,14 @@ class ForgotPasswordPage extends StatelessWidget {
                                     width: 169,
                                     height: 32,
                                     child: ElevatedButton(
-                                      onPressed: () {  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const LoginPage()),
-  );},
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const LoginPage()),
+                                        );
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.grey[300],
                                         shape: RoundedRectangleBorder(
@@ -186,23 +191,15 @@ class ForgotPasswordPage extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                Center(
+                                const Center(
                                   child: Column(
                                     children: [
-                                   
-                                      const SizedBox(height: 20),
+                                      SizedBox(height: 20),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
-                                        children: [
-                                         
-                                         
-                                        ],
+                                        children: [],
                                       ),
-                                      
-                                      
-                                     
-                                      
                                     ],
                                   ),
                                 ),

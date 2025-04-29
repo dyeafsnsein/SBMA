@@ -65,7 +65,7 @@ class SavingsController extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to initialize savings goals: $e';
-      debugPrint('Error initializing savings goals: $e');
+      debugPrint('SavingsController: Error initializing savings goals: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -80,14 +80,15 @@ class SavingsController extends ChangeNotifier {
         .collection('savings_goals')
         .snapshots()
         .listen((snapshot) {
-      _savingsGoals = snapshot.docs.map((doc) => SavingsGoal.fromFirestore(doc)).toList();
+      _savingsGoals =
+          snapshot.docs.map((doc) => SavingsGoal.fromFirestore(doc)).toList();
       _activeGoal = _savingsGoals.firstWhereOrNull((goal) => goal.isActive);
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {
       _errorMessage = 'Failed to load savings goals: $e';
       _isLoading = false;
-      debugPrint('Error listening to savings goals: $e');
+      debugPrint('SavingsController: Error listening to savings goals: $e');
       notifyListeners();
     });
   }
@@ -141,7 +142,7 @@ class SavingsController extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to create savings goal: $e';
-      debugPrint('Error creating savings goal: $e');
+      debugPrint('SavingsController: Error creating savings goal: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -182,7 +183,7 @@ class SavingsController extends ChangeNotifier {
       await goalRef.update(updates);
     } catch (e) {
       _errorMessage = 'Failed to update savings goal: $e';
-      debugPrint('Error updating savings goal: $e');
+      debugPrint('SavingsController: Error updating savings goal: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -210,7 +211,7 @@ class SavingsController extends ChangeNotifier {
           .delete();
     } catch (e) {
       _errorMessage = 'Failed to delete savings goal: $e';
-      debugPrint('Error deleting savings goal: $e');
+      debugPrint('SavingsController: Error deleting savings goal: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -249,7 +250,7 @@ class SavingsController extends ChangeNotifier {
           .update({'isActive': true});
     } catch (e) {
       _errorMessage = 'Failed to set active goal: $e';
-      debugPrint('Error setting active goal: $e');
+      debugPrint('SavingsController: Error setting active goal: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -297,7 +298,7 @@ class SavingsController extends ChangeNotifier {
       });
     } catch (e) {
       _errorMessage = 'Failed to add deposit: $e';
-      debugPrint('Error adding deposit: $e');
+      debugPrint('SavingsController: Error adding deposit: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

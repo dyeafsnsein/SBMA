@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/user_model.dart';
-import '../services/auth_service.dart';
+import '../Services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthController extends ChangeNotifier {
@@ -39,10 +39,10 @@ class AuthController extends ChangeNotifier {
     confirmPasswordController.addListener(_validateConfirmPasswordRealTime);
     dateOfBirthController.addListener(_validateDateOfBirthRealTime);
     mobileNumberController.addListener(_validateMobileNumberRealTime);
-    
+
     // Load current user data when controller is initialized
     loadCurrentUser();
-    
+
     // Listen for auth state changes
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
@@ -385,13 +385,14 @@ class AuthController extends ChangeNotifier {
     mobileNumberController.dispose();
     super.dispose();
   }
-  
+
   // Method to load current user data
   Future<void> loadCurrentUser() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       try {
-        final userData = await _firestore.collection('users').doc(currentUser.uid).get();
+        final userData =
+            await _firestore.collection('users').doc(currentUser.uid).get();
         if (userData.exists) {
           userModel = UserModel.fromMap(
             userData.data() as Map<String, dynamic>,
@@ -406,9 +407,9 @@ class AuthController extends ChangeNotifier {
             name: currentUser.displayName ?? '',
           );
           await _firestore.collection('users').doc(currentUser.uid).set(
-            userModel.toMap(),
-            SetOptions(merge: true),
-          );
+                userModel.toMap(),
+                SetOptions(merge: true),
+              );
         }
         notifyListeners();
       } catch (e) {

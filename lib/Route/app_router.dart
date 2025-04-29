@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; // For debugPrint
+// For debugPrint
 import '../commons/main_container.dart';
 import '../Screens/home/views/home.dart';
 import '../Screens/analysis/views/Analysis.dart';
@@ -16,10 +16,11 @@ import '../Screens/profile/views/editprofile.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
 import '../Screens/set_balance/views/set_balance.dart';
-import '../services/auth_service.dart';
+import '../Services/auth_service.dart';
 import '../Screens/transactions/views/add_expenses_page.dart';
 import '../Screens/transactions/views/add_income_page.dart';
 import '../Screens/Auth/views/LaunchPage.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
@@ -29,8 +30,8 @@ final router = GoRouter(
   initialLocation: '/', // Set LaunchPage as the initial page
   routes: [
     // Auth routes (outside shell, no bottom nav)
-   GoRoute(path: '/launchPage', 
-   builder: (context, state)  => const LaunchPage()),
+    GoRoute(
+        path: '/launchPage', builder: (context, state) => const LaunchPage()),
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
@@ -154,7 +155,8 @@ final router = GoRouter(
     // Define routes that don't require authentication checks
     final bool isOnAuthRoute = state.matchedLocation == '/Login' ||
         state.matchedLocation == '/signup' ||
-        state.matchedLocation == '/forgot-password' || state.matchedLocation == '/LaunchPage' ;
+        state.matchedLocation == '/forgot-password' ||
+        state.matchedLocation == '/LaunchPage';
     final bool isOnSetBalanceRoute = state.matchedLocation == '/set-balance';
     final bool isOnSuccessRoute = state.matchedLocation == '/success3';
 

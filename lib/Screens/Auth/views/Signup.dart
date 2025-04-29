@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
 import 'login.dart';
+
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
 
@@ -19,7 +20,8 @@ class SignupPage extends StatelessWidget {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
@@ -42,7 +44,8 @@ class SignupPage extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       const SizedBox(height: 60),
                                       // Name Field
@@ -58,7 +61,8 @@ class SignupPage extends StatelessWidget {
                                       _buildConfirmPasswordField(controller),
                                       const SizedBox(height: 20),
                                       // Date of Birth Field
-                                      _buildDateOfBirthField(controller, context),
+                                      _buildDateOfBirthField(
+                                          controller, context),
                                       const SizedBox(height: 20),
                                       // Mobile Number Field
                                       _buildMobileNumberField(controller),
@@ -119,7 +123,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.nameController,
           decoration: InputDecoration(
             labelText: 'Full Name',
@@ -163,8 +167,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-                    style: TextStyle(color: Colors.black),
-
+          style: const TextStyle(color: Colors.black),
           controller: controller.emailController,
           decoration: InputDecoration(
             labelText: 'Email',
@@ -208,7 +211,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-           style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.passwordController,
           obscureText: !controller.isPasswordVisible,
           decoration: InputDecoration(
@@ -226,7 +229,9 @@ class SignupPage extends StatelessWidget {
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                controller.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                controller.isPasswordVisible
+                    ? Icons.visibility
+                    : Icons.visibility_off,
                 color: const Color.fromARGB(255, 0, 0, 0),
               ),
               onPressed: controller.togglePasswordVisibility,
@@ -254,7 +259,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-           style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.confirmPasswordController,
           obscureText: !controller.isConfirmPasswordVisible,
           decoration: InputDecoration(
@@ -272,7 +277,9 @@ class SignupPage extends StatelessWidget {
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                controller.isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                controller.isConfirmPasswordVisible
+                    ? Icons.visibility
+                    : Icons.visibility_off,
                 color: const Color.fromARGB(255, 0, 0, 0),
               ),
               onPressed: controller.toggleConfirmPasswordVisibility,
@@ -295,12 +302,13 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDateOfBirthField(AuthController controller, BuildContext context) {
+  Widget _buildDateOfBirthField(
+      AuthController controller, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-           style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.dateOfBirthController,
           readOnly: true, // Make it read-only to use the date picker
           decoration: InputDecoration(
@@ -364,7 +372,7 @@ class SignupPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-           style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
           controller: controller.mobileNumberController,
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
@@ -385,7 +393,6 @@ class SignupPage extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(148, 146, 146, 1),
-
             ),
           ),
         ),
@@ -435,13 +442,13 @@ class SignupPage extends StatelessWidget {
   Widget _buildLoginLink(BuildContext context) {
     return TextButton(
       onPressed: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const LoginPage()),
-  );      },
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      },
       child: const Text(
         'Already have an account? Log In',
-        
         style: TextStyle(
           color: Colors.black,
           fontFamily: 'League Spartan',
@@ -450,6 +457,5 @@ class SignupPage extends StatelessWidget {
         ),
       ),
     );
-    
   }
 }
