@@ -8,7 +8,6 @@ import 'components/period_selector_analysis.dart';
 import '../../../commons/income_expense_summary.dart';
 import 'components/targets_section.dart';
 import '../../../Controllers/analysis_controller.dart';
-import '../../../services/data_service.dart';
 import '../../../Models/savings_goal.dart';
 
 class AnalysisPage extends StatefulWidget {
@@ -18,7 +17,8 @@ class AnalysisPage extends StatefulWidget {
   AnalysisPageState createState() => AnalysisPageState();
 }
 
-class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixin {
+class AnalysisPageState extends State<AnalysisPage>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> fadeAnimation;
 
@@ -29,7 +29,8 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
     _animationController.forward();
   }
 
@@ -39,9 +40,11 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
     super.dispose();
   }
 
-  List<Map<String, dynamic>> _convertSavingsGoalsToTargets(List<SavingsGoal> goals) {
+  List<Map<String, dynamic>> _convertSavingsGoalsToTargets(
+      List<SavingsGoal> goals) {
     return goals.map((goal) {
-      final progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0.0;
+      final progress =
+          goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0.0;
       return {
         'name': goal.name,
         'progress': progress.clamp(0.0, 1.0),
@@ -67,21 +70,31 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    final dataService = Provider.of<DataService>(context);
-
+    debugPrint('AnalysisPage: Building');
     return Consumer<AnalysisController>(
       builder: (context, controller, child) {
+        debugPrint('AnalysisPage: Consumer builder called');
         final screenHeight = MediaQuery.of(context).size.height;
         final screenWidth = MediaQuery.of(context).size.width;
 
-        final expensePercentage = dataService.totalBalance > 0
-            ? (controller.totalExpense / dataService.totalBalance * 100).toInt()
+        final expensePercentage = controller.totalBalance > 0
+            ? (controller.totalExpense / controller.totalBalance * 100).toInt()
             : 0;
 
-        String currentPeriod = controller.periods[controller.selectedPeriodIndex];
-        List<double> expenses = List<double>.from(controller.periodData[currentPeriod]!['expenses']);
-        List<double> income = List<double>.from(controller.periodData[currentPeriod]!['income']);
-        List<String> labels = List<String>.from(controller.periodData[currentPeriod]!['labels']);
+        String currentPeriod =
+            controller.periods[controller.selectedPeriodIndex];
+        final periodData = controller.periodData[currentPeriod] ??
+            {
+              'expenses': <double>[],
+              'income': <double>[],
+              'labels': <String>[],
+            };
+        List<double> expenses =
+            List<double>.from(periodData['expenses'] as List? ?? []);
+        List<double> income =
+            List<double>.from(periodData['income'] as List? ?? []);
+        List<String> labels =
+            List<String>.from(periodData['labels'] as List? ?? []);
 
         final targets = _convertSavingsGoalsToTargets(controller.savingsGoals);
 
@@ -97,7 +110,7 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
                 Column(
                   children: [
                     AnalysisHeader(
-                      totalBalance: dataService.totalBalance,
+                      totalBalance: controller.totalBalance,
                       totalExpense: controller.totalExpense,
                       expensePercentage: expensePercentage,
                       onBackPressed: () {
@@ -123,7 +136,8 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
                             : controller.errorMessage != null
                                 ? Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           controller.errorMessage!,
@@ -145,17 +159,22 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
                                     ),
                                   )
                                 : SingleChildScrollView(
-                                    key: const PageStorageKey('analysis_scroll'),
+                                    key:
+                                        const PageStorageKey('analysis_scroll'),
                                     physics: const BouncingScrollPhysics(),
                                     child: Padding(
-                                      padding: EdgeInsets.all(screenWidth * 0.04),
+                                      padding:
+                                          EdgeInsets.all(screenWidth * 0.04),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           PeriodSelector(
                                             periods: controller.periods,
-                                            selectedIndex: controller.selectedPeriodIndex,
-                                            onPeriodChanged: controller.onPeriodChanged,
+                                            selectedIndex:
+                                                controller.selectedPeriodIndex,
+                                            onPeriodChanged:
+                                                controller.onPeriodChanged,
                                           ),
                                           SizedBox(height: screenHeight * 0.02),
                                           FadeTransition(
@@ -172,7 +191,9 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
                                             expense: controller.totalExpense,
                                           ),
                                           SizedBox(height: screenHeight * 0.03),
-                                          _buildCategoryBreakdown(controller.categoryBreakdown, screenWidth),
+                                          _buildCategoryBreakdown(
+                                              controller.categoryBreakdown,
+                                              screenWidth),
                                           SizedBox(height: screenHeight * 0.03),
                                           TargetsSection(targets: targets),
                                           SizedBox(height: screenHeight * 0.1),
@@ -192,7 +213,8 @@ class AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixi
     );
   }
 
-  Widget _buildCategoryBreakdown(Map<String, double> breakdown, double screenWidth) {
+  Widget _buildCategoryBreakdown(
+      Map<String, double> breakdown, double screenWidth) {
     if (breakdown.isEmpty) {
       return const SizedBox();
     }

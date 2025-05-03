@@ -65,7 +65,8 @@ class DataService {
       if (label is String && icon is String) {
         _categoryIcons[label] = icon;
       } else {
-        debugPrint('Invalid category data for doc ${doc.id}: label=$label, icon=$icon');
+        debugPrint(
+            'Invalid category data for doc ${doc.id}: label=$label, icon=$icon');
       }
     }
   }
@@ -74,11 +75,14 @@ class DataService {
     return _categoryIcons[category] ?? 'lib/assets/Transaction.png';
   }
 
-  Future<void> updateBalance(String userId, double amount, bool isExpense) async {
+  Future<void> updateBalance(
+      String userId, double amount, bool isExpense) async {
     final userRef = _firestore.collection('users').doc(userId);
     final userDoc = await userRef.get();
-    final currentBalance = (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
-    final newBalance = isExpense ? currentBalance - amount : currentBalance + amount;
+    final currentBalance =
+        (userDoc.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+    final newBalance =
+        isExpense ? currentBalance - amount : currentBalance + amount;
     await userRef.update({'balance': newBalance});
   }
 

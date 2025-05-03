@@ -17,6 +17,7 @@ class HomeController extends ChangeNotifier {
   int _selectedPeriodIndex = 2;
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
   String? _errorMessage;
+  DateTime? _lastUpdate;
 
   HomeController(this._dataService) {
     _setupAuthListener();
@@ -45,7 +46,6 @@ class HomeController extends ChangeNotifier {
   void _clearState() {
     _transactionSubscription?.cancel();
     _transactionSubscription = null;
-
     _totalExpense = 0.0;
     _revenueLastWeek = 0.0;
     _topCategoryLastWeek = '';
@@ -54,7 +54,7 @@ class HomeController extends ChangeNotifier {
     _allTransactions = [];
     _filteredTransactions = [];
     _errorMessage = null;
-
+    _lastUpdate = null;
     notifyListeners();
   }
 
@@ -74,14 +74,14 @@ class HomeController extends ChangeNotifier {
         .snapshots()
         .listen((snapshot) {
       _errorMessage = null;
-      _allTransactions = [];
+      final newTransactions = <TransactionModel>[];
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final categoryRaw = data['category'];
         final category = categoryRaw is String ? categoryRaw : 'Unknown';
         final categoryId = data['categoryId'] as String? ?? 'unknown';
         final icon = _dataService.getIconForCategory(category);
-        _allTransactions.add(TransactionModel(
+        newTransactions.add(TransactionModel(
           id: doc.id,
           type: data['type'] ?? 'expense',
           amount: double.parse(data['amount'].toString()),
@@ -93,15 +93,28 @@ class HomeController extends ChangeNotifier {
         ));
       }
 
-      _calculateLastWeekMetrics();
-      _calculateTotalExpense();
-      _filterTransactions();
-      notifyListeners();
+      if (!_areTransactionsEqual(newTransactions, _allTransactions)) {
+        _allTransactions = newTransactions;
+        _calculateLastWeekMetrics();
+        _calculateTotalExpense();
+        _filterTransactions();
+        _lastUpdate = DateTime.now();
+        notifyListeners();
+      }
     }, onError: (e) {
       _errorMessage = 'Failed to load transactions: $e';
       debugPrint('Error listening to transactions: $e');
       notifyListeners();
     });
+  }
+
+  bool _areTransactionsEqual(
+      List<TransactionModel> a, List<TransactionModel> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id || a[i].amount != b[i].amount) return false;
+    }
+    return true;
   }
 
   Future<void> _calculateTotalExpense() async {
@@ -140,11 +153,11 @@ class HomeController extends ChangeNotifier {
       _topCategoryLastWeek = topEntry.key;
       _topCategoryAmountLastWeek = topEntry.value;
       _topCategoryIconLastWeek =
-          categoryIcons[topEntry.key] ?? 'lib/assets/Transaction.png';
+          categoryIcons[topEntry.key] ?? 'lib/assets/Salary.png';
     } else {
       _topCategoryLastWeek = 'None';
       _topCategoryAmountLastWeek = 0.0;
-      _topCategoryIconLastWeek = 'lib/assets/Transaction.png';
+      _topCategoryIconLastWeek = 'lib/assets/Salary.png';
     }
   }
 

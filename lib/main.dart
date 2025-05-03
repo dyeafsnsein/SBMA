@@ -1,22 +1,23 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'Controllers/auth_controller.dart';
 import 'Controllers/home_controller.dart';
 import 'Controllers/analysis_controller.dart';
 import 'Controllers/transaction_controller.dart';
 import 'Controllers/savings_controller.dart';
+import 'Controllers/notification_controller.dart';
+import 'Controllers/category_controller.dart';
 import 'Models/analysis_model.dart';
+import 'Models/notification_model.dart';
 import 'Services/data_service.dart';
 import 'Services/ai_service.dart';
 import 'Services/notification_service.dart';
 import 'Services/automation_service.dart';
 import 'Route/app_router.dart';
-import 'Controllers/category_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,11 @@ void main() async {
   try {
     await dotenv.load(fileName: '.env');
     debugPrint('Main: .env loaded successfully');
+    final geminiApiKey = dotenv.env['GEMINI_API_KEY'];
+    debugPrint('Main: GEMINI_API_KEY Loaded: ${geminiApiKey?.isNotEmpty}');
+    if (geminiApiKey == null || geminiApiKey.isEmpty) {
+      debugPrint('Main: GEMINI_API_KEY is missing or empty');
+    }
   } catch (e, stackTrace) {
     debugPrint('Main: Error loading .env: $e\n$stackTrace');
   }
@@ -38,6 +44,8 @@ void main() async {
   try {
     await notificationService.init();
     debugPrint('Main: NotificationService initialized successfully');
+    await notificationService.requestPermissions();
+    debugPrint('Main: Notification permissions requested');
   } catch (e, stackTrace) {
     debugPrint('Main: Error initializing NotificationService: $e\n$stackTrace');
   }
@@ -49,15 +57,6 @@ void main() async {
       debugPrint('Main: AutomationService initialized');
       await AutomationService.scheduleWeeklyAnalysis();
       debugPrint('Main: AutomationService scheduled');
-      final plugin = FlutterLocalNotificationsPlugin();
-      final androidPlugin = plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
-      if (androidPlugin != null) {
-        await androidPlugin.requestNotificationsPermission();
-        debugPrint('Main: Requested notification permission');
-      } else {
-        debugPrint('Main: Android notification plugin not available');
-      }
     } catch (e, stackTrace) {
       debugPrint('Main: Error setting up AutomationService: $e\n$stackTrace');
     }
@@ -95,6 +94,8 @@ class MyApp extends StatelessWidget {
             create: (context) =>
                 TransactionController(context.read<DataService>())),
         ChangeNotifierProvider(create: (_) => CategoryController()),
+        ChangeNotifierProvider(
+            create: (_) => NotificationController(NotificationModel())),
       ],
       child: MaterialApp.router(
         routerConfig: router,

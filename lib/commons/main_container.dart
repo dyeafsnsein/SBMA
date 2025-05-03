@@ -31,24 +31,21 @@ class MainContainerPage extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    
-    // Define route patterns
+
     final patterns = [
-      [r'^/$', r'^/quick-analysis'], // Home routes
+      [r'^/$', r'^/analysis'], // Home routes
       [r'^/savings', r'^/savings-analysis'], // Savings routes
       [r'^/transactions'], // Transaction routes
       [r'^/categories'], // Category routes
       [r'^/profile'], // Profile routes
     ];
-    
-    // Find matching pattern index
+
     for (var i = 0; i < patterns.length; i++) {
-      if (patterns[i].any((pattern) => 
-          RegExp(pattern).hasMatch(location))) {
+      if (patterns[i].any((pattern) => RegExp(pattern).hasMatch(location))) {
         return i;
       }
     }
-    
+
     return 0; // Default to home
   }
 
@@ -56,7 +53,7 @@ class MainContainerPage extends StatelessWidget {
     final routes = [
       '/',
       '/savings',
-      '/transactions', 
+      '/transactions',
       '/categories',
       '/profile',
     ];

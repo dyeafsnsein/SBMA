@@ -7,7 +7,7 @@ import '../Screens/home/views/home.dart';
 import '../Screens/analysis/views/Analysis.dart';
 import '../Screens/transactions/views/transaction.dart';
 import '../Screens/categories/views/categories.dart';
-import '../Screens/notification/views/Notification.dart';
+import '../Screens/notification/views/Notification1.dart';
 import '../Screens/Auth/views/login.dart';
 import '../Screens/Auth/views/signup.dart';
 import '../Screens/Auth/views/forgot_password.dart';
