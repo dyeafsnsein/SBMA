@@ -11,6 +11,7 @@ import '../Services/ai_service.dart';
 import '../Services/notification_service.dart';
 import '../Controllers/savings_controller.dart';
 import '../Controllers/category_controller.dart';
+import 'package:intl/intl.dart';
 
 class AnalysisController extends ChangeNotifier {
   final AnalysisModel model;
@@ -362,7 +363,7 @@ class AnalysisController extends ChangeNotifier {
         'AnalysisController: Input data: income=$totalIncome, expenses=$totalExpense, categories=$_categoryBreakdown, timestamp=$timestamp');
     if (_isAnalyzingTips) {
       debugPrint(
-          'AnalysisController: Budget tips generation already in progress');
+          'AnalysisController: Budget tip generation already in progress');
       return [];
     }
     _isAnalyzingTips = true;
@@ -380,7 +381,7 @@ class AnalysisController extends ChangeNotifier {
       if (totalIncome <= 0 || totalExpense <= 0 || _categoryBreakdown.isEmpty) {
         debugPrint('AnalysisController: Invalid input data for AI');
         final tips = [
-          'No sufficient data to generate tips.',
+          'No sufficient data to generate tip.',
           'Add more transactions to get personalized advice.',
         ];
         if (context != null) {
@@ -392,13 +393,13 @@ class AnalysisController extends ChangeNotifier {
         income: totalIncome,
         expenses: totalExpense,
         categories: _categoryBreakdown,
-        timestamp: timestamp,
+        timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
       );
-      debugPrint('AnalysisController: Generated tips: $tips');
+      debugPrint('AnalysisController: Generated tip: $tips');
       if (tips.isEmpty) {
-        debugPrint('AnalysisController: AI returned empty tips');
+        debugPrint('AnalysisController: AI returned empty tip');
         final fallbackTips = [
-          'No specific tips generated.',
+          'No specific tip generated.',
           'Review your spending patterns for savings opportunities.',
         ];
         if (context != null) {
@@ -412,8 +413,8 @@ class AnalysisController extends ChangeNotifier {
       return tips;
     } catch (e, stackTrace) {
       debugPrint(
-          'AnalysisController: Error generating budget tips: $e\n$stackTrace');
-      String errorMessage = 'Failed to generate tips: $e';
+          'AnalysisController: Error generating budget tip: $e\n$stackTrace');
+      String errorMessage = 'Failed to generate tip: $e';
       if (e.toString().contains('NotInitializedError')) {
         errorMessage = 'AI service not initialized. Please try again later.';
       }
@@ -426,7 +427,7 @@ class AnalysisController extends ChangeNotifier {
     } finally {
       _isAnalyzingTips = false;
       notifyListeners();
-      debugPrint('AnalysisController: Budget tips generation completed');
+      debugPrint('AnalysisController: Budget tip generation completed');
     }
   }
 

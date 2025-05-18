@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Controllers/notification_controller.dart';
 import '../../../Controllers/analysis_controller.dart';
 import '../../../Models/notification_model.dart';
+import 'package:intl/intl.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
@@ -15,26 +16,34 @@ class NotificationPage extends StatelessWidget {
       create: (_) => NotificationController(NotificationModel()),
       child: Consumer<NotificationController>(
         builder: (context, controller, child) {
-          // Load cached tips from SharedPreferences
+          // Load cached tip from SharedPreferences once
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             debugPrint(
-                'NotificationPage: Checking SharedPreferences for cached tips');
+                'NotificationPage: Checking SharedPreferences for cached tip');
             final prefs = await SharedPreferences.getInstance();
-            for (int i = 0; i < 3; i++) {
-              final tip = prefs.getString('budget_tip_$i');
-              if (tip != null) {
-                final parts = tip.split('|');
-                if (parts.length == 3) {
+            final tip = prefs.getString('budget_tip_0');
+            final deletedTip = prefs.getString('deleted_tip');
+            if (tip != null && deletedTip != tip) {
+              final parts = tip.split('|');
+              if (parts.length == 3) {
+                // Check for duplicates
+                final exists = controller.notifications.any(
+                    (n) => n['title'] == parts[1] && n['message'] == parts[2]);
+                if (!exists) {
                   controller.addNotification(
                     parts[0], // icon
                     parts[1], // title
                     parts[2].replaceAll('\n', ' '), // message
-                    DateTime.now().toIso8601String(),
+                    DateFormat('d MMMM').format(DateTime.now()),
                   );
                   debugPrint(
-                      'NotificationPage: Loaded cached tip $i: ${parts[1]}');
+                      'NotificationPage: Loaded cached tip: ${parts[1]}');
+                } else {
+                  debugPrint('NotificationPage: Skipped duplicate cached tip');
                 }
               }
+            } else {
+              debugPrint('NotificationPage: Skipped loading deleted tip');
             }
           });
 
@@ -128,11 +137,16 @@ class NotificationPage extends StatelessWidget {
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.white70),
-                                onPressed: () {
+                                onPressed: () async {
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  final tipData =
+                                      '${notification['icon']}|${notification['title']}|${notification['message']}';
+                                  await prefs.setString('deleted_tip', tipData);
                                   controller
                                       .removeNotification(notification['id']);
                                   debugPrint(
-                                      'NotificationPage: Removed notification ${notification['id']}');
+                                      'NotificationPage: Removed notification ${notification['id']} and marked as deleted');
                                 },
                               ),
                             ),
@@ -143,17 +157,20 @@ class NotificationPage extends StatelessWidget {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () async {
-                debugPrint('NotificationPage: Generating AI budget tips');
+                debugPrint('NotificationPage: Generating AI budget tip');
                 final analysisController = context.read<AnalysisController>();
                 try {
-                  // Clear previous tips in SharedPreferences
+                  // Clear previous tips and notifications
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.remove('budget_tip_0');
                   await prefs.remove('budget_tip_1');
                   await prefs.remove('budget_tip_2');
-                  debugPrint('NotificationPage: Cleared cached tips');
+                  await prefs.remove('deleted_tip');
+                  controller.clearNotifications();
+                  debugPrint(
+                      'NotificationPage: Cleared cached tips, deleted tip flag, and notifications');
 
-                  final timestamp = DateTime.now().toIso8601String();
+                  final timestamp = DateFormat('d MMMM').format(DateTime.now());
                   final tips = await analysisController.generateBudgetTips(
                     context: context,
                     timestamp: timestamp,
@@ -161,57 +178,58 @@ class NotificationPage extends StatelessWidget {
                   if (!context.mounted) return;
 
                   if (tips.isNotEmpty && !tips.contains('No sufficient data')) {
-                    for (int i = 0; i < tips.length && i < 3; i++) {
-                      controller.addNotification(
-                        'lib/assets/Notification.png',
-                        'AI Budget Tip ${i + 1}',
-                        tips[i].replaceAll('\n', ' '),
-                        DateTime.now().toIso8601String(),
-                      );
-                    }
+                    controller.addNotification(
+                      'lib/assets/Notification.png',
+                      'AI Budget Tip',
+                      tips[0].replaceAll('\n', ' '),
+                      timestamp,
+                    );
+                    // Cache the tip
+                    final tipData =
+                        'lib/assets/Notification.png|AI Budget Tip|${tips[0].replaceAll('\n', ' ')}';
+                    await prefs.setString('budget_tip_0', tipData);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('AI tips added')),
+                      const SnackBar(content: Text('AI tip added')),
                     );
                     debugPrint(
-                        'NotificationPage: AI tips added successfully: $tips');
+                        'NotificationPage: AI tip added successfully: $tips');
                   } else {
                     controller.addNotification(
                       'lib/assets/Error.png',
-                      'AI Budget Tip Error',
-                      'No budget tips generated. Please add more transactions.',
-                      DateTime.now().toIso8601String(),
+                      'AI Budget Tip',
+                      'No budget tip generated. Please add more transactions.',
+                      timestamp,
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content:
-                              Text('No tips generated. Add transactions.')),
+                          content: Text('No tip generated. Add transactions.')),
                     );
                     debugPrint(
-                        'NotificationPage: No valid tips generated: $tips');
+                        'NotificationPage: No valid tip generated: $tips');
                   }
                 } catch (e, stackTrace) {
                   if (!context.mounted) return;
-                  String errorMessage = 'Failed to generate tips: $e';
+                  String errorMessage = 'Failed to generate tip: $e';
                   if (e.toString().contains('NotInitializedError')) {
                     errorMessage =
                         'AI service not initialized. Please try again later.';
                   }
                   controller.addNotification(
                     'lib/assets/Error.png',
-                    'AI Error',
+                    'AI Budget Tip',
                     errorMessage,
-                    DateTime.now().toIso8601String(),
+                    DateFormat('d MMMM').format(DateTime.now()),
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(errorMessage)),
                   );
                   debugPrint(
-                      'NotificationPage: AI tips generation failed: $e\n$stackTrace');
+                      'NotificationPage: AI tip generation failed: $e\n$stackTrace');
                 }
               },
               backgroundColor: const Color(0xFF00FF94),
               child: const Icon(Icons.auto_awesome),
-              tooltip: 'Generate AI Budget Tips',
+              tooltip: 'Generate AI Budget Tip',
             ),
           );
         },
