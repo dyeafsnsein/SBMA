@@ -73,24 +73,15 @@ class HomeController extends ChangeNotifier {
         .limit(10)
         .snapshots()
         .listen((snapshot) {
-      _errorMessage = null;
-      final newTransactions = <TransactionModel>[];
+      _errorMessage = null;      final newTransactions = <TransactionModel>[];
       for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final categoryRaw = data['category'];
-        final category = categoryRaw is String ? categoryRaw : 'Unknown';
-        final categoryId = data['categoryId'] as String? ?? 'unknown';
-        final icon = _dataService.getIconForCategory(category);
-        newTransactions.add(TransactionModel(
-          id: doc.id,
-          type: data['type'] ?? 'expense',
-          amount: double.parse(data['amount'].toString()),
-          date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          description: data['description'] ?? '',
-          category: category,
-          categoryId: categoryId,
-          icon: icon,
-        ));
+        try {
+          // Use the same fromFirestore method as TransactionController to ensure consistency
+          final transaction = TransactionModel.fromFirestore(doc);
+          newTransactions.add(transaction);
+        } catch (e) {
+          debugPrint('Error parsing transaction: $e');
+        }
       }
 
       if (!_areTransactionsEqual(newTransactions, _allTransactions)) {

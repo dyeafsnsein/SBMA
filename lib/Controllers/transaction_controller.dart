@@ -169,18 +169,16 @@ class TransactionController extends ChangeNotifier {
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
-          .doc();
-
-      // Use "Income" category for income transactions
+          .doc();      // Use "Income" category for income transactions
       final income = TransactionModel(
         id: transactionRef.id,
         type: 'income',
         amount: transaction.amount,
         date: transaction.date,
         description: transaction.description,
-        category: 'Income',
+        category: 'Income', // Always use 'Income' category for income transactions
         categoryId: 'income',
-        icon: transaction.icon,
+        icon: 'lib/assets/Income.png', // Always use Income icon
       );
 
       batch.set(transactionRef, income.toFirestore());
@@ -213,9 +211,7 @@ class TransactionController extends ChangeNotifier {
   void clearFilter() {
     _selectedDate = null;
     notifyListeners();
-  }
-
-  Future<void> updateTransaction(TransactionModel transaction) async {
+  }  Future<void> updateTransaction(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       _errorMessage = 'User not authenticated';
@@ -228,35 +224,64 @@ class TransactionController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
           .doc(transaction.id);
-
+      
       // Get the old transaction to calculate balance difference
-      final oldTransaction =
-          _transactions.firstWhere((t) => t.id == transaction.id);
-      final balanceDifference = transaction.amount - oldTransaction.amount;
+      final oldTransactionIndex = _transactions.indexWhere((t) => t.id == transaction.id);
+      
+      // If we don't have the transaction locally, try to fetch it directly
+      if (oldTransactionIndex == -1) {
+        debugPrint('Transaction with ID: ${transaction.id} not found in local cache. Fetching from Firestore.');
+        try {
+          final docSnapshot = await transactionRef.get();
+          
+          if (!docSnapshot.exists) {
+            _errorMessage = 'Cannot update: Transaction not found';
+            debugPrint('Transaction with ID: ${transaction.id} not found in Firestore.');
+            _isLoading = false;
+            notifyListeners();
+            return;
+          }
+        } catch (e) {
+          _errorMessage = 'Error fetching transaction: $e';
+          debugPrint('Error fetching transaction: $e');
+          _isLoading = false;
+          notifyListeners();
+          return;
+        }
+      }
+        // Document exists, proceed with normal update
+      final batch = FirebaseFirestore.instance.batch();
+      
+      double balanceDifference = 0.0;
+      if (oldTransactionIndex != -1) {
+        final oldTransaction = _transactions[oldTransactionIndex];
+        balanceDifference = transaction.amount - oldTransaction.amount;
+      }
 
+      // Update the transaction in Firestore
       batch.update(transactionRef, transaction.toFirestore());
 
-      // Update balance via DataService
-      await _dataService.updateBalance(
-          user.uid, balanceDifference, transaction.type == 'expense');
+      // Update balance via DataService if we have the old transaction
+      if (oldTransactionIndex != -1) {
+        await _dataService.updateBalance(
+            user.uid, balanceDifference, transaction.type == 'expense');
+      }
 
       await batch.commit();
-      notifyListeners();
-    } catch (e) {
+      _isLoading = false;
+      notifyListeners();    } catch (e) {
       _errorMessage = 'Failed to update transaction: $e';
       debugPrint('Error updating transaction: $e');
       _isLoading = false;
       notifyListeners();
-      throw Exception('Failed to update transaction: $e');
+      // Don't rethrow to prevent app crashes
     }
   }
-
   Future<void> deleteTransaction(TransactionModel transaction) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -270,13 +295,24 @@ class TransactionController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final batch = FirebaseFirestore.instance.batch();
       final transactionRef = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('transactions')
           .doc(transaction.id);
-
+          
+      // First check if the document exists
+      final docSnapshot = await transactionRef.get();
+      
+      if (!docSnapshot.exists) {
+        debugPrint('Transaction with ID: ${transaction.id} not found in Firestore when trying to delete.');
+        // Document doesn't exist, so nothing to delete
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      
+      final batch = FirebaseFirestore.instance.batch();
       batch.delete(transactionRef);
 
       // Update balance via DataService (reverse the transaction amount)
@@ -284,13 +320,13 @@ class TransactionController extends ChangeNotifier {
           user.uid, -transaction.amount, transaction.type == 'expense');
 
       await batch.commit();
-      notifyListeners();
-    } catch (e) {
+      _isLoading = false;
+      notifyListeners();    } catch (e) {
       _errorMessage = 'Failed to delete transaction: $e';
       debugPrint('Error deleting transaction: $e');
       _isLoading = false;
       notifyListeners();
-      throw Exception('Failed to delete transaction: $e');
+      // Don't rethrow to prevent app crashes
     }
   }
 

@@ -131,11 +131,12 @@ class HomePage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Expanded(
+                          SizedBox(height: screenHeight * 0.02),                          Expanded(
                             child: Builder(
                               builder: (context) => TransactionList(
-                                  transactions: homeController.transactions),
+                                transactions: homeController.transactions,
+                                isHomePage: true,
+                              ),
                             ),
                           ),
                         ],
