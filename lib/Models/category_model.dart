@@ -15,8 +15,8 @@ class CategoryModel {
     final data = doc.data() as Map<String, dynamic>;
     return CategoryModel(
       id: doc.id,
-      label: data['label'] as String,
-      icon: data['icon'] as String,
+      label: data['label'] as String? ?? 'Unknown',
+      icon: data['icon'] as String? ?? 'lib/assets/Transaction.png',
     );
   }
 

@@ -10,20 +10,19 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    debugPrint('NotificationService: Initializing');
     tz.initializeTimeZones();
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('app_icon');
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
+        InitializationSettings(android: initializationSettingsAndroid);
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
     debugPrint('NotificationService: Initialized');
   }
 
   Future<void> requestPermissions() async {
+    debugPrint('NotificationService: Requesting permissions');
     if (Platform.isAndroid) {
-      // Skip permission request on Android 12 or lower
       final androidPlugin = _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
@@ -69,10 +68,15 @@ class NotificationService {
   }
 
   Future<void> showBudgetTips(BuildContext context, List<String> tips) async {
+    debugPrint('NotificationService: Scheduling budget tips: $tips');
     try {
-      for (int i = 0; i < tips.length; i++) {
+      // Ensure timezone is initialized
+      tz.initializeTimeZones();
+      final localTz = tz.local;
+      for (int i = 0; i < tips.length && i < 3; i++) {
+        // Use a longer delay to ensure future time
         final scheduledTime =
-            tz.TZDateTime.now(tz.local).add(Duration(seconds: i * 5));
+            tz.TZDateTime.now(localTz).add(Duration(seconds: 10 + i * 5));
         final androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'budget_tips_channel_$i',
           'Budget Tips',
@@ -86,19 +90,21 @@ class NotificationService {
         );
         await _flutterLocalNotificationsPlugin.zonedSchedule(
           i + 1,
-          'Budget Tip',
+          'Budget Tip ${i + 1}',
           tips[i],
           scheduledTime,
           platformChannelSpecifics,
-          androidAllowWhileIdle: true,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
         );
-        debugPrint('NotificationService: Scheduled budget tip $i: ${tips[i]}');
+        debugPrint(
+            'NotificationService: Scheduled budget tip ${i + 1} at $scheduledTime');
       }
     } catch (e, stackTrace) {
       debugPrint(
           'NotificationService: Error scheduling budget tips: $e\n$stackTrace');
+      rethrow;
     }
   }
 }

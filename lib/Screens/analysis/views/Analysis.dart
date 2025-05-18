@@ -8,6 +8,7 @@ import 'components/period_selector_analysis.dart';
 import '../../../commons/income_expense_summary.dart';
 import 'components/targets_section.dart';
 import '../../../Controllers/analysis_controller.dart';
+import '../../../Services/data_service.dart';
 import '../../../Models/savings_goal.dart';
 
 class AnalysisPage extends StatefulWidget {
@@ -25,6 +26,7 @@ class AnalysisPageState extends State<AnalysisPage>
   @override
   void initState() {
     super.initState();
+    debugPrint('AnalysisPage: initState');
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -36,6 +38,7 @@ class AnalysisPageState extends State<AnalysisPage>
 
   @override
   void dispose() {
+    debugPrint('AnalysisPage: dispose');
     _animationController.dispose();
     super.dispose();
   }
@@ -71,30 +74,26 @@ class AnalysisPageState extends State<AnalysisPage>
   @override
   Widget build(BuildContext context) {
     debugPrint('AnalysisPage: Building');
+    final dataService = Provider.of<DataService>(context);
+
     return Consumer<AnalysisController>(
       builder: (context, controller, child) {
         debugPrint('AnalysisPage: Consumer builder called');
         final screenHeight = MediaQuery.of(context).size.height;
         final screenWidth = MediaQuery.of(context).size.width;
 
-        final expensePercentage = controller.totalBalance > 0
-            ? (controller.totalExpense / controller.totalBalance * 100).toInt()
+        final expensePercentage = dataService.totalBalance > 0
+            ? (controller.totalExpense / dataService.totalBalance * 100).toInt()
             : 0;
 
         String currentPeriod =
             controller.periods[controller.selectedPeriodIndex];
-        final periodData = controller.periodData[currentPeriod] ??
-            {
-              'expenses': <double>[],
-              'income': <double>[],
-              'labels': <String>[],
-            };
-        List<double> expenses =
-            List<double>.from(periodData['expenses'] as List? ?? []);
+        List<double> expenses = List<double>.from(
+            controller.periodData[currentPeriod]!['expenses']);
         List<double> income =
-            List<double>.from(periodData['income'] as List? ?? []);
+            List<double>.from(controller.periodData[currentPeriod]!['income']);
         List<String> labels =
-            List<String>.from(periodData['labels'] as List? ?? []);
+            List<String>.from(controller.periodData[currentPeriod]!['labels']);
 
         final targets = _convertSavingsGoalsToTargets(controller.savingsGoals);
 
@@ -110,16 +109,18 @@ class AnalysisPageState extends State<AnalysisPage>
                 Column(
                   children: [
                     AnalysisHeader(
-                      totalBalance: controller.totalBalance,
+                      totalBalance: dataService.totalBalance,
                       totalExpense: controller.totalExpense,
                       expensePercentage: expensePercentage,
                       onBackPressed: () {
                         if (!context.mounted) return;
                         context.go('/');
+                        debugPrint('AnalysisPage: Back pressed');
                       },
                       onNotificationTap: () {
                         if (!context.mounted) return;
                         context.push('/notification');
+                        debugPrint('AnalysisPage: Notification tapped');
                       },
                     ),
                     Expanded(
@@ -152,6 +153,8 @@ class AnalysisPageState extends State<AnalysisPage>
                                         ElevatedButton(
                                           onPressed: () {
                                             controller.retryLoading();
+                                            debugPrint(
+                                                'AnalysisPage: Retry loading');
                                           },
                                           child: const Text('Retry'),
                                         ),

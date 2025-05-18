@@ -83,26 +83,22 @@ class HomePage extends StatelessWidget {
                         left: screenWidth * 0.06,
                         right: screenWidth * 0.06,
                         top: screenWidth * 0.06,
-                        // Add bottom padding to account for system navigation
                       ),
                       child: Column(
                         children: [
-                          // Check if there's an active goal
                           savingsController.activeGoal != null &&
                                   savingsController.activeGoal!.id != 'none'
                               ? GoalOverview(
-                                  goalIcon:
-                                      savingsController.activeGoal!.icon,
-                                  goalText:
-                                      savingsController.activeGoal!.name,
+                                  goalIcon: savingsController.activeGoal!.icon,
+                                  goalText: savingsController.activeGoal!.name,
                                   revenueLastWeek:
                                       homeController.revenueLastWeek,
                                   topCategoryLastWeek:
                                       homeController.topCategoryLastWeek,
-                                  topCategoryAmountLastWeek: homeController
-                                      .topCategoryAmountLastWeek,
-                                  topCategoryIconLastWeek: homeController
-                                      .topCategoryIconLastWeek,
+                                  topCategoryAmountLastWeek:
+                                      homeController.topCategoryAmountLastWeek,
+                                  topCategoryIconLastWeek:
+                                      homeController.topCategoryIconLastWeek,
                                   goalAmount: savingsController
                                       .activeGoal!.targetAmount,
                                   currentBalance: savingsController
@@ -114,9 +110,9 @@ class HomePage extends StatelessWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color.fromARGB(255, 110, 104, 104),
-                                      borderRadius:
-                                          BorderRadius.circular(20),
+                                      color: const Color.fromARGB(
+                                          255, 110, 104, 104),
+                                      borderRadius: BorderRadius.circular(20),
                                       boxShadow: const [
                                         BoxShadow(
                                           color: Colors.black12,
@@ -137,8 +133,10 @@ class HomePage extends StatelessWidget {
                                 ),
                           SizedBox(height: screenHeight * 0.02),
                           Expanded(
-                            child: TransactionList(
-                                transactions: homeController.transactions),
+                            child: Builder(
+                              builder: (context) => TransactionList(
+                                  transactions: homeController.transactions),
+                            ),
                           ),
                         ],
                       ),

@@ -16,7 +16,6 @@ import 'Models/notification_model.dart';
 import 'Services/data_service.dart';
 import 'Services/ai_service.dart';
 import 'Services/notification_service.dart';
-import 'Services/automation_service.dart';
 import 'Route/app_router.dart';
 
 void main() async {
@@ -52,16 +51,15 @@ void main() async {
 
   if (Platform.isAndroid) {
     try {
-      debugPrint('Main: Starting AutomationService setup for Android');
-      await AutomationService.init();
-      debugPrint('Main: AutomationService initialized');
-      await AutomationService.scheduleWeeklyAnalysis();
-      debugPrint('Main: AutomationService scheduled');
+      debugPrint('Main: Starting NotificationController setup for Android');
+      await NotificationController.scheduleWeeklyAnalysis();
+      debugPrint('Main: NotificationController scheduled');
     } catch (e, stackTrace) {
-      debugPrint('Main: Error setting up AutomationService: $e\n$stackTrace');
+      debugPrint(
+          'Main: Error setting up NotificationController: $e\n$stackTrace');
     }
   } else {
-    debugPrint('Main: Skipping AutomationService setup (not Android)');
+    debugPrint('Main: Skipping NotificationController setup (not Android)');
   }
 
   runApp(const MyApp());
@@ -81,6 +79,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (context) => HomeController(context.read<DataService>())),
         ChangeNotifierProvider(create: (context) => SavingsController()),
+        ChangeNotifierProvider(create: (context) => CategoryController()),
         ChangeNotifierProvider(
           create: (context) => AnalysisController(
             AnalysisModel(),
@@ -88,14 +87,14 @@ class MyApp extends StatelessWidget {
             context.read<SavingsController>(),
             context.read<AiService>(),
             context.read<NotificationService>(),
+            context.read<CategoryController>(),
           ),
         ),
         ChangeNotifierProvider(
             create: (context) =>
                 TransactionController(context.read<DataService>())),
-        ChangeNotifierProvider(create: (_) => CategoryController()),
         ChangeNotifierProvider(
-            create: (_) => NotificationController(NotificationModel())),
+            create: (context) => NotificationController(NotificationModel())),
       ],
       child: MaterialApp.router(
         routerConfig: router,
