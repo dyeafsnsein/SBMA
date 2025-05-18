@@ -46,21 +46,28 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeCategory();
     });
-  }
-
-  void _initializeCategory() {
+  }  void _initializeCategory() {
     final categoryController =
         Provider.of<CategoryController>(context, listen: false);
-    final filteredCategories = categoryController.categories
-        .where((category) => category.label != 'More')
-        .toList();
-    if (filteredCategories.isNotEmpty) {
+    
+    // If we're initializing in expense mode, use expense categories
+    if (_isExpense) {
+      final expenseCategories = categoryController.expenseCategories;
+      if (expenseCategories.isNotEmpty) {
+        setState(() {
+          // Check if current category is valid in expense categories
+          final isCurrentCategoryValid = _selectedCategory != null &&
+              expenseCategories.any((c) => c.label == _selectedCategory);
+          
+          if (!isCurrentCategoryValid) {
+            _selectedCategory = expenseCategories.first.label;
+          }
+        });
+      }
+    } else {
+      // For income, always use 'Income' category
       setState(() {
-        // If _selectedCategory is not in filteredCategories, reset it
-        if (_selectedCategory == null ||
-            !filteredCategories.any((c) => c.label == _selectedCategory)) {
-          _selectedCategory = filteredCategories.first.label;
-        }
+        _selectedCategory = 'Income';
       });
     }
   }
@@ -113,7 +120,6 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     _amountController.dispose();
     super.dispose();
   }
-
   void _submitForm() {
     if (_formKey.currentState!.validate() && _selectedCategory != null) {
       setState(() {
@@ -124,17 +130,31 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
       try {
         final categoryController =
             Provider.of<CategoryController>(context, listen: false);
-        final selectedCategoryData = categoryController.categories.firstWhere(
-          (category) => category.label == _selectedCategory,
-          orElse: () => CategoryModel(
-            id: 'unknown',
-            label: 'Unknown',
-            icon: 'lib/assets/Transaction.png',
-          ),
-        );
-
-        final transaction = TransactionModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
+        
+        // Different handling for income and expense
+        CategoryModel selectedCategoryData;
+        if (_isExpense) {
+          // For expenses, get the selected category
+          selectedCategoryData = categoryController.categories.firstWhere(
+            (category) => category.label == _selectedCategory,
+            orElse: () => CategoryModel(
+              id: 'unknown',
+              label: 'Unknown',
+              icon: 'lib/assets/Transaction.png',
+            ),
+          );
+        } else {
+          // For income, always use the Income category
+          selectedCategoryData = categoryController.categories.firstWhere(
+            (category) => category.label == 'Income',
+            orElse: () => CategoryModel(
+              id: 'income',
+              label: 'Income',
+              icon: 'lib/assets/Income.png',
+            ),
+          );
+        }        final transaction = TransactionModel(
+          id: widget.initialTransaction?.id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Preserve original ID if updating
           type: _isExpense ? 'expense' : 'income',
           amount: double.parse(_amountController.text),
           date: _selectedDateTime,
@@ -160,13 +180,12 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final categoryController = Provider.of<CategoryController>(context);
-    final filteredCategories = categoryController.categories
-        .where((category) => category.label != 'More')
-        .toList();
+    final filteredCategories = _isExpense 
+        ? categoryController.expenseCategories
+        : categoryController.incomeCategories;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final dialogWidth = screenWidth * 0.79;
@@ -193,10 +212,11 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                           children: [
                             ChoiceChip(
                               label: const Text('Expense'),
-                              selected: _isExpense,
-                              onSelected: (selected) {
+                              selected: _isExpense,                              onSelected: (selected) {
                                 setState(() {
                                   _isExpense = true;
+                                  // Reset category to a valid expense category
+                                  _initializeCategory(); 
                                 });
                               },
                               selectedColor: Colors.redAccent,
@@ -207,10 +227,11 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                             ),
                             ChoiceChip(
                               label: const Text('Income'),
-                              selected: !_isExpense,
-                              onSelected: (selected) {
+                              selected: !_isExpense,                              onSelected: (selected) {
                                 setState(() {
                                   _isExpense = false;
+                                  // Use a fixed category for Income
+                                  _selectedCategory = 'Income';
                                 });
                               },
                               selectedColor: Colors.greenAccent,
@@ -300,10 +321,13 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                             ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
+                      ),                      const SizedBox(height: 12),                      // Only show category dropdown for expenses
+                      if (_isExpense)
                       DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                        // Make sure selected value exists in dropdown items
+                        value: filteredCategories.any((c) => c.label == _selectedCategory) 
+                            ? _selectedCategory 
+                            : (filteredCategories.isNotEmpty ? filteredCategories.first.label : null),
                         decoration: InputDecoration(
                           labelText: 'Category',
                           labelStyle: const TextStyle(color: Colors.white70),
@@ -338,9 +362,8 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                                 setState(() {
                                   _selectedCategory = value;
                                 });
-                              },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
+                              },                        validator: (value) {
+                          if (_isExpense && (value == null || value.isEmpty)) {
                             return 'Please select a category';
                           }
                           return null;

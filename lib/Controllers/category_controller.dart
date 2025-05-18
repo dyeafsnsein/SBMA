@@ -6,21 +6,27 @@ import '../Models/category_model.dart';
 
 class CategoryController extends ChangeNotifier {
   List<CategoryModel> _categories = [];
-  StreamSubscription<QuerySnapshot>? _categorySubscription;
+  StreamSubscription<QuerySnapshot>? _categorySubscription;  // Lists to manage category types
   static const List<String> _incomeCategoryLabels = ['Income', 'Salary'];
-  static const List<String> _reservedCategoryLabels = ['More'];
+  static const List<String> _reservedCategoryLabels = ['More', 'Income', 'Salary'];
+  static const List<String> _defaultExpenseCategories = [
+    'Food', 'Transport', 'Rent', 'Entertainment', 'Medicine', 'Groceries'
+  ];
 
   CategoryController() {
     debugPrint('CategoryController: Constructor called');
     _setupAuthListener();
   }
-
   List<CategoryModel> get categories => _categories;
 
+  // Return only expense categories (exclude income and reserved categories)
   List<CategoryModel> get expenseCategories => _categories
-      .where((category) => !_incomeCategoryLabels.contains(category.label))
+      .where((category) => 
+          !_incomeCategoryLabels.contains(category.label) && 
+          !_reservedCategoryLabels.contains(category.label))
       .toList();
 
+  // Return only income categories
   List<CategoryModel> get incomeCategories => _categories
       .where((category) => _incomeCategoryLabels.contains(category.label))
       .toList();
@@ -68,7 +74,6 @@ class CategoryController extends ChangeNotifier {
           'CategoryController: Error listening to categories: $e\n$stackTrace');
     });
   }
-
   Future<void> initializeCategories(String userId) async {
     debugPrint('CategoryController: Initializing categories for user: $userId');
     try {
@@ -85,30 +90,25 @@ class CategoryController extends ChangeNotifier {
         return;
       }
 
-      // Default categories
-      final defaultCategories = [
-        CategoryModel(id: '', label: 'Food', icon: 'lib/assets/Food.png'),
-        CategoryModel(
-            id: '', label: 'Transport', icon: 'lib/assets/Transport.png'),
-        CategoryModel(id: '', label: 'Rent', icon: 'lib/assets/Rent.png'),
-        CategoryModel(
-            id: '',
-            label: 'Entertainment',
-            icon: 'lib/assets/Entertainment.png'),
-        CategoryModel(
-            id: '', label: 'Medicine', icon: 'lib/assets/Medicine.png'),
-        CategoryModel(
-            id: '', label: 'Groceries', icon: 'lib/assets/Groceries.png'),
-        CategoryModel(id: '', label: 'Income', icon: 'lib/assets/Income.png'),
-        CategoryModel(id: '', label: 'Salary', icon: 'lib/assets/Salary.png'),
-      ];
-
-      // Batch write default categories
+      // Initialize essential categories
       final batch = FirebaseFirestore.instance.batch();
-      for (var category in defaultCategories) {
-        final docRef = categoriesRef.doc(); // Auto-generate ID
-        batch.set(docRef, category.toFirestore());
+      
+      // Add expense categories
+      for (var categoryLabel in _defaultExpenseCategories) {
+        final docRef = categoriesRef.doc();
+        batch.set(docRef, {
+          'label': categoryLabel,
+          'icon': 'lib/assets/$categoryLabel.png'
+        });
       }
+      
+      // Add just one income category
+      final incomeDocRef = categoriesRef.doc();
+      batch.set(incomeDocRef, {
+        'label': 'Income',
+        'icon': 'lib/assets/Income.png'
+      });
+      
       await batch.commit();
       debugPrint('CategoryController: Default categories initialized');
     } catch (e, stackTrace) {

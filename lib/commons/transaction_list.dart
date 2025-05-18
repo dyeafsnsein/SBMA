@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Controllers/transaction_controller.dart';
 import '../Models/transaction_model.dart';
+import '../Services/data_service.dart';
 import 'add_transaction_dialog.dart';
 
 class TransactionList extends StatelessWidget {
@@ -13,14 +14,12 @@ class TransactionList extends StatelessWidget {
     required this.transactions,
     this.isHomePage = false,
   });
-
   @override
-  Widget build(BuildContext context) {
-    final transactionController = Provider.of<TransactionController>(context);
+  Widget build(BuildContext context) {    final transactionController = Provider.of<TransactionController>(context);
+    final dataService = Provider.of<DataService>(context, listen: false);
 
     return ListView.builder(
-      itemCount: transactions.length,
-      itemBuilder: (context, index) {
+      itemCount: transactions.length,      itemBuilder: (context, index) {
         final transaction = transactions[index];
         final isExpense = transaction.type == 'expense';
 
@@ -83,20 +82,21 @@ class TransactionList extends StatelessWidget {
               ],
             ),
             child: Row(
-              children: [
-                Container(
+              children: [                Container(
                   width: 57,
                   height: 53,
                   decoration: BoxDecoration(
                     color: const Color(0xFF202422),
                     borderRadius: BorderRadius.circular(28.5),
                   ),
-                  child: Center(
-                    child: Image.asset(
-                      transaction.icon,
+                  child: Center(                    child: Image.asset(
+                      transaction.icon.isNotEmpty 
+                          ? transaction.icon 
+                          : dataService.getIconForCategory(transaction.category),
                       width: 31,
                       height: 28,
                       errorBuilder: (context, error, stackTrace) {
+                        // Better error handling for icon loading
                         debugPrint(
                             'Failed to load icon: ${transaction.icon}, error: $error');
                         return Icon(

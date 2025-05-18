@@ -44,17 +44,23 @@ class TransactionModel {
     if (timestamp == null) {
       print(
           'TransactionModel: Missing timestamp for doc ID: ${doc.id}, using current time');
-    }
-
+    }    // Get the category for use in the model
+    final category = data['category'] as String? ?? 'Unknown';
+    
+    // Get icon directly from Firestore if available
+    final icon = data['icon'] is String && (data['icon'] as String).isNotEmpty
+        ? data['icon'] as String
+        : ''; // Empty string will trigger getIconForCategory in UI if needed
+    
     return TransactionModel(
       id: doc.id,
       type: ['income', 'expense'].contains(type) ? type : 'expense',
       amount: amount.isNaN || amount.isInfinite ? 0.0 : amount,
       date: timestamp != null ? timestamp.toDate().toLocal() : DateTime.now(),
       description: data['description'] as String? ?? '',
-      category: data['category'] as String? ?? 'Unknown',
+      category: category,
       categoryId: data['categoryId'] as String? ?? 'unknown',
-      icon: data['icon'] as String? ?? '',
+      icon: icon,
     );
   }
 
