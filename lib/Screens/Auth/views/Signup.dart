@@ -440,7 +440,7 @@ class SignupPage extends StatelessWidget {
   Widget _buildLoginLink(BuildContext context) {
     return TextButton(
       onPressed: () {
-        context.go('/login');
+        context.go('/');
       },
       child: const Text(
         'Already have an account? Log In',
