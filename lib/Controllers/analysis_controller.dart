@@ -52,7 +52,12 @@ class AnalysisController extends ChangeNotifier {
   Map<String, double> get categoryBreakdown => _categoryBreakdown;
   bool get isAnalyzingTips => _isAnalyzingTips;
   String? get tipErrorMessage => _tipErrorMessage;
-  double get totalBalance => _dataService.totalBalance;
+  double get totalBalance {
+    final balance = totalIncome > 0 ? totalIncome : 0.0;
+    debugPrint(
+        'AnalysisController: Total balance set to $balance (income: $totalIncome)');
+    return balance;
+  }
 
   void _setupAuthListener() {
     debugPrint('AnalysisController: Setting up auth listener');
@@ -198,6 +203,8 @@ class AnalysisController extends ChangeNotifier {
     totalExpense = _transactions
         .where((t) => t.type == 'expense')
         .fold(0.0, (total, t) => total + t.amount.abs());
+    debugPrint(
+        'AnalysisController: Computed totalIncome=$totalIncome, totalExpense=$totalExpense');
 
     // Daily: Last 7 days (oldest to newest)
     if (selectedPeriodIndex == 0) {
@@ -360,7 +367,7 @@ class AnalysisController extends ChangeNotifier {
   }) async {
     debugPrint('AnalysisController: Starting generateBudgetTips');
     debugPrint(
-        'AnalysisController: Input data: income=$totalIncome, expenses=$totalExpense, categories=$_categoryBreakdown, timestamp=$timestamp');
+        'AnalysisController: Input data: balance=$totalBalance, expenses=$totalExpense, categories=$_categoryBreakdown, timestamp=$timestamp');
     if (_isAnalyzingTips) {
       debugPrint(
           'AnalysisController: Budget tip generation already in progress');
@@ -378,11 +385,11 @@ class AnalysisController extends ChangeNotifier {
           throw Exception('Data not loaded');
         }
       }
-      if (totalIncome <= 0 || totalExpense <= 0 || _categoryBreakdown.isEmpty) {
-        debugPrint('AnalysisController: Invalid input data for AI');
+      if (totalExpense <= 0 && _categoryBreakdown.isEmpty) {
+        debugPrint('AnalysisController: No spending data for AI');
         final tips = [
-          'No sufficient data to generate tip.',
-          'Add more transactions to get personalized advice.',
+          'No spending data to generate a tip.',
+          'Add expense transactions to get personalized advice.',
         ];
         if (context != null) {
           await _notificationService.showBudgetTips(context, tips);
@@ -390,7 +397,7 @@ class AnalysisController extends ChangeNotifier {
         return tips;
       }
       final tips = await _aiService.generateBudgetTips(
-        income: totalIncome,
+        income: totalBalance,
         expenses: totalExpense,
         categories: _categoryBreakdown,
         timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
