@@ -10,6 +10,7 @@ class GoalOverview extends StatelessWidget {
   final double goalAmount;
   final double currentBalance;
   final VoidCallback onTap;
+  final bool hasActiveGoal; // New: Flag to indicate if there's an active goal
 
   const GoalOverview({
     Key? key,
@@ -22,12 +23,17 @@ class GoalOverview extends StatelessWidget {
     required this.goalAmount,
     required this.currentBalance,
     required this.onTap,
+    this.hasActiveGoal = true, // Default to true for backward compatibility
   }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     final progress = goalAmount > 0 ? (currentBalance / goalAmount).clamp(0.0, 1.0) : 0.0;
     final progressPercentage = (progress * 100).toStringAsFixed(0);
+    
+    // Text to show based on whether there's an active goal
+    final statusText = hasActiveGoal 
+        ? '$progressPercentage% Achieved' 
+        : 'No active goal set';
 
     return GestureDetector(
       onTap: onTap,
@@ -73,8 +79,7 @@ class GoalOverview extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),                Text(
                   goalText,
                   style: const TextStyle(
                     fontFamily: 'Poppins',
@@ -85,13 +90,12 @@ class GoalOverview extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$progressPercentage% Achieved',
-                  style: const TextStyle(
+                  statusText,
+                  style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFFFCFCFC),
-                    
+                    color: hasActiveGoal ? const Color(0xFFFCFCFC) : const Color(0xFFFF9800),
                   ),
                 ),
               ],
