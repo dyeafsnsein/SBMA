@@ -59,7 +59,7 @@ class CategoryPage extends StatelessWidget {
     final double height = screenSize.height;
     final double width = screenSize.width;
 
-    final double topSectionHeight = height * 0.32;
+    final double topSectionHeight = height * 0.2;
     final double horizontalPadding = width * 0.06;
     final double verticalPadding = height * 0.02;
 
@@ -97,11 +97,8 @@ class CategoryPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  if (context.mounted) {
-                                    context.pop();
-                                  }
-                                },
+                                                          onTap: () => context.go('/'),
+
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,

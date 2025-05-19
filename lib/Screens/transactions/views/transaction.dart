@@ -70,7 +70,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   color: const Color(0xFF202422),
                   padding: EdgeInsets.fromLTRB(
                     screenWidth * 0.06,
-                    screenHeight * 0.08,
+                    screenHeight * 0.10,
                     screenWidth * 0.06,
                     screenHeight * 0.02,
                   ),
