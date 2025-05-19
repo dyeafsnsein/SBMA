@@ -16,7 +16,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {  @override
+class _HomePageState extends State<HomePage> {
+  @override
   void initState() {
     super.initState();
     
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {  @override
       }
     });
   }
+  
   @override
   Widget build(BuildContext context) {
     final homeController = Provider.of<HomeController>(context);
@@ -103,57 +105,24 @@ class _HomePageState extends State<HomePage> {  @override
                       ),
                       child: Column(
                         children: [
-                          savingsController.activeGoal != null &&
-                                  savingsController.activeGoal!.id != 'none'
-                              ? GoalOverview(
-                                  goalIcon: savingsController.activeGoal!.icon,
-                                  goalText: savingsController.activeGoal!.name,
-                                  revenueLastWeek:
-                                      homeController.revenueLastWeek,
-                                  topCategoryLastWeek:
-                                      homeController.topCategoryLastWeek,
-                                  topCategoryAmountLastWeek:
-                                      homeController.topCategoryAmountLastWeek,
-                                  topCategoryIconLastWeek:
-                                      homeController.topCategoryIconLastWeek,
-                                  goalAmount: savingsController
-                                      .activeGoal!.targetAmount,
-                                  currentBalance: savingsController
-                                      .activeGoal!.currentAmount,
-                                  onTap: () => context.push('/analysis'),
-                                )
-                              : GestureDetector(
-                                  onTap: () => context.push('/analysis'),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                          255, 110, 104, 104),
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          offset: Offset(0, 5),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Text(
-                                      'No Active Goal - Tap to Analyze',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                          SizedBox(height: screenHeight * 0.02),                          Expanded(
-                            child: Builder(
-                              builder: (context) => TransactionList(
-                                transactions: homeController.transactions,
-                                isHomePage: true,
-                              ),
+                          GoalOverview(
+                            goalIcon: savingsController.activeGoal?.icon ?? 'lib/assets/More.png',
+                            goalText: savingsController.activeGoal?.name ?? 'No Active Goal',
+                            revenueLastWeek: homeController.revenueLastWeek,
+                            topCategoryLastWeek: homeController.topCategoryLastWeek,
+                            topCategoryAmountLastWeek: homeController.topCategoryAmountLastWeek,
+                            topCategoryIconLastWeek: homeController.topCategoryIconLastWeek,
+                            goalAmount: savingsController.activeGoal?.targetAmount ?? 0.0,
+                            currentBalance: savingsController.activeGoal?.currentAmount ?? 0.0,
+                            onTap: () => context.push('/analysis'),
+                            hasActiveGoal: savingsController.activeGoal != null && 
+                                        savingsController.activeGoal!.id != 'none',
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
+                          Expanded(
+                            child: TransactionList(
+                              transactions: homeController.transactions,
+                              isHomePage: true,
                             ),
                           ),
                         ],
