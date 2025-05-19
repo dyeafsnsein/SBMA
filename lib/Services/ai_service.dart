@@ -13,9 +13,10 @@ class AiService {
         'AiService: Generating budget tip with income=$income, expenses=$expenses, categories=$categories, timestamp=$timestamp');
     try {
       // Validate input
-      if (income <= 0 || expenses <= 0 || categories.isEmpty) {
-        debugPrint('AiService: Invalid input data, returning empty tip');
-        return ['No tip generated due to invalid data.'];
+      if (expenses <= 0 || categories.isEmpty) {
+        debugPrint(
+            'AiService: Invalid input data (no expenses or categories), returning empty tip');
+        return ['No tip generated due to insufficient spending data.'];
       }
 
       // Initialize Gemini model
@@ -45,9 +46,14 @@ class AiService {
 
       // Create a dynamic prompt
       final prompt = '''
-You’re a friendly financial coach. Based on the financial data below, provide **one concise, practical budget tip** to help optimize spending and savings, focusing on $selectedFocus. The tip should feel human, approachable, and tailored to the data, using a warm and encouraging tone. Keep it to one sentence, make it actionable, and ensure it’s unique by referencing the timestamp $timestamp.
+You’re a friendly financial coach. Based on the financial data below, provide **one concise, practical budget tip** to help optimize spending, savings, and money management, focusing on $selectedFocus. The tip should be human, approachable, and tailored to the data, using a warm and encouraging tone. Keep it to one sentence, make it actionable. Use the following guidelines:
+- If income is \$0, focus on reducing expenses (e.g., cut specific category spending) or reallocating to essential categories (e.g., prioritize Food over Entertainment).
+- If income is positive, suggest saving a percentage (e.g., 10% of income) or reducing high-spending categories (e.g., cut 20% from Entertainment).
+- Provide specific actions (e.g., "cut \$50 from Entertainment," "save \$20 monthly") based on income-to-expense ratio or category data.
+- Encourage mindful money behavior (e.g., "plan purchases in advance," "avoid impulse buys").
+- Use category data to identify high-spending areas or essentials.
 
-- Monthly Income: \$${income.toStringAsFixed(2)}
+- Monthly Income (Balance): \$${income.toStringAsFixed(2)}
 - Monthly Expenses: \$${expenses.toStringAsFixed(2)}
 - Spending by Category: ${categories.entries.map((e) => '${e.key}: \$${e.value.toStringAsFixed(2)}').join(', ')}
 - Timestamp: $timestamp
@@ -65,7 +71,7 @@ Return the tip as a single line, without any asterisks or bullet points.
 
       if (tip.isEmpty) {
         debugPrint('AiService: Gemini returned empty tip');
-        return ['Take a quick look at your spending to find easy savings.'];
+        return ['Review your spending to find small ways to save this month.'];
       }
 
       return [tip];
