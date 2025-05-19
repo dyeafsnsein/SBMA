@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Controllers/notification_controller.dart';
-import '../../../Controllers/analysis_controller.dart';
 import '../../../Services/notification_service.dart';
 import '../../../Services/ai_service.dart';
+import '../../../Services/data_service.dart';
 import '../../../Models/notification_model.dart';
 import 'package:intl/intl.dart';
 
@@ -17,13 +17,12 @@ class NotificationPage extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => NotificationController(
         NotificationModel(),
-        Provider.of<AnalysisController>(context, listen: false),
+        Provider.of<DataService>(context, listen: false),
         Provider.of<NotificationService>(context, listen: false),
         Provider.of<AiService>(context, listen: false),
       ),
       child: Consumer<NotificationController>(
         builder: (context, controller, child) {
-          // Load cached tip from SharedPreferences once
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             debugPrint(
                 'NotificationPage: Checking SharedPreferences for cached tip');

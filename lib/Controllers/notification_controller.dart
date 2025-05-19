@@ -2,20 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Models/notification_model.dart';
-import '../Controllers/analysis_controller.dart';
-import '../Controllers/category_controller.dart';
-import '../Controllers/savings_controller.dart';
 import '../Services/data_service.dart';
 import '../Services/ai_service.dart';
 import '../Services/notification_service.dart';
-import '../Models/analysis_model.dart';
 import 'package:intl/intl.dart';
 
 class NotificationController extends ChangeNotifier {
   final NotificationModel model;
-  final AnalysisController _analysisController;
+  final DataService _dataService;
   final NotificationService _notificationService;
   final AiService _aiService;
   bool _isAnalyzingTips = false;
@@ -23,7 +20,7 @@ class NotificationController extends ChangeNotifier {
 
   NotificationController(
     this.model,
-    this._analysisController,
+    this._dataService,
     this._notificationService,
     this._aiService,
   ) {
@@ -73,11 +70,20 @@ class NotificationController extends ChangeNotifier {
     String? timestamp,
   }) async {
     debugPrint('NotificationController: Starting generateBudgetTips');
-    final balance = _analysisController.totalBalance;
-    final expenses = _analysisController.totalExpense;
-    final categories = _analysisController.categoryBreakdown;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      debugPrint(
+          'NotificationController: Reloading transactions for user: $userId');
+      await _dataService.reloadTransactions(userId);
+    } else {
+      debugPrint('NotificationController: No user logged in');
+    }
+
+    final balance = _dataService.totalBalance;
+    final expenses = _dataService.totalExpense;
+    final categories = _dataService.categoryBreakdown;
     debugPrint(
-        'NotificationController: Input data: balance=$balance, expenses=$expenses, categories=$categories, timestamp=$timestamp');
+        'NotificationController: Input data: balance=$balance, expenses=$expenses, categories=$categories, timestamp=$timestamp, isDataLoaded=${_dataService.isDataLoaded}');
     if (_isAnalyzingTips) {
       debugPrint(
           'NotificationController: Budget tip generation already in progress');
@@ -88,10 +94,11 @@ class NotificationController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (!_analysisController.isDataLoaded) {
+      if (!_dataService.isDataLoaded) {
         debugPrint('NotificationController: Data not loaded, waiting for load');
         await Future.delayed(const Duration(seconds: 1));
-        if (!_analysisController.isDataLoaded) {
+        if (!_dataService.isDataLoaded) {
+          debugPrint('NotificationController: Data still not loaded');
           throw Exception('Data not loaded');
         }
       }
@@ -112,7 +119,7 @@ class NotificationController extends ChangeNotifier {
         categories: categories,
         timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
       );
-      debugPrint('NotificationController: Generated tip: $tips');
+      debugPrint('NotificationController: Generated tips: $tips');
       if (tips.isEmpty) {
         debugPrint('NotificationController: AI returned empty tip');
         final fallbackTips = [
@@ -207,22 +214,11 @@ class NotificationController extends ChangeNotifier {
       final notificationService = NotificationService();
       await notificationService.init();
       final dataService = DataService();
-      final savingsController = SavingsController();
       final aiService = AiService();
-      final categoryController = CategoryController();
       final notificationModel = NotificationModel();
-      final analysisModel = AnalysisModel();
-      final analysisController = AnalysisController(
-        analysisModel,
-        dataService,
-        savingsController,
-        aiService,
-        notificationService,
-        categoryController,
-      );
       final notificationController = NotificationController(
         notificationModel,
-        analysisController,
+        dataService,
         notificationService,
         aiService,
       );
@@ -273,14 +269,7 @@ class NotificationController extends ChangeNotifier {
       final notificationModel = NotificationModel();
       final notificationController = NotificationController(
         notificationModel,
-        AnalysisController(
-          AnalysisModel(),
-          DataService(),
-          SavingsController(),
-          AiService(),
-          NotificationService(),
-          CategoryController(),
-        ),
+        DataService(),
         NotificationService(),
         AiService(),
       );

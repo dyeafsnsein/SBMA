@@ -96,7 +96,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => NotificationController(
             NotificationModel(),
-            context.read<AnalysisController>(),
+            context.read<DataService>(),
             context.read<NotificationService>(),
             context.read<AiService>(),
           ),
