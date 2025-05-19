@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-class DataService {
+class DataService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   StreamSubscription<DocumentSnapshot>? _balanceSubscription;
@@ -35,7 +35,6 @@ class DataService {
     _totalBalance = 0.0;
     _categoryIcons.clear();
   }
-
   void _setupListeners(String userId) {
     _balanceSubscription?.cancel();
     _balanceSubscription = _firestore
@@ -46,6 +45,7 @@ class DataService {
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
         _totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
+        notifyListeners(); // Add this to notify controllers when balance updates
       }
     }, onError: (e) {
       debugPrint('Error listening to user balance: $e');
@@ -85,8 +85,8 @@ class DataService {
         isExpense ? currentBalance - amount : currentBalance + amount;
     await userRef.update({'balance': newBalance});
   }
-
   void dispose() {
     _balanceSubscription?.cancel();
+    super.dispose();
   }
 }

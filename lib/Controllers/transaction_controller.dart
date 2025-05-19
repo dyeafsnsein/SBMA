@@ -311,13 +311,22 @@ class TransactionController extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      
-      final batch = FirebaseFirestore.instance.batch();
+        final batch = FirebaseFirestore.instance.batch();
       batch.delete(transactionRef);
 
-      // Update balance via DataService (reverse the transaction amount)
-      await _dataService.updateBalance(
-          user.uid, -transaction.amount, transaction.type == 'expense');
+      // When deleting a transaction, we need to do the reverse operation:
+      // - For expense (negative amount): Add it back to balance
+      // - For income (positive amount): Subtract it from balance
+      if (transaction.type == 'expense') {
+        // For expense transactions, add the amount back (use the absolute value)
+        // Since expense amounts are stored as negative, we need the absolute value
+        await _dataService.updateBalance(
+            user.uid, transaction.amount.abs(), false);
+      } else {
+        // For income transactions, subtract the amount
+        await _dataService.updateBalance(
+            user.uid, transaction.amount, true);
+      }
 
       await batch.commit();
       _isLoading = false;
