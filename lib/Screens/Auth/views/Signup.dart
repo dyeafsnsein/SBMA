@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
-import 'login.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
@@ -438,14 +437,10 @@ class SignupPage extends StatelessWidget {
             ),
     );
   }
-
   Widget _buildLoginLink(BuildContext context) {
     return TextButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
+        context.go('/login');
       },
       child: const Text(
         'Already have an account? Log In',
