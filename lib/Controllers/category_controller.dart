@@ -53,7 +53,6 @@ class CategoryController extends ChangeNotifier {
     _categories = [];
     notifyListeners();
   }
-
   void _setupListeners(String userId) {
     debugPrint(
         'CategoryController: Setting up category listener for user: $userId');
@@ -68,13 +67,67 @@ class CategoryController extends ChangeNotifier {
           'CategoryController: Received category snapshot: ${snapshot.docs.length} docs');
       _categories =
           snapshot.docs.map((doc) => CategoryModel.fromFirestore(doc)).toList();
+          
+      // Check for and clean up duplicate categories
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _cleanupDuplicateCategories(userId);
+      });
+      
       notifyListeners();
     }, onError: (e, stackTrace) {
       debugPrint(
           'CategoryController: Error listening to categories: $e\n$stackTrace');
     });
   }
-  Future<void> initializeCategories(String userId) async {
+  
+  // Helper method to clean up duplicate categories
+  Future<void> _cleanupDuplicateCategories(String userId) async {
+    try {
+      // Create a map to track categories by label
+      final Map<String, List<CategoryModel>> categoriesByLabel = {};
+      
+      // Group categories by label
+      for (var category in _categories) {
+        if (!categoriesByLabel.containsKey(category.label)) {
+          categoriesByLabel[category.label] = [];
+        }
+        categoriesByLabel[category.label]!.add(category);
+      }
+      
+      // Check for duplicates and remove them
+      final batch = FirebaseFirestore.instance.batch();
+      bool hasDuplicates = false;
+      
+      // For each label that has multiple categories, keep only the first one
+      for (var entry in categoriesByLabel.entries) {
+        if (entry.value.length > 1) {
+          debugPrint('CategoryController: Found ${entry.value.length} duplicates for category ${entry.key}');
+          hasDuplicates = true;
+          
+          // Keep the first one, delete the rest
+          for (int i = 1; i < entry.value.length; i++) {
+            // Delete duplicate from Firestore
+            batch.delete(
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .collection('categories')
+                  .doc(entry.value[i].id)
+            );
+            debugPrint('CategoryController: Will delete duplicate ${entry.value[i].id} for category ${entry.key}');
+          }
+        }
+      }
+      
+      // If we have duplicates, commit the batch to delete them
+      if (hasDuplicates) {
+        await batch.commit();
+        debugPrint('CategoryController: Deleted duplicate categories');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('CategoryController: Error cleaning duplicate categories: $e\n$stackTrace');
+    }
+  }Future<void> initializeCategories(String userId) async {
     debugPrint('CategoryController: Initializing categories for user: $userId');
     try {
       final categoriesRef = FirebaseFirestore.instance
@@ -90,24 +143,41 @@ class CategoryController extends ChangeNotifier {
         return;
       }
 
+      // First get existing categories to check for duplicates
+      final existingCategories = snapshot.docs
+          .map((doc) => doc.data()['label'] as String?)
+          .whereType<String>()
+          .toSet();
+      
       // Initialize essential categories
       final batch = FirebaseFirestore.instance.batch();
       
-      // Add expense categories
+      // Add expense categories (only if they don't already exist)
       for (var categoryLabel in _defaultExpenseCategories) {
+        // Skip if this category already exists
+        if (existingCategories.contains(categoryLabel)) {
+          debugPrint('CategoryController: Category $categoryLabel already exists, skipping');
+          continue;
+        }
+        
         final docRef = categoriesRef.doc();
         batch.set(docRef, {
           'label': categoryLabel,
           'icon': 'lib/assets/$categoryLabel.png'
         });
+        
+        // Add to our set of existing categories to prevent duplicates in this batch
+        existingCategories.add(categoryLabel);
       }
       
-      // Add just one income category
-      final incomeDocRef = categoriesRef.doc();
-      batch.set(incomeDocRef, {
-        'label': 'Income',
-        'icon': 'lib/assets/Income.png'
-      });
+      // Add just one income category (if it doesn't already exist)
+      if (!existingCategories.contains('Income')) {
+        final incomeDocRef = categoriesRef.doc();
+        batch.set(incomeDocRef, {
+          'label': 'Income',
+          'icon': 'lib/assets/Income.png'
+        });
+      }
       
       await batch.commit();
       debugPrint('CategoryController: Default categories initialized');

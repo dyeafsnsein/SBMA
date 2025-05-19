@@ -31,6 +31,17 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Method to deduplicate categories by label
+  List<CategoryModel> _getUniqueCategories(List<CategoryModel> categories) {
+    final Map<String, CategoryModel> uniqueMap = {};
+    for (var cat in categories) {
+      if (!uniqueMap.containsKey(cat.label)) {
+        uniqueMap[cat.label] = cat;
+      }
+    }
+    return uniqueMap.values.toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +57,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeCategory();
     });
-  }  void _initializeCategory() {
+  }void _initializeCategory() {
     final categoryController =
         Provider.of<CategoryController>(context, listen: false);
     
@@ -119,8 +130,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     _titleController.dispose();
     _amountController.dispose();
     super.dispose();
-  }
-  void _submitForm() {
+  }  void _submitForm() {
     if (_formKey.currentState!.validate() && _selectedCategory != null) {
       setState(() {
         _isLoading = true;
@@ -135,25 +145,38 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
         CategoryModel selectedCategoryData;
         if (_isExpense) {
           // For expenses, get the selected category
-          selectedCategoryData = categoryController.categories.firstWhere(
-            (category) => category.label == _selectedCategory,
-            orElse: () => CategoryModel(
+          // Find the first category with the matching label to avoid duplicates
+          final matchingCategories = categoryController.categories
+              .where((category) => category.label == _selectedCategory)
+              .toList();
+              
+          if (matchingCategories.isNotEmpty) {
+            selectedCategoryData = matchingCategories.first;
+          } else {
+            // Fallback if no matching category is found
+            selectedCategoryData = CategoryModel(
               id: 'unknown',
               label: 'Unknown',
               icon: 'lib/assets/Transaction.png',
-            ),
-          );
+            );
+          }
         } else {
           // For income, always use the Income category
-          selectedCategoryData = categoryController.categories.firstWhere(
-            (category) => category.label == 'Income',
-            orElse: () => CategoryModel(
+          final incomeCategories = categoryController.categories
+              .where((category) => category.label == 'Income')
+              .toList();
+              
+          if (incomeCategories.isNotEmpty) {
+            selectedCategoryData = incomeCategories.first;
+          } else {
+            // Fallback if no Income category is found
+            selectedCategoryData = CategoryModel(
               id: 'income',
               label: 'Income',
               icon: 'lib/assets/Income.png',
-            ),
-          );
-        }        final transaction = TransactionModel(
+            );
+          }
+        }final transaction = TransactionModel(
           id: widget.initialTransaction?.id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Preserve original ID if updating
           type: _isExpense ? 'expense' : 'income',
           amount: double.parse(_amountController.text),
@@ -322,8 +345,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                           ),
                         ),
                       ),                      const SizedBox(height: 12),                      // Only show category dropdown for expenses
-                      if (_isExpense)
-                      DropdownButtonFormField<String>(
+                      if (_isExpense)                      DropdownButtonFormField<String>(
                         // Make sure selected value exists in dropdown items
                         value: filteredCategories.any((c) => c.label == _selectedCategory) 
                             ? _selectedCategory 
@@ -350,7 +372,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                                   child: Text('Loading...'),
                                 ),
                               ]
-                            : filteredCategories.map((category) {
+                            : _getUniqueCategories(filteredCategories).map((category) {
                                 return DropdownMenuItem<String>(
                                   value: category.label,
                                   child: Text(category.label),
@@ -362,7 +384,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                                 setState(() {
                                   _selectedCategory = value;
                                 });
-                              },                        validator: (value) {
+                              },validator: (value) {
                           if (_isExpense && (value == null || value.isEmpty)) {
                             return 'Please select a category';
                           }
