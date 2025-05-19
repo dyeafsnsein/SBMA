@@ -238,33 +238,59 @@ class SavingsPageState extends State<SavingsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  if (!mounted) return;
-                                  context.pop();
-                                },
+                                onTap: () => context.go('/'),
+
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
                                   size: width * 0.06,
                                 ),
                               ),
-                              Text(
-                                'Savings',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: width * 0.06,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Savings',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: width * 0.06,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                    onPressed: () {
+                                      _showAddOrEditGoalDialog(
+                                          context, savingsController);
+                                    },
+                                    tooltip: 'Add Savings Goal',
+                                  ),
+                                ],
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  _showAddOrEditGoalDialog(
-                                      context, savingsController);
+                                  if (context.mounted) {
+                                    context.push('/notification');
+                                  }
                                 },
-                                child: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: width * 0.06,
+                                child: Container(
+                                  width: width * 0.08,
+                                  height: width * 0.08,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF050505),
+                                    borderRadius: BorderRadius.circular(width * 0.04),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.notifications,
+                                      color: Colors.white,
+                                      size: width * 0.05,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../services/auth_service.dart';
-import 'custom_header.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -10,12 +10,47 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       backgroundColor: const Color(0xFF202422),
       body: Column(
         children: [
-          const CustomHeader(title: 'Profile'),
+          // Custom header with back arrow going to home
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 55,
+              left: 16,
+              right: 16,
+              bottom: 10,
+            ),
+            color: const Color(0xFF202422),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => context.go('/'),
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: screenWidth * 0.06,
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Profile',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                // Invisible widget for balance
+                SizedBox(width: screenWidth * 0.06),
+              ],
+            ),
+          ),
           Expanded(
             child: Stack(
               children: [
@@ -50,6 +85,32 @@ class ProfilePage extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
+                          // User info
+                          CircleAvatar(
+                            radius: screenWidth * 0.12,
+                            backgroundImage: user?.photoURL != null
+                                ? NetworkImage(user!.photoURL!)
+                                : const AssetImage('lib/assets/Profile.png') as ImageProvider,
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
+                          Text(
+                            user?.displayName ?? 'User',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: screenWidth * 0.05,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF202422),
+                            ),
+                          ),
+                          if (user?.email != null)
+                            Text(
+                              user!.email!,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: screenWidth * 0.035,
+                                color: Colors.grey[600],
+                              ),
+                            ),
                           SizedBox(height: screenHeight * 0.03),
                           _buildProfileOptions(context),
                         ],
@@ -57,8 +118,6 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Profile Image
-        
               ],
             ),
           ),
@@ -104,6 +163,12 @@ class ProfilePage extends StatelessWidget {
                 color: const Color(0xFF202422),
               ),
             ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: screenWidth * 0.04,
+              color: Colors.grey[400],
+            ),
           ],
         ),
       ),
@@ -141,7 +206,7 @@ class ProfilePage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Logout'),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -166,6 +231,7 @@ class ProfilePage extends StatelessWidget {
           },
           screenWidth: screenWidth,
         ),
+
         _buildProfileOption(
           iconPath: 'lib/assets/Logout.png',
           title: 'Logout',

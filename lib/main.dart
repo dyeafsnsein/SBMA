@@ -70,9 +70,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        Provider(create: (_) => DataService()),
+    return MultiProvider(      providers: [
+        ChangeNotifierProvider(create: (_) => DataService()),
         Provider(create: (_) => AiService()),
         Provider(create: (_) => NotificationService()),
         ChangeNotifierProvider(create: (context) => AuthController()),

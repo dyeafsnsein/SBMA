@@ -180,7 +180,6 @@ class HomeController extends ChangeNotifier {
     _filterTransactions();
     notifyListeners();
   }
-
   Future<void> setBalance(double balance) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -194,6 +193,31 @@ class HomeController extends ChangeNotifier {
       _errorMessage = 'Error setting balance: $e';
       debugPrint('Error setting balance: $e');
       notifyListeners();
+    }
+  }
+  
+  // Method to force refresh data
+  Future<void> refreshData() async {
+    debugPrint('HomeController: Refreshing data...');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('HomeController: No user found for refresh');
+      return;
+    }
+
+    try {
+      // Fetch the latest user data
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      if (userDoc.exists) {
+        // Force a notification to listeners
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('HomeController: Error refreshing data: $e');
     }
   }
 

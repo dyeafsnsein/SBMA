@@ -9,9 +9,23 @@ import '../../../commons/transaction_list.dart';
 import '../../../Controllers/home_controller.dart';
 import '../../../Controllers/savings_controller.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Force a refresh of the data when the page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final homeController = Provider.of<HomeController>(context, listen: false);
+      homeController.refreshData();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final homeController = Provider.of<HomeController>(context);
@@ -21,8 +35,6 @@ class HomePage extends StatelessWidget {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final bottomInsets = MediaQuery.of(context).viewInsets.bottom;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
