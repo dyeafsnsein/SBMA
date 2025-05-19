@@ -16,14 +16,19 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  @override
+class _HomePageState extends State<HomePage> {  @override
   void initState() {
     super.initState();
+    
     // Force a refresh of the data when the page loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final homeController = Provider.of<HomeController>(context, listen: false);
-      homeController.refreshData();
+      await homeController.refreshData();
+      
+      // If we're mounted, trigger a rebuild to ensure the balance is displayed
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
   @override

@@ -195,8 +195,7 @@ class HomeController extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
-  // Method to force refresh data
+    // Method to force refresh data
   Future<void> refreshData() async {
     debugPrint('HomeController: Refreshing data...');
     final user = FirebaseAuth.instance.currentUser;
@@ -206,13 +205,40 @@ class HomeController extends ChangeNotifier {
     }
 
     try {
-      // Fetch the latest user data
+      // Fetch the latest user data to ensure we have the most up-to-date balance
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
       
       if (userDoc.exists) {
+        // Also refresh transaction data
+        final transactionsSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .orderBy('timestamp', descending: true)
+            .limit(10)
+            .get();
+            
+        final newTransactions = <TransactionModel>[];
+        for (var doc in transactionsSnapshot.docs) {
+          try {
+            final transaction = TransactionModel.fromFirestore(doc);
+            newTransactions.add(transaction);
+          } catch (e) {
+            debugPrint('Error parsing transaction: $e');
+          }
+        }
+        
+        if (!_areTransactionsEqual(newTransactions, _allTransactions)) {
+          _allTransactions = newTransactions;
+          _calculateLastWeekMetrics();
+          _calculateTotalExpense();
+          _filterTransactions();
+        }
+        
+        _lastUpdate = DateTime.now();
         // Force a notification to listeners
         notifyListeners();
       }

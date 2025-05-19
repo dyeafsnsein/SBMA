@@ -12,9 +12,16 @@ class DataService extends ChangeNotifier {
 
   double get totalBalance => _totalBalance;
   Map<String, String> get categoryIcons => Map.unmodifiable(_categoryIcons);
-
   DataService() {
     _setupAuthListener();
+    
+    // Immediately fetch data if user is already logged in
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      _loadCategories(currentUser.uid).then((_) {
+        _setupListeners(currentUser.uid);
+      });
+    }
   }
 
   void _setupAuthListener() {
