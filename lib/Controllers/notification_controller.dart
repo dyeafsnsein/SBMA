@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import '../Models/notification_model.dart';
 import '../Controllers/analysis_controller.dart';
 import '../Controllers/category_controller.dart';
@@ -14,16 +15,27 @@ import 'package:intl/intl.dart';
 
 class NotificationController extends ChangeNotifier {
   final NotificationModel model;
+  final AnalysisController _analysisController;
+  final NotificationService _notificationService;
+  final AiService _aiService;
+  bool _isAnalyzingTips = false;
+  String? _tipErrorMessage;
 
-  NotificationController(this.model) {
+  NotificationController(
+    this.model,
+    this._analysisController,
+    this._notificationService,
+    this._aiService,
+  ) {
     _loadNotifications();
     debugPrint('NotificationController: Constructor called');
   }
 
   List<Map<String, dynamic>> get notifications => model.notifications;
+  bool get isAnalyzingTips => _isAnalyzingTips;
+  String? get tipErrorMessage => _tipErrorMessage;
 
   void addNotification(String icon, String title, String message, String time) {
-    // Check for duplicates
     final exists = model.notifications
         .any((n) => n['title'] == title && n['message'] == message);
     if (exists) {
@@ -56,6 +68,86 @@ class NotificationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<String>> generateBudgetTips({
+    BuildContext? context,
+    String? timestamp,
+  }) async {
+    debugPrint('NotificationController: Starting generateBudgetTips');
+    final balance = _analysisController.totalBalance;
+    final expenses = _analysisController.totalExpense;
+    final categories = _analysisController.categoryBreakdown;
+    debugPrint(
+        'NotificationController: Input data: balance=$balance, expenses=$expenses, categories=$categories, timestamp=$timestamp');
+    if (_isAnalyzingTips) {
+      debugPrint(
+          'NotificationController: Budget tip generation already in progress');
+      return [];
+    }
+    _isAnalyzingTips = true;
+    _tipErrorMessage = null;
+    notifyListeners();
+
+    try {
+      if (!_analysisController.isDataLoaded) {
+        debugPrint('NotificationController: Data not loaded, waiting for load');
+        await Future.delayed(const Duration(seconds: 1));
+        if (!_analysisController.isDataLoaded) {
+          throw Exception('Data not loaded');
+        }
+      }
+      if (expenses <= 0 && categories.isEmpty) {
+        debugPrint('NotificationController: No spending data for AI');
+        final tips = [
+          'No spending data to generate a tip.',
+          'Add expense transactions to get personalized advice.',
+        ];
+        if (context != null) {
+          await _notificationService.showBudgetTips(context, tips);
+        }
+        return tips;
+      }
+      final tips = await _aiService.generateBudgetTips(
+        income: balance,
+        expenses: expenses,
+        categories: categories,
+        timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
+      );
+      debugPrint('NotificationController: Generated tip: $tips');
+      if (tips.isEmpty) {
+        debugPrint('NotificationController: AI returned empty tip');
+        final fallbackTips = [
+          'No specific tip generated.',
+          'Review your spending patterns for savings opportunities.',
+        ];
+        if (context != null) {
+          await _notificationService.showBudgetTips(context, fallbackTips);
+        }
+        return fallbackTips;
+      }
+      if (context != null) {
+        await _notificationService.showBudgetTips(context, tips);
+      }
+      return tips;
+    } catch (e, stackTrace) {
+      debugPrint(
+          'NotificationController: Error generating budget tip: $e\n$stackTrace');
+      String errorMessage = 'Failed to generate tip: $e';
+      if (e.toString().contains('NotInitializedError')) {
+        errorMessage = 'AI service not initialized. Please try again later.';
+      }
+      final errorTips = [errorMessage];
+      if (context != null) {
+        await _notificationService.showBudgetTips(context, errorTips);
+      }
+      _tipErrorMessage = errorMessage;
+      return errorTips;
+    } finally {
+      _isAnalyzingTips = false;
+      notifyListeners();
+      debugPrint('NotificationController: Budget tip generation completed');
+    }
+  }
+
   static Future<void> scheduleWeeklyAnalysis() async {
     const int analysisId = 0;
     const String alarmScheduledKey = 'weekly_analysis_scheduled';
@@ -68,7 +160,6 @@ class NotificationController extends ChangeNotifier {
     }
 
     await AndroidAlarmManager.initialize();
-    // Cancel any existing alarm to prevent duplicates
     await AndroidAlarmManager.cancel(analysisId);
     debugPrint(
         'NotificationController: Canceled any existing alarm with ID $analysisId');
@@ -120,29 +211,32 @@ class NotificationController extends ChangeNotifier {
       final aiService = AiService();
       final categoryController = CategoryController();
       final notificationModel = NotificationModel();
-      final notificationController = NotificationController(notificationModel);
+      final analysisModel = AnalysisModel();
       final analysisController = AnalysisController(
-        AnalysisModel(),
+        analysisModel,
         dataService,
         savingsController,
         aiService,
         notificationService,
         categoryController,
       );
-      // Clear previous tips in SharedPreferences
+      final notificationController = NotificationController(
+        notificationModel,
+        analysisController,
+        notificationService,
+        aiService,
+      );
       await prefs.remove('budget_tip_0');
       await prefs.remove('budget_tip_1');
       await prefs.remove('budget_tip_2');
-      // Clear existing notifications
       notificationController.clearNotifications();
-      // Use simplified date format
       final timestamp = DateFormat('d MMMM').format(DateTime.now());
-      final tips = await analysisController.generateBudgetTips(
+      final tips = await notificationController.generateBudgetTips(
         context: null,
         timestamp: timestamp,
       );
       debugPrint('NotificationController: Generated tip: $tips');
-      if (tips.isNotEmpty && !tips.contains('No sufficient data')) {
+      if (tips.isNotEmpty && !tips.contains('No spending data')) {
         final title = 'AI Budget Tip';
         final message = tips[0].replaceAll('\n', ' ');
         notificationController.addNotification(
@@ -168,7 +262,6 @@ class NotificationController extends ChangeNotifier {
         await prefs.setString('budget_tip_0', tipData);
         debugPrint('NotificationController: Cached empty tip error: $tipData');
       }
-      // Update last run date
       await prefs.setString('last_analysis_run', today);
       debugPrint('NotificationController: Updated last analysis run to $today');
     } catch (e, stackTrace) {
@@ -178,14 +271,25 @@ class NotificationController extends ChangeNotifier {
       final message = 'Failed to generate tip: $e';
       final timestamp = DateFormat('d MMMM').format(DateTime.now());
       final notificationModel = NotificationModel();
-      final notificationController = NotificationController(notificationModel);
+      final notificationController = NotificationController(
+        notificationModel,
+        AnalysisController(
+          AnalysisModel(),
+          DataService(),
+          SavingsController(),
+          AiService(),
+          NotificationService(),
+          CategoryController(),
+        ),
+        NotificationService(),
+        AiService(),
+      );
       notificationController.addNotification(
         'lib/assets/Error.png',
         title,
         message,
         timestamp,
       );
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
           'budget_tip_0', 'lib/assets/Error.png|$title|$message');
       debugPrint('NotificationController: Cached error: $e');
@@ -200,7 +304,6 @@ class NotificationController extends ChangeNotifier {
     for (var s in saved) {
       final parts = s.split('|');
       if (parts.length == 5) {
-        // Check for duplicates and deleted tips
         final tipData = '${parts[1]}|${parts[2]}|${parts[3]}';
         final exists = model.notifications
             .any((n) => n['title'] == parts[2] && n['message'] == parts[3]);

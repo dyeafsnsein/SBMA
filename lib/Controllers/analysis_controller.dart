@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import '../Models/analysis_model.dart';
 import '../Models/transaction_model.dart';
 import '../Models/savings_goal.dart';
@@ -27,8 +26,6 @@ class AnalysisController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   Map<String, double> _categoryBreakdown = {};
-  bool _isAnalyzingTips = false;
-  String? _tipErrorMessage;
   bool _isDataLoaded = false;
 
   AnalysisController(
@@ -50,8 +47,7 @@ class AnalysisController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, double> get categoryBreakdown => _categoryBreakdown;
-  bool get isAnalyzingTips => _isAnalyzingTips;
-  String? get tipErrorMessage => _tipErrorMessage;
+  bool get isDataLoaded => _isDataLoaded;
   double get totalBalance {
     final balance = totalIncome > 0 ? totalIncome : 0.0;
     debugPrint(
@@ -82,8 +78,6 @@ class AnalysisController extends ChangeNotifier {
     _categoryBreakdown = {};
     _isLoading = false;
     _errorMessage = null;
-    _isAnalyzingTips = false;
-    _tipErrorMessage = null;
     _isDataLoaded = false;
     _computePeriodData();
     notifyListeners();
@@ -359,83 +353,6 @@ class AnalysisController extends ChangeNotifier {
     }
     _clearState();
     _setupListeners(user.uid);
-  }
-
-  Future<List<String>> generateBudgetTips({
-    BuildContext? context,
-    String? timestamp,
-  }) async {
-    debugPrint('AnalysisController: Starting generateBudgetTips');
-    debugPrint(
-        'AnalysisController: Input data: balance=$totalBalance, expenses=$totalExpense, categories=$_categoryBreakdown, timestamp=$timestamp');
-    if (_isAnalyzingTips) {
-      debugPrint(
-          'AnalysisController: Budget tip generation already in progress');
-      return [];
-    }
-    _isAnalyzingTips = true;
-    _tipErrorMessage = null;
-    notifyListeners();
-
-    try {
-      if (!_isDataLoaded) {
-        debugPrint('AnalysisController: Data not loaded, waiting for load');
-        await Future.delayed(const Duration(seconds: 1));
-        if (!_isDataLoaded) {
-          throw Exception('Data not loaded');
-        }
-      }
-      if (totalExpense <= 0 && _categoryBreakdown.isEmpty) {
-        debugPrint('AnalysisController: No spending data for AI');
-        final tips = [
-          'No spending data to generate a tip.',
-          'Add expense transactions to get personalized advice.',
-        ];
-        if (context != null) {
-          await _notificationService.showBudgetTips(context, tips);
-        }
-        return tips;
-      }
-      final tips = await _aiService.generateBudgetTips(
-        income: totalBalance,
-        expenses: totalExpense,
-        categories: _categoryBreakdown,
-        timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
-      );
-      debugPrint('AnalysisController: Generated tip: $tips');
-      if (tips.isEmpty) {
-        debugPrint('AnalysisController: AI returned empty tip');
-        final fallbackTips = [
-          'No specific tip generated.',
-          'Review your spending patterns for savings opportunities.',
-        ];
-        if (context != null) {
-          await _notificationService.showBudgetTips(context, fallbackTips);
-        }
-        return fallbackTips;
-      }
-      if (context != null) {
-        await _notificationService.showBudgetTips(context, tips);
-      }
-      return tips;
-    } catch (e, stackTrace) {
-      debugPrint(
-          'AnalysisController: Error generating budget tip: $e\n$stackTrace');
-      String errorMessage = 'Failed to generate tip: $e';
-      if (e.toString().contains('NotInitializedError')) {
-        errorMessage = 'AI service not initialized. Please try again later.';
-      }
-      final errorTips = [errorMessage];
-      if (context != null) {
-        await _notificationService.showBudgetTips(context, errorTips);
-      }
-      _tipErrorMessage = errorMessage;
-      return errorTips;
-    } finally {
-      _isAnalyzingTips = false;
-      notifyListeners();
-      debugPrint('AnalysisController: Budget tip generation completed');
-    }
   }
 
   @override
