@@ -8,7 +8,6 @@ import 'components/period_selector_analysis.dart';
 import '../../../commons/income_expense_summary.dart';
 import 'components/targets_section.dart';
 import '../../../Controllers/analysis_controller.dart';
-import '../../../Services/data_service.dart';
 import '../../../Models/savings_goal.dart';
 
 class AnalysisPage extends StatefulWidget {
@@ -70,20 +69,17 @@ class AnalysisPageState extends State<AnalysisPage>
         return Colors.blue;
     }
   }
-
   @override
   Widget build(BuildContext context) {
     debugPrint('AnalysisPage: Building');
-    final dataService = Provider.of<DataService>(context);
 
     return Consumer<AnalysisController>(
-      builder: (context, controller, child) {
-        debugPrint('AnalysisPage: Consumer builder called');
+      builder: (context, controller, child) {debugPrint('AnalysisPage: Consumer builder called');
         final screenHeight = MediaQuery.of(context).size.height;
         final screenWidth = MediaQuery.of(context).size.width;
 
-        final expensePercentage = dataService.totalBalance > 0
-            ? (controller.totalExpense / dataService.totalBalance * 100).toInt()
+        final expensePercentage = controller.totalBalance > 0
+            ? (controller.totalExpense / controller.totalBalance * 100).toInt()
             : 0;
 
         String currentPeriod =
@@ -107,9 +103,8 @@ class AnalysisPageState extends State<AnalysisPage>
             body: Stack(
               children: [
                 Column(
-                  children: [
-                    AnalysisHeader(
-                      totalBalance: dataService.totalBalance,
+                  children: [                    AnalysisHeader(
+                      totalBalance: controller.totalBalance,
                       totalExpense: controller.totalExpense,
                       expensePercentage: expensePercentage,
                       onBackPressed: () {

@@ -1,24 +1,17 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/analysis_model.dart';
 import '../Models/transaction_model.dart';
 import '../Models/savings_goal.dart';
 import '../Services/data_service.dart';
-import '../Services/ai_service.dart';
-import '../Services/notification_service.dart';
 import '../Controllers/savings_controller.dart';
-import '../Controllers/category_controller.dart';
-import 'package:intl/intl.dart';
 
 class AnalysisController extends ChangeNotifier {
   final AnalysisModel model;
   final DataService _dataService;
   final SavingsController _savingsController;
-  final AiService _aiService;
-  final NotificationService _notificationService;
-  final CategoryController _categoryController;
   double totalIncome = 0.0;
   double totalExpense = 0.0;
   List<TransactionModel> _transactions = [];
@@ -27,14 +20,10 @@ class AnalysisController extends ChangeNotifier {
   String? _errorMessage;
   Map<String, double> _categoryBreakdown = {};
   bool _isDataLoaded = false;
-
   AnalysisController(
     this.model,
     this._dataService,
     this._savingsController,
-    this._aiService,
-    this._notificationService,
-    this._categoryController,
   ) {
     debugPrint('AnalysisController: Constructor called');
     _setupAuthListener();
@@ -48,12 +37,7 @@ class AnalysisController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   Map<String, double> get categoryBreakdown => _categoryBreakdown;
   bool get isDataLoaded => _isDataLoaded;
-  double get totalBalance {
-    final balance = totalIncome > 0 ? totalIncome : 0.0;
-    debugPrint(
-        'AnalysisController: Total balance set to $balance (income: $totalIncome)');
-    return balance;
-  }
+ double get totalBalance => _dataService.totalBalance;
 
   void _setupAuthListener() {
     debugPrint('AnalysisController: Setting up auth listener');
@@ -90,72 +74,34 @@ class AnalysisController extends ChangeNotifier {
     _isDataLoaded = false;
     notifyListeners();
 
+    // Cancel any existing subscriptions
     _transactionSubscription?.cancel();
-    _transactionSubscription = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('transactions')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) async {
-      debugPrint(
-          'AnalysisController: Received transaction snapshot: ${snapshot.docs.length} docs');
-      _transactions = [];
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final categoryRaw = data['category'];
-        final category = categoryRaw is String ? categoryRaw : 'Unknown';
-        final categoryId = data['categoryId'] as String? ?? 'unknown';
-        final icon = data['icon'] is String
-            ? data['icon'] as String
-            : await _categoryController.getIconForCategory(category);
-        _transactions.add(TransactionModel(
-          id: doc.id,
-          type: data['type'] ?? 'expense',
-          amount: double.parse(data['amount'].toString()),
-          date: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          description: data['description'] ?? '',
-          category: category,
-          categoryId: categoryId,
-          icon: icon,
-        ));
-      }
-
-      _computePeriodData();
-      _computeCategoryBreakdown();
-      _isLoading = false;
-      _isDataLoaded = true;
-      debugPrint(
-          'AnalysisController: Data loaded, transactions: ${_transactions.length}');
-      notifyListeners();
-    }, onError: (e, stackTrace) {
-      _errorMessage = 'Failed to load transactions: $e';
-      _isLoading = false;
-      _isDataLoaded = false;
-      debugPrint(
-          'AnalysisController: Error listening to transactions: $e\n$stackTrace');
-      notifyListeners();
-    });
-
+    
+    // Add listener to dataService
+    _dataService.addListener(_onDataServiceChanged);
+    
+    // Initial data load
+    _onDataServiceChanged();
+    
     _savingsController.addListener(() {
       debugPrint('AnalysisController: SavingsController updated');
       notifyListeners();
     });
   }
-
-  void _computeCategoryBreakdown() {
-    debugPrint('AnalysisController: Computing category breakdown');
-    _categoryBreakdown.clear();
-    for (var transaction in _transactions) {
-      if (transaction.type == 'expense') {
-        final category = transaction.category;
-        _categoryBreakdown[category] =
-            (_categoryBreakdown[category] ?? 0.0) + transaction.amount.abs();
-      }
-    }
-    debugPrint('AnalysisController: Category breakdown: $_categoryBreakdown');
+  
+  void _onDataServiceChanged() {
+    debugPrint('AnalysisController: DataService changed, updating data');
+    _transactions = List.from(_dataService.transactions);
+    _categoryBreakdown = Map.from(_dataService.categoryBreakdown);
+    totalExpense = _dataService.totalExpense;
+    totalIncome = _dataService.totalIncome;
+    
+    _computePeriodData();
+    _isLoading = false;
+    _isDataLoaded = true;
+    notifyListeners();
   }
-
+  
   void onPeriodChanged(int index) {
     if (model.selectedPeriodIndex == index) return;
     debugPrint('AnalysisController: Period changed to index: $index');
@@ -358,6 +304,7 @@ class AnalysisController extends ChangeNotifier {
   @override
   void dispose() {
     debugPrint('AnalysisController: Disposing');
+    _dataService.removeListener(_onDataServiceChanged);
     _transactionSubscription?.cancel();
     _savingsController.removeListener(notifyListeners);
     super.dispose();

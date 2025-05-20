@@ -22,6 +22,7 @@ class NotificationController extends ChangeNotifier {
   String? _tipErrorMessage;
   List<TransactionModel> _transactions = [];
   StreamSubscription<QuerySnapshot>? _transactionSubscription;
+  bool _transactionRemindersEnabled = false;
 
   NotificationController(
     this.model,
@@ -31,6 +32,7 @@ class NotificationController extends ChangeNotifier {
   ) {
     _loadNotifications();
     _setupAuthListener();
+    _loadReminderSettings();
     debugPrint('NotificationController: Constructor called');
   }
 
@@ -38,6 +40,81 @@ class NotificationController extends ChangeNotifier {
   bool get isAnalyzingTips => _isAnalyzingTips;
   String? get tipErrorMessage => _tipErrorMessage;
   List<TransactionModel> get transactions => _transactions;
+  bool get transactionRemindersEnabled => _transactionRemindersEnabled;
+  // Load transaction reminder settings from shared preferences
+  Future<void> _loadReminderSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _transactionRemindersEnabled = prefs.getBool('transaction_reminders_enabled') ?? false;
+    debugPrint('NotificationController: Transaction reminders enabled from SharedPreferences: $_transactionRemindersEnabled');
+    
+    // Ensure the NotificationService state also matches
+    if (_transactionRemindersEnabled) {
+      // Delay slightly to ensure all services are initialized
+      await Future.delayed(const Duration(milliseconds: 500));
+      enableTransactionReminders(notify: false);
+    } else {
+      // Make sure notifications are truly canceled on startup if they should be off
+      await _notificationService.cancelTransactionReminders();
+      debugPrint('NotificationController: Ensured notifications are canceled on startup');
+    }
+  }
+  // Enable transaction reminders
+  Future<void> enableTransactionReminders({bool testMode = false, bool notify = true}) async {
+    try {
+      // Set the controller state first
+      _transactionRemindersEnabled = true;
+      
+      // Then schedule notifications in the service
+      await _notificationService.scheduleTransactionReminder(testMode: testMode);
+      
+      // Save the preference
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('transaction_reminders_enabled', true);
+      
+      debugPrint('NotificationController: Transaction reminders enabled (test mode: $testMode)');
+      
+      // Ensure UI gets updated
+      if (notify) notifyListeners();
+    } catch (e, stackTrace) {
+      // Reset the state if scheduling failed
+      _transactionRemindersEnabled = false;
+      debugPrint('NotificationController: Error enabling transaction reminders: $e\n$stackTrace');
+      rethrow;
+    }
+  }
+  // Disable transaction reminders
+  Future<void> disableTransactionReminders({bool notify = true}) async {
+    try {
+      // Set the controller state first
+      _transactionRemindersEnabled = false;
+      
+      // Then cancel notifications in the service
+      await _notificationService.cancelTransactionReminders();
+      
+      // Save the preference
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('transaction_reminders_enabled', false);
+      
+      debugPrint('NotificationController: Transaction reminders disabled');
+      
+      // Ensure UI gets updated
+      if (notify) notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint('NotificationController: Error disabling transaction reminders: $e\n$stackTrace');
+      rethrow;
+    }
+  }
+
+  // Method to test notifications on the physical device
+  Future<void> showDebugNotification() async {
+    try {
+      await _notificationService.showImmediateDebugNotification();
+      debugPrint('NotificationController: Debug notification triggered');
+    } catch (e, stackTrace) {
+      debugPrint('NotificationController: Error showing debug notification: $e\n$stackTrace');
+      rethrow;
+    }
+  }
 
   void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -77,8 +154,7 @@ class NotificationController extends ChangeNotifier {
           debugPrint('NotificationController: Error listening to transactions: $e');
         });
   }
-
-  void addNotification(String icon, String title, String message, String time) {
+  Future<void> addNotification(String icon, String title, String message, String time) async {
     final exists = model.notifications
         .any((n) => n['title'] == title && n['message'] == message);
     if (exists) {
@@ -87,21 +163,25 @@ class NotificationController extends ChangeNotifier {
       return;
     }
     final id = DateTime.now().millisecondsSinceEpoch.toString();
-    model.saveNotification(id, icon, title, message, time);
+    await model.saveNotification(id, icon, title, message, time);
     _saveNotifications();
     debugPrint('NotificationController: Added notification: $title - $message');
     notifyListeners();
   }
 
-  void clearNotifications() {
+  Future<void> clearNotifications() async {
+    // Delete each notification from Firebase
+    for (var notification in model.notifications) {
+      await model.deleteNotification(notification['id']);
+    }
     model.notifications.clear();
     _saveNotifications();
     debugPrint('NotificationController: Cleared notifications');
     notifyListeners();
   }
 
-  void removeNotification(String id) async {
-    model.deleteNotification(id);
+  Future<void> removeNotification(String id) async {
+    await model.deleteNotification(id);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('budget_tip_0');
     await prefs.remove('deleted_tip');
@@ -187,8 +267,7 @@ class NotificationController extends ChangeNotifier {
           await _notificationService.showBudgetTips(context, tips);
         }
         return tips;
-      }
-      final tips = await _aiService.generateBudgetTips(
+      }      final tips = await _aiService.generateBudgetTips(
         income: balance,
         expenses: expenses,
         categories: categories,
@@ -201,11 +280,13 @@ class NotificationController extends ChangeNotifier {
           'No specific tip generated.',
           'Review your spending patterns for savings opportunities.',
         ];
+        // Only show notification if explicitly requested through context
         if (context != null) {
           await _notificationService.showBudgetTips(context, fallbackTips);
         }
         return fallbackTips;
       }
+      // Only show notification if explicitly requested through context
       if (context != null) {
         await _notificationService.showBudgetTips(context, tips);
       }
@@ -269,8 +350,7 @@ class NotificationController extends ChangeNotifier {
     } else {
       debugPrint('NotificationController: Failed to schedule weekly analysis');
     }
-  }
-  static Future<void> _runWeeklyAnalysis() async {
+  }  static Future<void> _runWeeklyAnalysis() async {
     debugPrint('NotificationController: Attempting weekly analysis at ${DateTime.now()}');
     final prefs = await SharedPreferences.getInstance();
     final lastRun = prefs.getString('last_analysis_run');
@@ -297,38 +377,54 @@ class NotificationController extends ChangeNotifier {
         aiService,
       );
       
-      // Clear old cached tips
+      // Load existing notifications to check for duplicates
+      await notificationModel.loadFromFirebase();
+      
+      // Clear old cached tips from SharedPreferences
       await prefs.remove('budget_tip_0');
       await prefs.remove('budget_tip_1');
       await prefs.remove('budget_tip_2');
-      notificationController.clearNotifications();
       
       // Wait a moment for the real-time listeners to fetch data
       await Future.delayed(const Duration(seconds: 2));
-      
       final timestamp = DateFormat('d MMMM').format(DateTime.now());
+      
+      // Get the tips without showing notifications (context: null)
       final tips = await notificationController.generateBudgetTips(
-        context: null,
+        context: null, // Don't show notifications here
         timestamp: timestamp,
       );
       
-      debugPrint('NotificationController: Generated tip: $tips');
+      debugPrint('NotificationController: Generated weekly tip: $tips');
       if (tips.isNotEmpty && !tips.contains('No spending data')) {
-        final title = 'AI Budget Tip';
+        final title = 'Weekly Budget Tip';
         final message = tips[0].replaceAll('\n', ' ');
-        notificationController.addNotification(
-          'lib/assets/Notification.png',
-          title,
-          message,
-          timestamp,
-        );
-        final tipData = 'lib/assets/Notification.png|$title|$message';
-        await prefs.setString('budget_tip_0', tipData);
-        debugPrint('NotificationController: Cached tip: $tipData');
+        
+        // Check if this tip already exists in notifications using exact message matching
+        final exists = notificationController.notifications
+            .any((n) => n['message'] == message);
+        
+        if (!exists) {
+          // Add to notifications list in Firebase first to prevent duplicates
+          await notificationController.addNotification(
+            'lib/assets/Notification.png',
+            title,
+            message,
+            timestamp,
+          );
+          
+          // Cache the tip in SharedPreferences 
+          final tipData = 'lib/assets/Notification.png|$title|$message';
+          await prefs.setString('budget_tip_0', tipData);
+          debugPrint('NotificationController: Cached weekly tip: $tipData');
+        } else {
+          debugPrint('NotificationController: Skipping duplicate weekly tip: $message');
+        }
       } else {
+        // Only store this in Firebase, don't show a notification for empty tips
         final title = 'AI Budget Tip';
         final message = 'No budget tip generated. Please add more transactions.';
-        notificationController.addNotification(
+        await notificationController.addNotification(
           'lib/assets/Error.png',
           title,
           message,
@@ -345,55 +441,81 @@ class NotificationController extends ChangeNotifier {
       await prefs.setString('last_analysis_run', today);
       debugPrint('NotificationController: Updated last analysis run to $today');
     } catch (e, stackTrace) {
-      debugPrint('NotificationController: Error running analysis: $e\n$stackTrace');
+      debugPrint('NotificationController: Error running weekly analysis: $e\n$stackTrace');
+      
       final title = 'AI Budget Tip';
       final message = 'Failed to generate tip: $e';
       final timestamp = DateFormat('d MMMM').format(DateTime.now());
-      final notificationModel = NotificationModel();
-      final notificationController = NotificationController(
-        notificationModel,
-        DataService(),
-        NotificationService(),
-        AiService(),
-      );
-      notificationController.addNotification(
-        'lib/assets/Error.png',
-        title,
-        message,
-        timestamp,
-      );
-      await prefs.setString('budget_tip_0', 'lib/assets/Error.png|$title|$message');
-      debugPrint('NotificationController: Cached error: $e');
       
-      // Clean up resources
-      notificationController.dispose();
-    }
-  }
-
-  void _loadNotifications() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList('notifications') ?? [];
-    final deletedTip = prefs.getString('deleted_tip');
-    model.notifications.clear();
-    for (var s in saved) {
-      final parts = s.split('|');
-      if (parts.length == 5) {
-        final tipData = '${parts[1]}|${parts[2]}|${parts[3]}';
-        final exists = model.notifications
-            .any((n) => n['title'] == parts[2] && n['message'] == parts[3]);
-        if (!exists && (deletedTip == null || tipData != deletedTip)) {
-          model.saveNotification(
-            parts[0], // id
-            parts[1], // icon
-            parts[2], // title
-            parts[3], // message
-            parts[4], // time
-          );
-        }
+      try {
+        final notificationModel = NotificationModel();
+        final notificationService = NotificationService();
+        await notificationService.init();
+        
+        final notificationController = NotificationController(
+          notificationModel,
+          DataService(),
+          notificationService,
+          AiService(),
+        );
+        
+        // Add error notification to Firebase
+        await notificationController.addNotification(
+          'lib/assets/Error.png',
+          title,
+          message,
+          timestamp,
+        );
+        
+        // Cache the error in SharedPreferences
+        await prefs.setString('budget_tip_0', 'lib/assets/Error.png|$title|$message');
+        debugPrint('NotificationController: Cached weekly analysis error: $e');
+        
+        // Clean up resources
+        notificationController.dispose();
+      } catch (innerError) {
+        // If even the error handling fails, just log it
+        debugPrint('NotificationController: Error while handling weekly analysis error: $innerError');
       }
     }
-    debugPrint('NotificationController: Loaded ${saved.length} notifications');
-    notifyListeners();
+  }
+  Future<void> _loadNotifications() async {
+    try {
+      // Load from Firebase (primary source)
+      await model.loadFromFirebase();
+      
+      // If we couldn't get data from Firebase, load from SharedPreferences as backup
+      if (model.notifications.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        final saved = prefs.getStringList('notifications') ?? [];
+        final deletedTip = prefs.getString('deleted_tip');
+        
+        for (var s in saved) {
+          final parts = s.split('|');
+          if (parts.length == 5) {
+            final tipData = '${parts[1]}|${parts[2]}|${parts[3]}';
+            final exists = model.notifications
+                .any((n) => n['title'] == parts[2] && n['message'] == parts[3]);
+            if (!exists && (deletedTip == null || tipData != deletedTip)) {
+              await model.saveNotification(
+                parts[0], // id
+                parts[1], // icon
+                parts[2], // title
+                parts[3], // message
+                parts[4], // time
+              );
+            }
+          }
+        }
+        debugPrint('NotificationController: Loaded ${saved.length} notifications from SharedPreferences');
+      } else {
+        debugPrint('NotificationController: Loaded ${model.notifications.length} notifications from Firebase');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('NotificationController: Error loading notifications: $e');
+    }
   }
   void _saveNotifications() async {
     final prefs = await SharedPreferences.getInstance();

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Controllers/auth_controller.dart';
 import 'Controllers/home_controller.dart';
 import 'Controllers/analysis_controller.dart';
@@ -38,21 +39,49 @@ void main() async {
   } catch (e, stackTrace) {
     debugPrint('Main: Error loading .env: $e\n$stackTrace');
   }
-
   final notificationService = NotificationService();
   try {
     await notificationService.init();
     debugPrint('Main: NotificationService initialized successfully');
+    
+    // Request notification permissions explicitly
     await notificationService.requestPermissions();
     debugPrint('Main: Notification permissions requested');
+    
+    // Test the notification service with an immediate debug notification if enabled
+    final prefs = await SharedPreferences.getInstance();
+    final debugMode = prefs.getBool('debug_notifications') ?? false;
+    if (debugMode) {
+      // Only show this in debug mode
+      await notificationService.showImmediateDebugNotification();
+      debugPrint('Main: Sent debug notification during startup');
+    }
   } catch (e, stackTrace) {
     debugPrint('Main: Error initializing NotificationService: $e\n$stackTrace');
   }
-
   if (Platform.isAndroid) {
     try {
       debugPrint('Main: Starting NotificationController setup for Android');
       await NotificationController.scheduleWeeklyAnalysis();
+      
+      // Check if transaction reminders should be enabled
+      final prefs = await SharedPreferences.getInstance();
+      final remindersEnabled = prefs.getBool('transaction_reminders_enabled') ?? false;
+      if (remindersEnabled) {
+        debugPrint('Main: Initializing transaction reminders');
+        final aiService = AiService();
+        final dataService = DataService();
+        final notificationController = NotificationController(
+          NotificationModel(),
+          dataService,
+          notificationService,
+          aiService,
+        );
+        await notificationController.enableTransactionReminders(testMode: true, notify: false);
+        debugPrint('Main: Transaction reminders enabled');
+        notificationController.dispose();
+      }
+      
       debugPrint('Main: NotificationController scheduled');
     } catch (e, stackTrace) {
       debugPrint(
@@ -85,9 +114,6 @@ class MyApp extends StatelessWidget {
             AnalysisModel(),
             context.read<DataService>(),
             context.read<SavingsController>(),
-            context.read<AiService>(),
-            context.read<NotificationService>(),
-            context.read<CategoryController>(),
           ),
         ),
         ChangeNotifierProvider(

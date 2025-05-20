@@ -57,7 +57,6 @@ class HomeController extends ChangeNotifier {
     _lastUpdate = null;
     notifyListeners();
   }
-
   void _setupListeners() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -65,47 +64,24 @@ class HomeController extends ChangeNotifier {
       return;
     }
 
-    _transactionSubscription = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('transactions')
-        .orderBy('timestamp', descending: true)
-        .limit(10)
-        .snapshots()
-        .listen((snapshot) {
-      _errorMessage = null;      final newTransactions = <TransactionModel>[];
-      for (var doc in snapshot.docs) {
-        try {
-          // Use the same fromFirestore method as TransactionController to ensure consistency
-          final transaction = TransactionModel.fromFirestore(doc);
-          newTransactions.add(transaction);
-        } catch (e) {
-          debugPrint('Error parsing transaction: $e');
-        }
-      }
-
-      if (!_areTransactionsEqual(newTransactions, _allTransactions)) {
-        _allTransactions = newTransactions;
-        _calculateLastWeekMetrics();
-        _calculateTotalExpense();
-        _filterTransactions();
-        _lastUpdate = DateTime.now();
-        notifyListeners();
-      }
-    }, onError: (e) {
-      _errorMessage = 'Failed to load transactions: $e';
-      debugPrint('Error listening to transactions: $e');
-      notifyListeners();
-    });
+    // Cancel any existing subscriptions
+    _transactionSubscription?.cancel();
+    
+    // Add listener to dataService
+    _dataService.addListener(_onDataServiceChanged);
+    
+    // Initial data load
+    _onDataServiceChanged();
   }
-
-  bool _areTransactionsEqual(
-      List<TransactionModel> a, List<TransactionModel> b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i].id != b[i].id || a[i].amount != b[i].amount) return false;
-    }
-    return true;
+    void _onDataServiceChanged() {
+    debugPrint('HomeController: DataService changed, updating data');
+    _allTransactions = List.from(_dataService.transactions);
+    _calculateLastWeekMetrics();
+    _calculateTotalExpense();
+    _filterTransactions();
+    _lastUpdate = DateTime.now();
+    _errorMessage = null;
+    notifyListeners();
   }
 
   Future<void> _calculateTotalExpense() async {
@@ -174,28 +150,25 @@ class HomeController extends ChangeNotifier {
           transaction.date.isAtSameMomentAs(startDate);
     }).toList();
   }
-
   void onPeriodTapped(int index) {
     _selectedPeriodIndex = index;
     _filterTransactions();
     notifyListeners();
   }
+  
   Future<void> setBalance(double balance) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set({'balance': balance}, SetOptions(merge: true));
+      // Use DataService to update balance instead of direct Firestore access
+      await _dataService.updateBalance(user.uid, balance, false);
     } catch (e) {
       _errorMessage = 'Error setting balance: $e';
       debugPrint('Error setting balance: $e');
       notifyListeners();
     }
-  }
-    // Method to force refresh data
+  }  // Method to force refresh data
   Future<void> refreshData() async {
     debugPrint('HomeController: Refreshing data...');
     final user = FirebaseAuth.instance.currentUser;
@@ -205,51 +178,20 @@ class HomeController extends ChangeNotifier {
     }
 
     try {
-      // Fetch the latest user data to ensure we have the most up-to-date balance
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      // Use DataService to refresh data instead of direct Firestore access
+      await _dataService.refreshData(user.uid);
       
-      if (userDoc.exists) {
-        // Also refresh transaction data
-        final transactionsSnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('transactions')
-            .orderBy('timestamp', descending: true)
-            .limit(10)
-            .get();
-            
-        final newTransactions = <TransactionModel>[];
-        for (var doc in transactionsSnapshot.docs) {
-          try {
-            final transaction = TransactionModel.fromFirestore(doc);
-            newTransactions.add(transaction);
-          } catch (e) {
-            debugPrint('Error parsing transaction: $e');
-          }
-        }
-        
-        if (!_areTransactionsEqual(newTransactions, _allTransactions)) {
-          _allTransactions = newTransactions;
-          _calculateLastWeekMetrics();
-          _calculateTotalExpense();
-          _filterTransactions();
-        }
-        
-        _lastUpdate = DateTime.now();
-        // Force a notification to listeners
-        notifyListeners();
-      }
+      // DataService listener will update our local data, 
+      // but we can force an update here to ensure UI refreshes
+      _onDataServiceChanged();
     } catch (e) {
       debugPrint('HomeController: Error refreshing data: $e');
     }
   }
-
   @override
   void dispose() {
     _transactionSubscription?.cancel();
+    _dataService.removeListener(_onDataServiceChanged);
     super.dispose();
   }
 }
