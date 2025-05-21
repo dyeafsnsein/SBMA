@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import '../Controllers/category_controller.dart';
-import '../Models/category_model.dart';
-import '../Models/transaction_model.dart';
+import 'package:intl/intl.dart';
+import '../../../Controllers/category_controller.dart';
+import '../../../Models/transaction_model.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final Function(TransactionModel) onAddExpense;
@@ -31,17 +30,6 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Method to deduplicate categories by label
-  List<CategoryModel> _getUniqueCategories(List<CategoryModel> categories) {
-    final Map<String, CategoryModel> uniqueMap = {};
-    for (var cat in categories) {
-      if (!uniqueMap.containsKey(cat.label)) {
-        uniqueMap[cat.label] = cat;
-      }
-    }
-    return uniqueMap.values.toList();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -57,22 +45,25 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeCategory();
     });
-  }void _initializeCategory() {
+  }
+
+  void _initializeCategory() {
+    if (!mounted) return;
+    
     final categoryController =
         Provider.of<CategoryController>(context, listen: false);
     
-    // If we're initializing in expense mode, use expense categories
     if (_isExpense) {
       final expenseCategories = categoryController.expenseCategories;
-      if (expenseCategories.isNotEmpty) {
+      if (expenseCategories.isEmpty) return;
+      
+      // Only update if the current category is invalid
+      final isCurrentCategoryValid = _selectedCategory != null &&
+          expenseCategories.any((c) => c.label == _selectedCategory);
+      
+      if (!isCurrentCategoryValid) {
         setState(() {
-          // Check if current category is valid in expense categories
-          final isCurrentCategoryValid = _selectedCategory != null &&
-              expenseCategories.any((c) => c.label == _selectedCategory);
-          
-          if (!isCurrentCategoryValid) {
-            _selectedCategory = expenseCategories.first.label;
-          }
+          _selectedCategory = expenseCategories.first.label;
         });
       }
     } else {
@@ -98,31 +89,19 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
       initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
     );
 
-    if (pickedTime != null && mounted) {
-      setState(() {
-        _selectedDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        );
-      });
-    } else {
-      setState(() {
-        _selectedDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          _selectedDateTime.hour,
-          _selectedDateTime.minute,
-        );
-      });
-    }
+    setState(() {
+      _selectedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime?.hour ?? _selectedDateTime.hour,
+        pickedTime?.minute ?? _selectedDateTime.minute,
+      );
+    });
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
   }
 
   @override
@@ -130,79 +109,56 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
     _titleController.dispose();
     _amountController.dispose();
     super.dispose();
-  }  void _submitForm() {
-    if (_formKey.currentState!.validate() && _selectedCategory != null) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
+  }
+  
+  void _submitForm() {
+    if (!_formKey.currentState!.validate() || _selectedCategory == null) return;
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-      try {
-        final categoryController =
-            Provider.of<CategoryController>(context, listen: false);
-        
-        // Different handling for income and expense
-        CategoryModel selectedCategoryData;
-        if (_isExpense) {
-          // For expenses, get the selected category
-          // Find the first category with the matching label to avoid duplicates
-          final matchingCategories = categoryController.categories
-              .where((category) => category.label == _selectedCategory)
-              .toList();
-              
-          if (matchingCategories.isNotEmpty) {
-            selectedCategoryData = matchingCategories.first;
-          } else {
-            // Fallback if no matching category is found
-            selectedCategoryData = CategoryModel(
-              id: 'unknown',
-              label: 'Unknown',
-              icon: 'lib/assets/Transaction.png',
-            );
-          }
-        } else {
-          // For income, always use the Income category
-          final incomeCategories = categoryController.categories
-              .where((category) => category.label == 'Income')
-              .toList();
-              
-          if (incomeCategories.isNotEmpty) {
-            selectedCategoryData = incomeCategories.first;
-          } else {
-            // Fallback if no Income category is found
-            selectedCategoryData = CategoryModel(
-              id: 'income',
-              label: 'Income',
-              icon: 'lib/assets/Income.png',
-            );
-          }
-        }final transaction = TransactionModel(
-          id: widget.initialTransaction?.id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Preserve original ID if updating
-          type: _isExpense ? 'expense' : 'income',
-          amount: double.parse(_amountController.text),
+    try {
+      final categoryController = Provider.of<CategoryController>(context, listen: false);
+      final amount = double.parse(_amountController.text);
+      final id = widget.initialTransaction?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+      
+      // Get category from controller
+      final category = _isExpense 
+          ? categoryController.findCategoryByLabelOrDefault(_selectedCategory!)
+          : categoryController.getIncomeCategoryOrDefault();
+      
+      // Call the appropriate callback with the transaction
+      if (_isExpense) {
+        widget.onAddExpense(TransactionModel.expense(
+          id: id,
+          amount: amount,
           date: _selectedDateTime,
           description: _titleController.text,
-          category: selectedCategoryData.label,
-          categoryId: selectedCategoryData.id,
-          icon: selectedCategoryData.icon,
-        );
-
-        if (_isExpense) {
-          widget.onAddExpense(transaction);
-        } else {
-          widget.onAddIncome(transaction);
-        }
-      } catch (e) {
-        setState(() {
-          _errorMessage = e.toString();
-        });
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
+          category: category.label,
+          categoryId: category.id,
+          icon: category.icon,
+        ));
+      } else {
+        widget.onAddIncome(TransactionModel.income(
+          id: id,
+          amount: amount,
+          date: _selectedDateTime,
+          description: _titleController.text,
+        ));
       }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final categoryController = Provider.of<CategoryController>(context);
@@ -235,10 +191,10 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                           children: [
                             ChoiceChip(
                               label: const Text('Expense'),
-                              selected: _isExpense,                              onSelected: (selected) {
+                              selected: _isExpense,
+                              onSelected: (_) {
                                 setState(() {
                                   _isExpense = true;
-                                  // Reset category to a valid expense category
                                   _initializeCategory(); 
                                 });
                               },
@@ -250,18 +206,17 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                             ),
                             ChoiceChip(
                               label: const Text('Income'),
-                              selected: !_isExpense,                              onSelected: (selected) {
+                              selected: !_isExpense,
+                              onSelected: (_) {
                                 setState(() {
                                   _isExpense = false;
-                                  // Use a fixed category for Income
                                   _selectedCategory = 'Income';
                                 });
                               },
                               selectedColor: Colors.greenAccent,
                               backgroundColor: Colors.grey,
                               labelStyle: TextStyle(
-                                color:
-                                    !_isExpense ? Colors.white : Colors.black,
+                                color: !_isExpense ? Colors.white : Colors.black,
                               ),
                             ),
                           ],
@@ -344,9 +299,12 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                             ],
                           ),
                         ),
-                      ),                      const SizedBox(height: 12),                      // Only show category dropdown for expenses
-                      if (_isExpense)                      DropdownButtonFormField<String>(
-                        // Make sure selected value exists in dropdown items
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      // Only show category dropdown for expenses
+                      if (_isExpense)
+                      DropdownButtonFormField<String>(
                         value: filteredCategories.any((c) => c.label == _selectedCategory) 
                             ? _selectedCategory 
                             : (filteredCategories.isNotEmpty ? filteredCategories.first.label : null),
@@ -365,31 +323,27 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                         dropdownColor: const Color(0xFF202422),
                         style: const TextStyle(color: Colors.white),
                         items: filteredCategories.isEmpty
-                            ? [
-                                const DropdownMenuItem<String>(
-                                  value: 'loading',
-                                  enabled: false,
-                                  child: Text('Loading...'),
-                                ),
-                              ]
-                            : _getUniqueCategories(filteredCategories).map((category) {
-                                return DropdownMenuItem<String>(
+                            ? [const DropdownMenuItem<String>(
+                                value: 'loading',
+                                enabled: false,
+                                child: Text('Loading...'),
+                              )]
+                            : categoryController.getUniqueCategories(filteredCategories)
+                                .map((category) => DropdownMenuItem<String>(
                                   value: category.label,
                                   child: Text(category.label),
-                                );
-                              }).toList(),
+                                ))
+                                .toList(),
                         onChanged: filteredCategories.isEmpty
                             ? null
                             : (value) {
                                 setState(() {
                                   _selectedCategory = value;
                                 });
-                              },validator: (value) {
-                          if (_isExpense && (value == null || value.isEmpty)) {
-                            return 'Please select a category';
-                          }
-                          return null;
-                        },
+                              },
+                        validator: (value) => _isExpense && (value == null || value.isEmpty)
+                            ? 'Please select a category'
+                            : null,
                       ),
                       if (_errorMessage != null)
                         Padding(
@@ -407,21 +361,27 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                               ? null
                               : _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: _isExpense ? Colors.redAccent : Colors.green,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                           child: _isLoading
-                              ? const CircularProgressIndicator()
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
                               : Text(
-                                  widget.initialTransaction != null
-                                      ? 'Update'
-                                      : 'Add',
+                                  widget.initialTransaction != null ? 'Update' : 'Add',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
                         ),

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/transaction_controller.dart';
 import '../../../commons/income_expense_summary.dart';
-import '../../../commons/add_transaction_dialog.dart';
+import 'add_transaction_dialog.dart';
 import '../../../commons/transaction_list.dart';
 
 class TransactionsPage extends StatefulWidget {
@@ -247,10 +247,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             right: 20,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Chip(
+                              children: [                                Chip(
                                   label: Text(
-                                    '${controller.selectedDate!.day}/${controller.selectedDate!.month}/${controller.selectedDate!.year}',
+                                    controller.formattedSelectedDate,
                                     style: const TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 14,

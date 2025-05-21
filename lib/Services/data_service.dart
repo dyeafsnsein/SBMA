@@ -18,14 +18,6 @@ class DataService extends ChangeNotifier {
   bool _isDataLoaded = false;
   DateTime? _lastTransactionUpdate;
 
-  // Track transactions that were recently modified through the app
-  final Set<String> _recentlyAddedTransactions = {};
-  final Set<String> _recentlyDeletedTransactions = {};
-  final Set<String> _recentlyModifiedTransactions = {};
-
-  // Track last document change timestamp to prevent multiple recalculations
-  DateTime? _lastRecalculationTime;
-
   double get totalBalance => _totalBalance;
   double get totalExpense => _totalExpense;
   double get totalIncome => _totalIncome;
@@ -70,7 +62,7 @@ class DataService extends ChangeNotifier {
     _isDataLoaded = false;
     notifyListeners();
   }
-
+  
   void _setupListeners(String userId) {
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
@@ -87,7 +79,6 @@ class DataService extends ChangeNotifier {
         notifyListeners();
       }
     }, onError: (e) {
-      debugPrint('DataService: Error listening to user balance: $e');
       _isDataLoaded = false;
       notifyListeners();
     });
@@ -101,7 +92,6 @@ class DataService extends ChangeNotifier {
         .listen((snapshot) {
       _loadTransactionsFromSnapshot(snapshot);
     }, onError: (e) {
-      debugPrint('DataService: Error listening to transactions: $e');
       _totalExpense = 0.0;
       _totalIncome = 0.0;
       _transactions = [];
@@ -109,86 +99,79 @@ class DataService extends ChangeNotifier {
       notifyListeners();
     });
   }
-
-  void _loadTransactionsFromSnapshot(QuerySnapshot snapshot) {
+    void _loadTransactionsFromSnapshot(QuerySnapshot snapshot) {
     _totalExpense = 0.0;
     _totalIncome = 0.0;
     _categoryBreakdown.clear();
     _transactions = [];
     _lastTransactionUpdate = DateTime.now();
 
-    debugPrint('DataService: Processing ${snapshot.docs.length} transactions');
-
     for (var doc in snapshot.docs) {
       try {
-        // Use the TransactionModel.fromFirestore method for consistency
         final transaction = TransactionModel.fromFirestore(doc);
         _transactions.add(transaction);
 
-        if (transaction.type == 'expense') {
-          _totalExpense += transaction.amount;
-          _categoryBreakdown[transaction.category] =
-              (_categoryBreakdown[transaction.category] ?? 0.0) + transaction.amount;
-        } else if (transaction.type == 'income') {
+        // Update totals and category breakdown
+        if (transaction.isExpense) {
+          _totalExpense += transaction.absoluteAmount;
+          
+          // Update category breakdown
+          final category = transaction.category;
+          _categoryBreakdown[category] = (_categoryBreakdown[category] ?? 0.0) + transaction.absoluteAmount;
+        } else if (transaction.isIncome) {
           _totalIncome += transaction.amount;
         }
       } catch (e) {
-        debugPrint('DataService: Error parsing transaction ${doc.id}: $e');
+        // Skip invalid transactions
       }
     }
 
-    debugPrint(
-        'DataService: Loaded ${_transactions.length} transactions: totalIncome=$_totalIncome, totalExpense=$_totalExpense, categories=$_categoryBreakdown');
     notifyListeners();
   }
-
+  
   Future<void> _loadCategories(String userId) async {
     final snapshot = await _firestore
         .collection('users')
         .doc(userId)
         .collection('categories')
         .get();
+        
     _categoryIcons.clear();
     for (var doc in snapshot.docs) {
       final label = doc['label'];
       final icon = doc['icon'];
       if (label is String && icon is String) {
         _categoryIcons[label] = icon;
-      } else {
-        debugPrint(
-            'DataService: Invalid category data for doc ${doc.id}: label=$label, icon=$icon');
       }
     }
     notifyListeners();
   }
-
+  
   Future<void> reloadTransactions(String userId) async {
     try {
-      debugPrint('DataService: Reloading transactions for user: $userId');
       var snapshot = await _firestore
           .collection('users')
           .doc(userId)
           .collection('transactions')
           .orderBy('timestamp', descending: true)
           .get();
-      debugPrint(
-          'DataService: Query found ${snapshot.docs.length} transactions');
+          
       _loadTransactionsFromSnapshot(snapshot);
     } catch (e) {
-      debugPrint('DataService: Error reloading transactions: $e');
+      // Reset data on error
       _totalExpense = 0.0;
       _totalIncome = 0.0;
       _transactions = [];
       _categoryBreakdown.clear();
       notifyListeners();
+      
+      throw Exception('Error reloading transactions: $e');
     }
   }
-
+  
   // Method to refresh data from Firestore
   Future<void> refreshData(String userId) async {
     try {
-      debugPrint('DataService: Refreshing data for user: $userId');
-
       // Refresh user data (balance)
       final userDoc = await _firestore
           .collection('users')
@@ -208,13 +191,10 @@ class DataService extends ChangeNotifier {
           .collection('transactions')
           .orderBy('timestamp', descending: true)
           .get();
-
+          
       _loadTransactionsFromSnapshot(snapshot);
-
-      return;
     } catch (e) {
-      debugPrint('DataService: Error refreshing data: $e');
-      throw e;
+      throw Exception('Error refreshing data: $e');
     }
   }
 
@@ -241,40 +221,27 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .doc();
-
+          
       // Create a copy with the generated ID
-      final transactionWithId = TransactionModel(
-        id: transactionRef.id,
-        type: transaction.type,
-        amount: transaction.amount,
-        date: transaction.date,
-        description: transaction.description,
-        category: transaction.category,
-        categoryId: transaction.categoryId,
-        icon: transaction.icon,
-      );
+      final transactionWithId = transaction.copyWith(id: transactionRef.id);
 
       // Add to Firestore
       await transactionRef.set(transactionWithId.toFirestore());
 
       // Update balance
       await updateBalance(userId,
-          transaction.amount.abs(),
-          transaction.type == 'expense');
+          transaction.absoluteAmount,
+          transaction.isExpense);
 
       // Refresh local data
       await refreshData(userId);
 
-      // Track the added transaction
-      _recentlyAddedTransactions.add(transactionRef.id);
-
       return transactionRef.id;
     } catch (e) {
-      debugPrint('DataService: Error adding transaction: $e');
-      throw e;
+      throw Exception('Error adding transaction: $e');
     }
   }
-  // Update a transaction
+    // Update a transaction
   Future<void> updateTransaction(String userId, TransactionModel oldTransaction, TransactionModel newTransaction) async {
     try {
       final transactionRef = _firestore
@@ -283,51 +250,39 @@ class DataService extends ChangeNotifier {
           .collection('transactions')
           .doc(newTransaction.id);
 
-      // Update the transaction in Firestore first
+      // Update the transaction in Firestore
       await transactionRef.update(newTransaction.toFirestore());
-
+      
+      // Handle balance adjustment
       if (oldTransaction.type != newTransaction.type) {
-        // If the transaction type changed (income <-> expense)
-        // First reverse the old transaction effect
-        await updateBalance(userId,
-            oldTransaction.amount.abs(),
-            oldTransaction.type != 'expense');
-
-        // Then apply the new transaction effect
-        await updateBalance(userId,
-            newTransaction.amount.abs(),
-            newTransaction.type == 'expense');
-      } else {
-        // Same transaction type, calculate the balance impact
-        double amountDifference = 0.0;
-        bool addToBalance = false;
+        // Transaction type changed (expense to income or vice versa)
         
-        if (oldTransaction.type == 'expense') {
-          // For expenses, lower expense means add to balance, higher expense means subtract
-          // If oldAmount=-100, newAmount=-90, diff=10, add to balance
-          // If oldAmount=-90, newAmount=-100, diff=-10, subtract from balance
-          amountDifference = oldTransaction.amount.abs() - newTransaction.amount.abs();
-          addToBalance = amountDifference > 0; // If old expense was greater, add the difference to balance
-        } else {
-          // For income, higher income means add to balance, lower income means subtract
-          // If oldAmount=100, newAmount=90, diff=-10, subtract from balance
-          // If oldAmount=90, newAmount=100, diff=10, add to balance
-          amountDifference = newTransaction.amount - oldTransaction.amount;
-          addToBalance = amountDifference > 0; // If new income is greater, add the difference to balance
-        }
+        // Reverse old transaction effect
+        await updateBalance(userId,
+            oldTransaction.absoluteAmount,
+            !oldTransaction.isExpense);
+
+        // Apply new transaction effect
+        await updateBalance(userId,
+            newTransaction.absoluteAmount,
+            newTransaction.isExpense);
+      } else {
+        // Same transaction type, calculate the amount difference
+        final amountDifference = oldTransaction.isExpense
+            ? oldTransaction.absoluteAmount - newTransaction.absoluteAmount
+            : newTransaction.amount - oldTransaction.amount;
+        
+        final addToBalance = amountDifference > 0;
         
         if (amountDifference != 0) {
           await updateBalance(userId, amountDifference.abs(), !addToBalance);
-        }      }
+        }
+      }
 
       // Refresh local data
       await refreshData(userId);
-
-      // Track the modified transaction
-      _recentlyModifiedTransactions.add(newTransaction.id);
     } catch (e) {
-      debugPrint('DataService: Error updating transaction: $e');
-      throw e;
+      throw Exception('Error updating transaction: $e');
     }
   }
 
@@ -339,38 +294,31 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .doc(transaction.id);
-
+          
       // First check if the document exists
       final docSnapshot = await transactionRef.get();
 
       if (!docSnapshot.exists) {
-        debugPrint('DataService: Transaction with ID: ${transaction.id} not found when trying to delete');
-        return;
+        return; // Transaction not found, nothing to delete
       }
-
+      
       // Delete the transaction
       await transactionRef.delete();
-
-      // Adjust balance (reverse the transaction effect)
-      if (transaction.type == 'expense') {
-        // For expense transactions, add the amount back
-        await updateBalance(userId, transaction.amount.abs(), false);
+      
+      // Adjust balance by reversing the transaction effect
+      if (transaction.isExpense) {
+        await updateBalance(userId, transaction.absoluteAmount, false); // Add the amount back
       } else {
-        // For income transactions, subtract the amount
-        await updateBalance(userId, transaction.amount, true);
+        await updateBalance(userId, transaction.amount, true); // Subtract the amount
       }
 
       // Refresh local data
       await refreshData(userId);
-
-      // Track the deleted transaction
-      _recentlyDeletedTransactions.add(transaction.id);
     } catch (e) {
-      debugPrint('DataService: Error deleting transaction: $e');
-      throw e;
+      throw Exception('Error deleting transaction: $e');
     }
   }
-  // Recalculate balance from all transactions
+    // Recalculate balance from all transactions
   Future<void> recalculateBalance(String userId) async {
     try {
       // Get all transactions
@@ -380,30 +328,30 @@ class DataService extends ChangeNotifier {
           .collection('transactions')
           .get();
     
-      double calculatedBalance = 0.0;
-    
       // Calculate balance from transactions
+      double totalIncome = 0.0;
+      double totalExpense = 0.0;
+      
       for (var doc in snapshot.docs) {
         final transaction = TransactionModel.fromFirestore(doc);
-        if (transaction.type == 'income') {
-          calculatedBalance += transaction.amount;
-        } else if (transaction.type == 'expense') {
-          calculatedBalance -= transaction.amount;
+        if (transaction.isIncome) {
+          totalIncome += transaction.amount;
+        } else if (transaction.isExpense) {
+          totalExpense += transaction.absoluteAmount;
         }
       }
+      
+      final calculatedBalance = totalIncome - totalExpense;
     
       // Update the balance in Firestore
       await _firestore.collection('users').doc(userId).update({
         'balance': calculatedBalance
       });
-    
-      debugPrint('DataService: Recalculated balance: $calculatedBalance');
       
       // Refresh local data
       await refreshData(userId);
     } catch (e) {
-      debugPrint('DataService: Error recalculating balance: $e');
-      throw e;
+      throw Exception('Error recalculating balance: $e');
     }
   }
 

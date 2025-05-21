@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../Controllers/transaction_controller.dart';
 import '../Models/transaction_model.dart';
 import '../Services/data_service.dart';
-import 'add_transaction_dialog.dart';
+import '../Screens/transactions/views/add_transaction_dialog.dart';
 
 class TransactionList extends StatelessWidget {
   final List<TransactionModel> transactions;
@@ -21,7 +21,7 @@ class TransactionList extends StatelessWidget {
     return ListView.builder(
       itemCount: transactions.length,      itemBuilder: (context, index) {
         final transaction = transactions[index];
-        final isExpense = transaction.type == 'expense';
+        final isExpense = transaction.isExpense;
 
         return GestureDetector(
           onTap: () {
@@ -94,11 +94,8 @@ class TransactionList extends StatelessWidget {
                           ? transaction.icon 
                           : dataService.getIconForCategory(transaction.category),
                       width: 31,
-                      height: 28,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Better error handling for icon loading
-                        debugPrint(
-                            'Failed to load icon: ${transaction.icon}, error: $error');
+                      height: 28,                      errorBuilder: (context, error, stackTrace) {
+                        // Default icon if loading fails
                         return Icon(
                           isExpense ? Icons.arrow_downward : Icons.arrow_upward,
                           color: Colors.white,
@@ -136,18 +133,16 @@ class TransactionList extends StatelessWidget {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${isExpense ? '-' : '+'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                  children: [                    Text(
+                      transaction.displayTypeWithAmount,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: isExpense ? Colors.red : Colors.green,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${transaction.date.day}/${transaction.date.month}/${transaction.date.year}',
+                    const SizedBox(height: 4),                    Text(
+                      transaction.formatDate('dd/MM/yyyy'),
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
