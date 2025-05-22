@@ -5,28 +5,28 @@ import 'dart:async';
 import '../Models/category_model.dart';
 
 class CategoryController extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<CategoryModel> _categories = [];
-  StreamSubscription<QuerySnapshot>? _categorySubscription;  // Lists to manage category types
-  static const List<String> _incomeCategoryLabels = ['Income', 'Salary'];
-  static const List<String> _reservedCategoryLabels = ['More', 'Income', 'Salary'];
+  StreamSubscription<QuerySnapshot>? _categorySubscription;
+  
+  // Constants for category management
+  static const List<String> _reservedCategoryLabels = ['More', 'Income', 'Salary', 'Unknown'];
   static const List<String> _defaultExpenseCategories = [
     'Food', 'Transport', 'Rent', 'Entertainment', 'Medicine', 'Groceries'
   ];
   CategoryController() {
     _setupAuthListener();
   }
-  List<CategoryModel> get categories => _categories;
-
+  List<CategoryModel> get categories => List.unmodifiable(_categories);
   // Return only expense categories (exclude income and reserved categories)
   List<CategoryModel> get expenseCategories => _categories
-      .where((category) => 
-          !_incomeCategoryLabels.contains(category.label) && 
+      .where((category) => category.isExpense && 
           !_reservedCategoryLabels.contains(category.label))
       .toList();
 
   // Return only income categories
   List<CategoryModel> get incomeCategories => _categories
-      .where((category) => _incomeCategoryLabels.contains(category.label))
+      .where((category) => category.isIncome)
       .toList();
 
   /// Finds a category by its label
@@ -37,18 +37,17 @@ class CategoryController extends ChangeNotifier {
     
     return matchingCategories.isNotEmpty ? matchingCategories.first : null;
   }
-
   /// Gets the default income category or creates a fallback if none exists
   CategoryModel getIncomeCategoryOrDefault() {
     final incomeCategories = _categories
-        .where((category) => category.label == 'Income')
+        .where((category) => category.isIncome && category.label == 'Income')
         .toList();
     
     if (incomeCategories.isNotEmpty) {
       return incomeCategories.first;
     } else {
       // Fallback if no Income category is found
-      return CategoryModel(
+      return CategoryModel.income(
         id: 'income',
         label: 'Income',
         icon: 'lib/assets/Income.png',
@@ -64,20 +63,24 @@ class CategoryController extends ChangeNotifier {
       return category;
     } else {
       // Fallback if no matching category is found
-      return CategoryModel(
+      return CategoryModel.expense(
         id: 'unknown',
         label: 'Unknown',
         icon: 'lib/assets/Transaction.png',
       );
     }
-  }
-  void _setupAuthListener() {
+  }  void _setupAuthListener() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
         _clearState();
       } else {
+        debugPrint('User signed in, initializing categories...');
+        // Force initialization of categories for the user
         initializeCategories(user.uid).then((_) {
-          _setupListeners(user.uid);
+          debugPrint('Categories initialized successfully');
+          _setupCategoryListener(user.uid);
+        }).catchError((e) {
+          debugPrint('Error initializing categories: $e');
         });
       }
     });
@@ -88,17 +91,20 @@ class CategoryController extends ChangeNotifier {
     _categorySubscription = null;
     _categories = [];
     notifyListeners();
-  }  void _setupListeners(String userId) {
+  }
+  void _setupCategoryListener(String userId) {
     _categorySubscription?.cancel(); // Prevent duplicate listeners
-    _categorySubscription = FirebaseFirestore.instance
+    
+    _categorySubscription = _firestore
         .collection('users')
         .doc(userId)
         .collection('categories')
         .snapshots()
         .listen((snapshot) {
-      _categories =
-          snapshot.docs.map((doc) => CategoryModel.fromFirestore(doc)).toList();
-          
+      _categories = snapshot.docs
+          .map((doc) => CategoryModel.fromFirestore(doc))
+          .toList();
+      
       // Check for and clean up duplicate categories
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _cleanupDuplicateCategories(userId);
@@ -106,10 +112,11 @@ class CategoryController extends ChangeNotifier {
       
       notifyListeners();
     }, onError: (e, stackTrace) {
-      // Handle error silently
+      debugPrint('Error in category listener: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // We don't notify here as we don't want to propagate errors to UI
     });
-  }
-    // Helper method to clean up duplicate categories
+  }  // Helper method to clean up duplicate categories
   Future<void> _cleanupDuplicateCategories(String userId) async {
     try {
       // Create a map to track categories by label
@@ -124,7 +131,7 @@ class CategoryController extends ChangeNotifier {
       }
       
       // Check for duplicates and remove them
-      final batch = FirebaseFirestore.instance.batch();
+      final batch = _firestore.batch();
       bool hasDuplicates = false;
       
       // For each label that has multiple categories, keep only the first one
@@ -136,7 +143,7 @@ class CategoryController extends ChangeNotifier {
           for (int i = 1; i < entry.value.length; i++) {
             // Delete duplicate from Firestore
             batch.delete(
-              FirebaseFirestore.instance
+              _firestore
                   .collection('users')
                   .doc(userId)
                   .collection('categories')
@@ -151,136 +158,222 @@ class CategoryController extends ChangeNotifier {
         await batch.commit();
       }
     } catch (e) {
-      // Handle error silently
-    }  }Future<void> initializeCategories(String userId) async {
+      debugPrint('Error cleaning up duplicate categories: $e');
+    }
+  }  Future<void> initializeCategories(String userId) async {
+    debugPrint('Starting category initialization for user: $userId');
     try {
-      final categoriesRef = FirebaseFirestore.instance
+      final categoriesRef = _firestore
           .collection('users')
           .doc(userId)
           .collection('categories');
 
       // Check if categories already exist
       final snapshot = await categoriesRef.get();
+      debugPrint('Found ${snapshot.docs.length} existing categories');
+      
       if (snapshot.docs.isNotEmpty) {
+        debugPrint('Categories already exist, skipping initialization');
         return;
       }
 
-      // First get existing categories to check for duplicates
-      final existingCategories = snapshot.docs
-          .map((doc) => doc.data()['label'] as String?)
-          .whereType<String>()
-          .toSet();
-        // Initialize essential categories
-      final batch = FirebaseFirestore.instance.batch();
+      debugPrint('Creating default categories for new user');
       
-      // Add expense categories (only if they don't already exist)
+      // Initialize with a batch for better performance
+      final batch = _firestore.batch();
+      
+      // Add expense categories
       for (var categoryLabel in _defaultExpenseCategories) {
-        // Skip if this category already exists
-        if (existingCategories.contains(categoryLabel)) {
-          continue;
-        }
-        
+        debugPrint('Adding expense category: $categoryLabel');
         final docRef = categoriesRef.doc();
         batch.set(docRef, {
           'label': categoryLabel,
-          'icon': 'lib/assets/$categoryLabel.png'
-        });
-        
-        // Add to our set of existing categories to prevent duplicates in this batch
-        existingCategories.add(categoryLabel);
-      }
-        // Add just one income category (if it doesn't already exist)
-      if (!existingCategories.contains('Income')) {
-        final incomeDocRef = categoriesRef.doc();
-        batch.set(incomeDocRef, {
-          'label': 'Income',
-          'icon': 'lib/assets/Income.png'
+          'icon': 'lib/assets/$categoryLabel.png',
+          'type': CategoryModel.TYPE_EXPENSE
         });
       }
       
+      // Add income category
+      debugPrint('Adding income category: Income');
+      final incomeDocRef = categoriesRef.doc();
+      batch.set(incomeDocRef, {
+        'label': 'Income',
+        'icon': 'lib/assets/Income.png',
+        'type': CategoryModel.TYPE_INCOME
+      });
+      
+      // Add salary category
+      debugPrint('Adding income category: Salary');
+      final salaryDocRef = categoriesRef.doc();
+      batch.set(salaryDocRef, {
+        'label': 'Salary',
+        'icon': 'lib/assets/Salary.png',
+        'type': CategoryModel.TYPE_INCOME
+      });
+      
+      debugPrint('Committing batch with new categories');
       await batch.commit();
+      debugPrint('Category initialization completed successfully');
+      
+      // Trigger refresh of categories right away
+      final newSnapshot = await categoriesRef.get();
+      _categories = newSnapshot.docs
+          .map((doc) => CategoryModel.fromFirestore(doc))
+          .toList();
+      notifyListeners();
     } catch (e) {
+      debugPrint('Failed to initialize categories: $e');
       throw Exception('Failed to initialize categories: $e');
     }
-  }
-  Future<String> getIconForCategory(String category) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return 'lib/assets/Transaction.png';
-    }
-
-    // Check cached categories first
+  }/// Returns a validated icon path for the given category
+  String getIconForCategory(String category) {
+    // Check cached categories first for efficiency
     final cachedCategory = _categories.firstWhere(
       (cat) => cat.label == category,
-      orElse: () =>
-          CategoryModel(id: '', label: '', icon: 'lib/assets/Transaction.png'),
+      orElse: () => CategoryModel(
+        id: '', 
+        label: '', 
+        icon: 'lib/assets/Transaction.png'
+      ),
     );
+    
     if (cachedCategory.label.isNotEmpty) {
       return cachedCategory.icon;
     }
-
-    // Query Firestore as fallback
-    try {
-      final categoryDocs = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('categories')
-          .where('label', isEqualTo: category)
-          .limit(1)
-          .get();
-
-      if (categoryDocs.docs.isNotEmpty) {
-        final data = categoryDocs.docs.first.data();
-        return data['icon'] as String? ?? 'lib/assets/Transaction.png';
-      }
-      return 'lib/assets/Transaction.png';
-    } catch (e) {
-      return 'lib/assets/Transaction.png';
-    }
-  }
-  Future<void> addCategory(String name) async {
+    
+    return 'lib/assets/Transaction.png';
+  }  Future<void> addCategory(String name, {String type = CategoryModel.TYPE_EXPENSE}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      debugPrint('Cannot add category: User not authenticated');
       return;
     }
 
     // Prevent adding reserved categories
-    if (_incomeCategoryLabels.contains(name) ||
-        _reservedCategoryLabels.contains(name)) {
+    if (_reservedCategoryLabels.contains(name)) {
+      debugPrint('Cannot add reserved category: $name');
+      return;
+    }
+    
+    // Prevent duplicates
+    if (_categories.any((cat) => cat.label == name)) {
+      debugPrint('Cannot add duplicate category: $name');
       return;
     }
 
     try {
-      final newCategory = CategoryModel(
-        id: '', // ID will be auto-generated by Firestore
-        label: name,
-        icon: 'lib/assets/star.png', // Default icon for new categories
-      );
+      // Use the proper factory method based on type
+      CategoryModel newCategory;
+      
+      if (type == CategoryModel.TYPE_INCOME) {
+        newCategory = CategoryModel.income(
+          id: '', // ID will be auto-generated by Firestore
+          label: name,
+          icon: 'lib/assets/Income.png',
+        );
+      } else {
+        newCategory = CategoryModel.expense(
+          id: '', // ID will be auto-generated by Firestore
+          label: name,
+          icon: 'lib/assets/Transaction.png', // Default icon for new categories
+        );
+      }
 
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('categories')
           .add(newCategory.toFirestore());
     } catch (e) {
+      debugPrint('Failed to add category: $e');
       throw Exception('Failed to add category: $e');
     }
-  }
-  Future<void> deleteCategory(String categoryId) async {
+  }  Future<void> deleteCategory(String categoryId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      debugPrint('Cannot delete category: User not authenticated');
+      return;
+    }
+    
+    // Don't allow deleting reserved categories
+    final categoryToDelete = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => CategoryModel(id: '', label: '', icon: ''),
+    );
+    
+    if (categoryToDelete.id.isEmpty) {
+      debugPrint('Category not found: $categoryId');
+      return;
+    }
+    
+    if (_reservedCategoryLabels.contains(categoryToDelete.label)) {
+      debugPrint('Cannot delete reserved category: ${categoryToDelete.label}');
       return;
     }
 
     try {
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('categories')
           .doc(categoryId)
           .delete();
     } catch (e) {
+      debugPrint('Failed to delete category: $e');
       throw Exception('Failed to delete category: $e');
+    }
+  }
+  Future<void> updateCategory(String categoryId, {String? label, String? icon, String? type}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('Cannot update category: User not authenticated');
+      return;
+    }
+    
+    // Find the category to ensure it exists
+    final categoryToUpdate = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => CategoryModel(id: '', label: '', icon: ''),
+    );
+    
+    if (categoryToUpdate.id.isEmpty) {
+      debugPrint('Category not found: $categoryId');
+      return;
+    }
+    
+    // Don't allow updating reserved categories
+    if (_reservedCategoryLabels.contains(categoryToUpdate.label)) {
+      debugPrint('Cannot update reserved category: ${categoryToUpdate.label}');
+      return;
+    }
+    
+    // Don't allow duplicates if label is being changed
+    if (label != null && 
+        label != categoryToUpdate.label && 
+        _categories.any((cat) => cat.label == label)) {
+      debugPrint('Cannot update to duplicate name: $label');
+      return;
+    }
+
+    try {
+      final updates = <String, dynamic>{};
+      if (label != null) updates['label'] = label;
+      if (icon != null) updates['icon'] = icon;
+      if (type != null && CategoryModel.VALID_TYPES.contains(type)) {
+        updates['type'] = type;
+      }
+      
+      if (updates.isNotEmpty) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('categories')
+            .doc(categoryId)
+            .update(updates);
+      }
+    } catch (e) {
+      debugPrint('Failed to update category: $e');
+      throw Exception('Failed to update category: $e');
     }
   }
 
@@ -292,45 +385,8 @@ class CategoryController extends ChangeNotifier {
         uniqueMap[cat.label] = cat;
       }
     }
-    return uniqueMap.values.toList();
-  }
-  /// Recalculate balance from all transactions
-  Future<void> recalculateBalance(String userId) async {
-    try {
-      // Fetch all transactions for the user
-      final transactionsSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('transactions')
-          .get();
-
-      // Calculate the new balance
-      double totalIncome = 0;
-      double totalExpense = 0;
-      for (var doc in transactionsSnapshot.docs) {
-        final data = doc.data();
-        final amount = data['amount'] as double? ?? 0;
-        final isExpense = data['isExpense'] as bool? ?? false;
-        
-        if (isExpense) {
-          totalExpense += amount;
-        } else {
-          totalIncome += amount;
-        }
-      }
-      
-      final newBalance = totalIncome - totalExpense;
-      
-      // Update the user's balance in Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .update({'balance': newBalance});
-    } catch (e) {
-      throw Exception('Failed to recalculate balance: $e');
-    }
-  }
-
+    return uniqueMap.values.toList();  }
+  
   @override
   void dispose() {
     _categorySubscription?.cancel();

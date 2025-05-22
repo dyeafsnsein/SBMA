@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../Models/transaction_model.dart';
 import '../Services/data_service.dart';
-
 class HomeController extends ChangeNotifier {
   final DataService _dataService;
   double _totalExpense = 0.0;
