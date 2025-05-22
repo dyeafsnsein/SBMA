@@ -57,6 +57,8 @@ class DataService extends ChangeNotifier {
     _transactionSubscription = null;
     _totalBalance = 0.0;
     _totalExpense = 0.0;
+    _totalIncome = 0.0;
+    _transactions.clear();
     _categoryBreakdown.clear();
     _categoryIcons.clear();
     _isDataLoaded = false;
@@ -145,28 +147,6 @@ class DataService extends ChangeNotifier {
       }
     }
     notifyListeners();
-  }
-  
-  Future<void> reloadTransactions(String userId) async {
-    try {
-      var snapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('transactions')
-          .orderBy('timestamp', descending: true)
-          .get();
-          
-      _loadTransactionsFromSnapshot(snapshot);
-    } catch (e) {
-      // Reset data on error
-      _totalExpense = 0.0;
-      _totalIncome = 0.0;
-      _transactions = [];
-      _categoryBreakdown.clear();
-      notifyListeners();
-      
-      throw Exception('Error reloading transactions: $e');
-    }
   }
   
   // Method to refresh data from Firestore
@@ -353,6 +333,75 @@ class DataService extends ChangeNotifier {
     } catch (e) {
       throw Exception('Error recalculating balance: $e');
     }
+  }
+
+  // A method to calculate last week metrics that could be used by multiple controllers
+  Map<String, dynamic> calculateLastWeekMetrics() {
+    final now = DateTime.now();
+    final lastWeekStart = now.subtract(const Duration(days: 7));
+    final lastWeekTransactions = _transactions.where((transaction) {
+      return transaction.date.isAfter(lastWeekStart) ||
+          transaction.date.isAtSameMomentAs(lastWeekStart);
+    }).toList();
+
+    final revenueLastWeek = lastWeekTransactions
+        .where((t) => t.isIncome)
+        .fold(0.0, (total, t) => total + t.amount);
+
+    final categorySpending = <String, double>{};
+    final categoryIcons = <String, String>{};
+
+    for (var transaction in lastWeekTransactions) {
+      if (transaction.isExpense) {
+        final category = transaction.category;
+        categorySpending[category] =
+            (categorySpending[category] ?? 0) + transaction.absoluteAmount;
+        categoryIcons[category] = transaction.icon;
+      }
+    }
+
+    String topCategory = 'None';
+    double topAmount = 0.0;
+    String topIcon = 'lib/assets/Salary.png';
+
+    if (categorySpending.isNotEmpty) {
+      final topEntry =
+          categorySpending.entries.reduce((a, b) => a.value > b.value ? a : b);
+      topCategory = topEntry.key;
+      topAmount = topEntry.value;
+      topIcon = categoryIcons[topEntry.key] ?? 'lib/assets/Salary.png';
+    }
+
+    return {
+      'revenueLastWeek': revenueLastWeek,
+      'topCategory': topCategory,
+      'topAmount': topAmount,
+      'topIcon': topIcon,
+    };
+  }
+
+  // Filter transactions for a given period
+  List<TransactionModel> getFilteredTransactions(int periodIndex) {
+    final now = DateTime.now();
+    DateTime startDate;
+    switch (periodIndex) {
+      case 0:
+        startDate = now.subtract(const Duration(days: 1));
+        break;
+      case 1:
+        startDate = now.subtract(const Duration(days: 7));
+        break;
+      case 2:
+        startDate = DateTime(now.year, now.month, 1);
+        break;
+      default:
+        startDate = now.subtract(const Duration(days: 1));
+    }
+
+    return _transactions.where((transaction) {
+      return transaction.date.isAfter(startDate) ||
+          transaction.date.isAtSameMomentAs(startDate);
+    }).toList();
   }
 
   @override

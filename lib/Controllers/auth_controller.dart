@@ -341,6 +341,36 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Add this method to AuthController
+  Future<bool> setInitialBalance(double balance) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      errorMessage = 'User not authenticated';
+      notifyListeners();
+      return false;
+    }
+
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      // Update balance in Firestore
+      await _authService.updateBalance(user.uid, balance);
+
+      // Mark that user has set their balance
+      await _authService.updateUserData(user.uid, {'hasSetBalance': true});
+
+      isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      errorMessage = 'Failed to set initial balance: $e';
+      isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   String _getErrorMessage(String code) {
     switch (code) {
       case 'user-not-found':
