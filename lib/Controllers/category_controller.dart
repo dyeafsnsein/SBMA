@@ -10,10 +10,9 @@ class CategoryController extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _categorySubscription;
   
   // Constants for category management
-  static const List<String> _reservedCategoryLabels = ['More', 'Income', 'Salary', 'Unknown'];
+  static const List<String> _reservedCategoryLabels = ['More', 'more','Income', 'income','Salary','salary', 'Unknown','unknown'];
   static const List<String> _defaultExpenseCategories = [
-    'Food', 'Transport', 'Rent', 'Entertainment', 'Medicine', 'Groceries'
-  ];
+    'Food', 'Transport', 'Rent','Entertainment', 'Medicine','Groceries',];
   CategoryController() {
     _setupAuthListener();
   }
@@ -73,15 +72,10 @@ class CategoryController extends ChangeNotifier {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
         _clearState();
-      } else {
-        debugPrint('User signed in, initializing categories...');
-        // Force initialization of categories for the user
+      } else {        // Force initialization of categories for the user
         initializeCategories(user.uid).then((_) {
-          debugPrint('Categories initialized successfully');
           _setupCategoryListener(user.uid);
-        }).catchError((e) {
-          debugPrint('Error initializing categories: $e');
-        });
+        }).catchError((_) {});
       }
     });
   }
@@ -104,63 +98,10 @@ class CategoryController extends ChangeNotifier {
       _categories = snapshot.docs
           .map((doc) => CategoryModel.fromFirestore(doc))
           .toList();
-      
-      // Check for and clean up duplicate categories
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _cleanupDuplicateCategories(userId);
-      });
-      
       notifyListeners();
-    }, onError: (e, stackTrace) {
-      debugPrint('Error in category listener: $e');
-      debugPrint('Stack trace: $stackTrace');
-      // We don't notify here as we don't want to propagate errors to UI
-    });
-  }  // Helper method to clean up duplicate categories
-  Future<void> _cleanupDuplicateCategories(String userId) async {
-    try {
-      // Create a map to track categories by label
-      final Map<String, List<CategoryModel>> categoriesByLabel = {};
-      
-      // Group categories by label
-      for (var category in _categories) {
-        if (!categoriesByLabel.containsKey(category.label)) {
-          categoriesByLabel[category.label] = [];
-        }
-        categoriesByLabel[category.label]!.add(category);
-      }
-      
-      // Check for duplicates and remove them
-      final batch = _firestore.batch();
-      bool hasDuplicates = false;
-      
-      // For each label that has multiple categories, keep only the first one
-      for (var entry in categoriesByLabel.entries) {
-        if (entry.value.length > 1) {
-          hasDuplicates = true;
-          
-          // Keep the first one, delete the rest
-          for (int i = 1; i < entry.value.length; i++) {
-            // Delete duplicate from Firestore
-            batch.delete(
-              _firestore
-                  .collection('users')
-                  .doc(userId)
-                  .collection('categories')
-                  .doc(entry.value[i].id)
-            );
-          }
-        }
-      }
-      
-      // If we have duplicates, commit the batch to delete them
-      if (hasDuplicates) {
-        await batch.commit();
-      }
-    } catch (e) {
-      debugPrint('Error cleaning up duplicate categories: $e');
-    }
-  }  Future<void> initializeCategories(String userId) async {
+    }, onError: (_, __) {});
+  }  
+ Future<void> initializeCategories(String userId) async {
     debugPrint('Starting category initialization for user: $userId');
     try {
       final categoriesRef = _firestore
@@ -171,14 +112,11 @@ class CategoryController extends ChangeNotifier {
       // Check if categories already exist
       final snapshot = await categoriesRef.get();
       debugPrint('Found ${snapshot.docs.length} existing categories');
-      
       if (snapshot.docs.isNotEmpty) {
         debugPrint('Categories already exist, skipping initialization');
         return;
       }
-
       debugPrint('Creating default categories for new user');
-      
       // Initialize with a batch for better performance
       final batch = _firestore.batch();
       
@@ -226,23 +164,7 @@ class CategoryController extends ChangeNotifier {
       throw Exception('Failed to initialize categories: $e');
     }
   }/// Returns a validated icon path for the given category
-  String getIconForCategory(String category) {
-    // Check cached categories first for efficiency
-    final cachedCategory = _categories.firstWhere(
-      (cat) => cat.label == category,
-      orElse: () => CategoryModel(
-        id: '', 
-        label: '', 
-        icon: 'lib/assets/Transaction.png'
-      ),
-    );
-    
-    if (cachedCategory.label.isNotEmpty) {
-      return cachedCategory.icon;
-    }
-    
-    return 'lib/assets/Transaction.png';
-  }  Future<void> addCategory(String name, {String type = CategoryModel.TYPE_EXPENSE}) async {
+  Future<void> addCategory(String name, {String type = CategoryModel.TYPE_EXPENSE}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       debugPrint('Cannot add category: User not authenticated');
@@ -322,71 +244,7 @@ class CategoryController extends ChangeNotifier {
       debugPrint('Failed to delete category: $e');
       throw Exception('Failed to delete category: $e');
     }
-  }
-  Future<void> updateCategory(String categoryId, {String? label, String? icon, String? type}) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      debugPrint('Cannot update category: User not authenticated');
-      return;
-    }
-    
-    // Find the category to ensure it exists
-    final categoryToUpdate = _categories.firstWhere(
-      (cat) => cat.id == categoryId,
-      orElse: () => CategoryModel(id: '', label: '', icon: ''),
-    );
-    
-    if (categoryToUpdate.id.isEmpty) {
-      debugPrint('Category not found: $categoryId');
-      return;
-    }
-    
-    // Don't allow updating reserved categories
-    if (_reservedCategoryLabels.contains(categoryToUpdate.label)) {
-      debugPrint('Cannot update reserved category: ${categoryToUpdate.label}');
-      return;
-    }
-    
-    // Don't allow duplicates if label is being changed
-    if (label != null && 
-        label != categoryToUpdate.label && 
-        _categories.any((cat) => cat.label == label)) {
-      debugPrint('Cannot update to duplicate name: $label');
-      return;
-    }
-
-    try {
-      final updates = <String, dynamic>{};
-      if (label != null) updates['label'] = label;
-      if (icon != null) updates['icon'] = icon;
-      if (type != null && CategoryModel.VALID_TYPES.contains(type)) {
-        updates['type'] = type;
-      }
-      
-      if (updates.isNotEmpty) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .collection('categories')
-            .doc(categoryId)
-            .update(updates);
-      }
-    } catch (e) {
-      debugPrint('Failed to update category: $e');
-      throw Exception('Failed to update category: $e');
-    }
-  }
-
-  /// Returns a deduplicated list of categories based on their labels
-  List<CategoryModel> getUniqueCategories(List<CategoryModel> categories) {
-    final Map<String, CategoryModel> uniqueMap = {};
-    for (var cat in categories) {
-      if (!uniqueMap.containsKey(cat.label)) {
-        uniqueMap[cat.label] = cat;
-      }
-    }
-    return uniqueMap.values.toList();  }
-  
+  }  
   @override
   void dispose() {
     _categorySubscription?.cancel();

@@ -328,7 +328,7 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
                                 enabled: false,
                                 child: Text('Loading...'),
                               )]
-                            : categoryController.getUniqueCategories(filteredCategories)
+                            : filteredCategories
                                 .map((category) => DropdownMenuItem<String>(
                                   value: category.label,
                                   child: Text(category.label),
