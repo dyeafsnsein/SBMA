@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../Controllers/category_controller.dart';
 import '../../../Models/transaction_model.dart';
+import '../../../Models/category_model.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final Function(TransactionModel) onAddExpense;
@@ -127,7 +128,14 @@ class AddTransactionDialogState extends State<AddTransactionDialog> {
       // Get category from controller
       final category = _isExpense 
           ? categoryController.findCategoryByLabelOrDefault(_selectedCategory!)
-          : categoryController.getIncomeCategoryOrDefault();
+          : categoryController.incomeCategories.firstWhere(
+              (cat) => cat.label == 'Income',
+              orElse: () => CategoryModel.income(
+                id: 'income',
+                label: 'Income',
+                icon: 'lib/assets/Income.png',
+              ),
+            );
       
       // Call the appropriate callback with the transaction
       if (_isExpense) {
