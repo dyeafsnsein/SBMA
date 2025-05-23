@@ -64,7 +64,7 @@ class DataService extends ChangeNotifier {
     _isDataLoaded = false;
     notifyListeners();
   }
-  
+
   void _setupListeners(String userId) {
     _balanceSubscription?.cancel();
     _transactionSubscription?.cancel();
@@ -101,7 +101,8 @@ class DataService extends ChangeNotifier {
       notifyListeners();
     });
   }
-    void _loadTransactionsFromSnapshot(QuerySnapshot snapshot) {
+
+  void _loadTransactionsFromSnapshot(QuerySnapshot snapshot) {
     _totalExpense = 0.0;
     _totalIncome = 0.0;
     _categoryBreakdown.clear();
@@ -116,10 +117,11 @@ class DataService extends ChangeNotifier {
         // Update totals and category breakdown
         if (transaction.isExpense) {
           _totalExpense += transaction.absoluteAmount;
-          
+
           // Update category breakdown
           final category = transaction.category;
-          _categoryBreakdown[category] = (_categoryBreakdown[category] ?? 0.0) + transaction.absoluteAmount;
+          _categoryBreakdown[category] = (_categoryBreakdown[category] ?? 0.0) +
+              transaction.absoluteAmount;
         } else if (transaction.isIncome) {
           _totalIncome += transaction.amount;
         }
@@ -130,14 +132,14 @@ class DataService extends ChangeNotifier {
 
     notifyListeners();
   }
-  
+
   Future<void> _loadCategories(String userId) async {
     final snapshot = await _firestore
         .collection('users')
         .doc(userId)
         .collection('categories')
         .get();
-        
+
     _categoryIcons.clear();
     for (var doc in snapshot.docs) {
       final label = doc['label'];
@@ -148,15 +150,12 @@ class DataService extends ChangeNotifier {
     }
     notifyListeners();
   }
-  
+
   // Method to refresh data from Firestore
   Future<void> refreshData(String userId) async {
     try {
       // Refresh user data (balance)
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .get();
+      final userDoc = await _firestore.collection('users').doc(userId).get();
 
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
@@ -171,7 +170,7 @@ class DataService extends ChangeNotifier {
           .collection('transactions')
           .orderBy('timestamp', descending: true)
           .get();
-          
+
       _loadTransactionsFromSnapshot(snapshot);
     } catch (e) {
       throw Exception('Error refreshing data: $e');
@@ -194,14 +193,15 @@ class DataService extends ChangeNotifier {
   }
 
   // Add a transaction
-  Future<String> addTransaction(String userId, TransactionModel transaction) async {
+  Future<String> addTransaction(
+      String userId, TransactionModel transaction) async {
     try {
       final transactionRef = _firestore
           .collection('users')
           .doc(userId)
           .collection('transactions')
           .doc();
-          
+
       // Create a copy with the generated ID
       final transactionWithId = transaction.copyWith(id: transactionRef.id);
 
@@ -209,9 +209,8 @@ class DataService extends ChangeNotifier {
       await transactionRef.set(transactionWithId.toFirestore());
 
       // Update balance
-      await updateBalance(userId,
-          transaction.absoluteAmount,
-          transaction.isExpense);
+      await updateBalance(
+          userId, transaction.absoluteAmount, transaction.isExpense);
 
       // Refresh local data
       await refreshData(userId);
@@ -221,8 +220,10 @@ class DataService extends ChangeNotifier {
       throw Exception('Error adding transaction: $e');
     }
   }
-    // Update a transaction
-  Future<void> updateTransaction(String userId, TransactionModel oldTransaction, TransactionModel newTransaction) async {
+
+  // Update a transaction
+  Future<void> updateTransaction(String userId, TransactionModel oldTransaction,
+      TransactionModel newTransaction) async {
     try {
       final transactionRef = _firestore
           .collection('users')
@@ -232,28 +233,26 @@ class DataService extends ChangeNotifier {
 
       // Update the transaction in Firestore
       await transactionRef.update(newTransaction.toFirestore());
-      
+
       // Handle balance adjustment
       if (oldTransaction.type != newTransaction.type) {
         // Transaction type changed (expense to income or vice versa)
-        
+
         // Reverse old transaction effect
-        await updateBalance(userId,
-            oldTransaction.absoluteAmount,
-            !oldTransaction.isExpense);
+        await updateBalance(
+            userId, oldTransaction.absoluteAmount, !oldTransaction.isExpense);
 
         // Apply new transaction effect
-        await updateBalance(userId,
-            newTransaction.absoluteAmount,
-            newTransaction.isExpense);
+        await updateBalance(
+            userId, newTransaction.absoluteAmount, newTransaction.isExpense);
       } else {
         // Same transaction type, calculate the amount difference
         final amountDifference = oldTransaction.isExpense
             ? oldTransaction.absoluteAmount - newTransaction.absoluteAmount
             : newTransaction.amount - oldTransaction.amount;
-        
+
         final addToBalance = amountDifference > 0;
-        
+
         if (amountDifference != 0) {
           await updateBalance(userId, amountDifference.abs(), !addToBalance);
         }
@@ -267,29 +266,32 @@ class DataService extends ChangeNotifier {
   }
 
   // Delete a transaction
-  Future<void> deleteTransaction(String userId, TransactionModel transaction) async {
+  Future<void> deleteTransaction(
+      String userId, TransactionModel transaction) async {
     try {
       final transactionRef = _firestore
           .collection('users')
           .doc(userId)
           .collection('transactions')
           .doc(transaction.id);
-          
+
       // First check if the document exists
       final docSnapshot = await transactionRef.get();
 
       if (!docSnapshot.exists) {
         return; // Transaction not found, nothing to delete
       }
-      
+
       // Delete the transaction
       await transactionRef.delete();
-      
+
       // Adjust balance by reversing the transaction effect
       if (transaction.isExpense) {
-        await updateBalance(userId, transaction.absoluteAmount, false); // Add the amount back
+        await updateBalance(
+            userId, transaction.absoluteAmount, false); // Add the amount back
       } else {
-        await updateBalance(userId, transaction.amount, true); // Subtract the amount
+        await updateBalance(
+            userId, transaction.amount, true); // Subtract the amount
       }
 
       // Refresh local data
@@ -298,7 +300,8 @@ class DataService extends ChangeNotifier {
       throw Exception('Error deleting transaction: $e');
     }
   }
-    // Recalculate balance from all transactions
+
+  // Recalculate balance from all transactions
   Future<void> recalculateBalance(String userId) async {
     try {
       // Get all transactions
@@ -307,11 +310,11 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .get();
-    
+
       // Calculate balance from transactions
       double totalIncome = 0.0;
       double totalExpense = 0.0;
-      
+
       for (var doc in snapshot.docs) {
         final transaction = TransactionModel.fromFirestore(doc);
         if (transaction.isIncome) {
@@ -320,14 +323,15 @@ class DataService extends ChangeNotifier {
           totalExpense += transaction.absoluteAmount;
         }
       }
-      
+
       final calculatedBalance = totalIncome - totalExpense;
-    
+
       // Update the balance in Firestore
-      await _firestore.collection('users').doc(userId).update({
-        'balance': calculatedBalance
-      });
-      
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .update({'balance': calculatedBalance});
+
       // Refresh local data
       await refreshData(userId);
     } catch (e) {

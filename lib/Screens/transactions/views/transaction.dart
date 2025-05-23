@@ -17,26 +17,24 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   void _showAddTransactionDialog() {
-    final controller = Provider.of<TransactionController>(context, listen: false);
+    final controller =
+        Provider.of<TransactionController>(context, listen: false);
     showDialog(
       context: context,
       builder: (context) => AddTransactionDialog(
         onAddExpense: (expense) {
           controller.addExpense(expense);
-          if (!context.mounted) return;
-          Navigator.pop(context);
         },
         onAddIncome: (income) {
           controller.addIncome(income);
-          if (!context.mounted) return;
-          Navigator.pop(context);
         },
       ),
     );
   }
 
   Future<void> _showDatePicker() async {
-    final controller = Provider.of<TransactionController>(context, listen: false);
+    final controller =
+        Provider.of<TransactionController>(context, listen: false);
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -170,7 +168,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                               : controller.errorMessage != null
                                   ? Center(
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             controller.errorMessage!,
@@ -247,7 +246,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             right: 20,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [                                Chip(
+                              children: [
+                                Chip(
                                   label: Text(
                                     controller.formattedSelectedDate,
                                     style: const TextStyle(

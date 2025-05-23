@@ -15,11 +15,13 @@ class TransactionList extends StatelessWidget {
     this.isHomePage = false,
   });
   @override
-  Widget build(BuildContext context) {    final transactionController = Provider.of<TransactionController>(context);
+  Widget build(BuildContext context) {
+    final transactionController = Provider.of<TransactionController>(context);
     final dataService = Provider.of<DataService>(context, listen: false);
 
     return ListView.builder(
-      itemCount: transactions.length,      itemBuilder: (context, index) {
+      itemCount: transactions.length,
+      itemBuilder: (context, index) {
         final transaction = transactions[index];
         final isExpense = transaction.isExpense;
 
@@ -32,11 +34,9 @@ class TransactionList extends StatelessWidget {
                   initialTransaction: transaction,
                   onAddExpense: (expense) {
                     transactionController.updateTransaction(expense);
-                    Navigator.pop(context);
                   },
                   onAddIncome: (income) {
                     transactionController.updateTransaction(income);
-                    Navigator.pop(context);
                   },
                 ),
               );
@@ -63,9 +63,9 @@ class TransactionList extends StatelessWidget {
                       child: const Text('Delete'),
                     ),
                   ],
-        ),
-      );
-    }
+                ),
+              );
+            }
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -82,19 +82,23 @@ class TransactionList extends StatelessWidget {
               ],
             ),
             child: Row(
-              children: [                Container(
+              children: [
+                Container(
                   width: 57,
                   height: 53,
                   decoration: BoxDecoration(
                     color: const Color(0xFF202422),
                     borderRadius: BorderRadius.circular(28.5),
                   ),
-                  child: Center(                    child: Image.asset(
-                      transaction.icon.isNotEmpty 
-                          ? transaction.icon 
-                          : dataService.getIconForCategory(transaction.category),
+                  child: Center(
+                    child: Image.asset(
+                      transaction.icon.isNotEmpty
+                          ? transaction.icon
+                          : dataService
+                              .getIconForCategory(transaction.category),
                       width: 31,
-                      height: 28,                      errorBuilder: (context, error, stackTrace) {
+                      height: 28,
+                      errorBuilder: (context, error, stackTrace) {
                         // Default icon if loading fails
                         return Icon(
                           isExpense ? Icons.arrow_downward : Icons.arrow_upward,
@@ -133,7 +137,8 @@ class TransactionList extends StatelessWidget {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [                    Text(
+                  children: [
+                    Text(
                       transaction.displayTypeWithAmount,
                       style: TextStyle(
                         fontSize: 16,
@@ -141,7 +146,8 @@ class TransactionList extends StatelessWidget {
                         color: isExpense ? Colors.red : Colors.green,
                       ),
                     ),
-                    const SizedBox(height: 4),                    Text(
+                    const SizedBox(height: 4),
+                    Text(
                       transaction.formatDate('dd/MM/yyyy'),
                       style: const TextStyle(
                         fontSize: 12,
@@ -152,9 +158,9 @@ class TransactionList extends StatelessWidget {
                 ),
               ],
             ),
-            ),
-          );
-        },
+          ),
+        );
+      },
     );
   }
 }

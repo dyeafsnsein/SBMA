@@ -21,7 +21,7 @@ import 'Route/app_router.dart';
 void main() async {
   // Ensure Flutter binding is initialized first
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize Firebase
     await Firebase.initializeApp();
@@ -45,7 +45,7 @@ void main() async {
   try {
     await notificationService.init();
     await notificationService.requestPermissions();
-    
+
     // Show debug notification if enabled
     final prefs = await SharedPreferences.getInstance();
     final debugMode = prefs.getBool('debug_notifications') ?? false;
@@ -55,7 +55,7 @@ void main() async {
   } catch (e) {
     debugPrint('Notification service initialization failed: $e');
   }
-  
+
   // Notifications are now always enabled and handled by NotificationController
 
   runApp(const MyApp());
