@@ -69,12 +69,14 @@ class AnalysisPageState extends State<AnalysisPage>
         return Colors.blue;
     }
   }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('AnalysisPage: Building');
 
     return Consumer<AnalysisController>(
-      builder: (context, controller, child) {debugPrint('AnalysisPage: Consumer builder called');
+      builder: (context, controller, child) {
+        debugPrint('AnalysisPage: Consumer builder called');
         final screenHeight = MediaQuery.of(context).size.height;
         final screenWidth = MediaQuery.of(context).size.width;
 
@@ -103,7 +105,8 @@ class AnalysisPageState extends State<AnalysisPage>
             body: Stack(
               children: [
                 Column(
-                  children: [                    AnalysisHeader(
+                  children: [
+                    AnalysisHeader(
                       totalBalance: controller.totalBalance,
                       totalExpense: controller.totalExpense,
                       expensePercentage: expensePercentage,

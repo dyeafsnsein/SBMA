@@ -96,12 +96,12 @@ class TransactionModel {
     final amountRaw = data['amount'] as num?;
     final amount = amountRaw?.toDouble() ?? 0.0;
     final category = data['category'] as String? ?? 'Unknown';
-    
+
     // Get icon directly from Firestore if available
     final icon = data['icon'] is String && (data['icon'] as String).isNotEmpty
         ? data['icon'] as String
         : ''; // Empty string will trigger getIconForCategory in UI if needed
-    
+
     return TransactionModel(
       id: doc.id,
       type: VALID_TYPES.contains(type) ? type : TYPE_EXPENSE,
@@ -111,6 +111,33 @@ class TransactionModel {
       category: category,
       categoryId: data['categoryId'] as String? ?? 'unknown',
       icon: icon,
+    );
+  }
+
+  /// Creates a transaction model from a local Map (for shared_preferences)
+  static TransactionModel fromLocal(Map<String, dynamic> data) {
+    final type = data['type'] as String? ?? TYPE_EXPENSE;
+    final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
+    final dateRaw = data['timestamp'];
+    DateTime date;
+    if (dateRaw is String) {
+      date = DateTime.tryParse(dateRaw) ?? DateTime.now();
+    } else if (dateRaw is int) {
+      date = DateTime.fromMillisecondsSinceEpoch(dateRaw);
+    } else if (dateRaw is DateTime) {
+      date = dateRaw;
+    } else {
+      date = DateTime.now();
+    }
+    return TransactionModel(
+      id: data['id'] as String? ?? '',
+      type: VALID_TYPES.contains(type) ? type : TYPE_EXPENSE,
+      amount: amount.isNaN || amount.isInfinite ? 0.0 : amount,
+      date: date,
+      description: data['description'] as String? ?? '',
+      category: data['category'] as String? ?? 'Unknown',
+      categoryId: data['categoryId'] as String? ?? 'unknown',
+      icon: data['icon'] as String? ?? '',
     );
   }
 
@@ -163,12 +190,13 @@ class TransactionModel {
   String formatDate([String format = 'MM/dd/yyyy']) {
     return DateFormat(format).format(date);
   }
+
   /// Returns a display-friendly string of the transaction amount
   String get displayAmount {
     final formatter = NumberFormat.currency(symbol: '\$');
     return formatter.format(absoluteAmount);
   }
-  
+
   /// Returns a display-friendly string of the transaction amount with a custom currency symbol
   String formatAmount({String symbol = '\$', String locale = 'en_US'}) {
     final formatter = NumberFormat.currency(symbol: symbol, locale: locale);

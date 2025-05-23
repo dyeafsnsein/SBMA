@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../Models/transaction_model.dart';
@@ -28,13 +30,56 @@ class DataService extends ChangeNotifier {
   bool get isDataLoaded => _isDataLoaded;
   DateTime? get lastTransactionUpdate => _lastTransactionUpdate;
 
-  DataService() {
-    _setupAuthListener();
-    final currentUser = _auth.currentUser;
-    if (currentUser != null) {
-      _setUserData(currentUser.uid);
-      _setupListeners(currentUser.uid);
+  // Save transactions and balance to local storage
+  Future<void> _saveToLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Save balance
+    await prefs.setDouble('balance', _totalBalance);
+    // Save transactions as JSON
+    final txList = _transactions.map((tx) => tx.toFirestore()).toList();
+    await prefs.setString('transactions', jsonEncode(txList));
+  }
+
+  // Load transactions and balance from local storage
+  Future<void> _loadFromLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    _totalBalance = prefs.getDouble('balance') ?? 0.0;
+    final txString = prefs.getString('transactions');
+    if (txString != null) {
+      final txList = jsonDecode(txString) as List;
+      _transactions = txList.map((e) => TransactionModel.fromLocal(e)).toList();
+      // Rebuild category breakdown, income, expense
+      _totalExpense = 0.0;
+      _totalIncome = 0.0;
+      _categoryBreakdown.clear();
+      for (var tx in _transactions) {
+        if (tx.isExpense) {
+          _totalExpense += tx.absoluteAmount;
+          _categoryBreakdown[tx.category] =
+              (_categoryBreakdown[tx.category] ?? 0.0) + tx.absoluteAmount;
+        } else if (tx.isIncome) {
+          _totalIncome += tx.amount;
+        }
+      }
     }
+    notifyListeners();
+  }
+
+  // Add this static helper to TransactionModel for local decode
+  // static TransactionModel fromFirestoreFake(Map<String, dynamic> data) {
+  //   ...
+  // }
+
+  // On startup, load from local first, then Firebase
+  DataService() {
+    _loadFromLocal().then((_) {
+      _setupAuthListener();
+      final currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        _setUserData(currentUser.uid);
+        _setupListeners(currentUser.uid);
+      }
+    });
   }
 
   // Helper to set all user data from Firestore
@@ -146,6 +191,7 @@ class DataService extends ChangeNotifier {
         }
       } catch (e) {}
     }
+    _saveToLocal();
   }
 
   Future<void> _loadCategories(String userId) async {
@@ -328,7 +374,7 @@ class DataService extends ChangeNotifier {
     };
   }
 
-  // Filter transactions for a given period
+  // Returns a filtered list of transactions for a given period index
   List<TransactionModel> getFilteredTransactions(int periodIndex) {
     final now = DateTime.now();
     DateTime startDate;
@@ -345,7 +391,6 @@ class DataService extends ChangeNotifier {
       default:
         startDate = now.subtract(const Duration(days: 1));
     }
-
     return _transactions.where((transaction) {
       return transaction.date.isAfter(startDate) ||
           transaction.date.isAtSameMomentAs(startDate);

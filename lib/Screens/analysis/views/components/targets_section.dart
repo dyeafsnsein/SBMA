@@ -16,23 +16,32 @@ class TargetsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'My Targets',
-          style: TextStyle(
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF202422),
+        if (targets.isNotEmpty)
+          Text(
+            'My Targets',
+            style: TextStyle(
+              fontSize: screenWidth * 0.045,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF202422),
+            ),
           ),
-        ),
-        SizedBox(height: screenHeight * 0.02),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: targets.map((target) => _buildTargetItem(
-            name: target['name'],
-            progress: target['progress'],
-            screenWidth: screenWidth,
-          )).toList(),
-        ),
+        if (targets.isNotEmpty) SizedBox(height: screenHeight * 0.02),
+        if (targets.isNotEmpty)
+          SizedBox(
+            height: screenWidth * 0.45, // Ensure enough height for cards
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: targets.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _buildTargetItem(
+                  name: targets[index]['name'],
+                  progress: targets[index]['progress'],
+                  screenWidth: screenWidth,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -45,6 +54,8 @@ class TargetsSection extends StatelessWidget {
     return Container(
       width: screenWidth * 0.4,
       height: screenWidth * 0.4,
+      margin:
+          const EdgeInsets.only(bottom: 8), // Add margin to prevent overflow
       decoration: BoxDecoration(
         color: const Color(0xFF202422),
         borderRadius: BorderRadius.circular(20),
@@ -61,7 +72,8 @@ class TargetsSection extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.white.withOpacity(0.2),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00FF94)),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF00FF94)),
                   strokeWidth: 8,
                 ),
               ),
