@@ -13,7 +13,7 @@ class DataService extends ChangeNotifier {
   double _totalExpense = 0.0;
   double _totalIncome = 0.0;
   List<TransactionModel> _transactions = [];
-  Map<String, double> _categoryBreakdown = {};
+  final Map<String, double> _categoryBreakdown = {};
   final Map<String, String> _categoryIcons = {};
   bool _isDataLoaded = false;
   DateTime? _lastTransactionUpdate;
@@ -32,9 +32,32 @@ class DataService extends ChangeNotifier {
     _setupAuthListener();
     final currentUser = _auth.currentUser;
     if (currentUser != null) {
-      _loadCategories(currentUser.uid).then((_) {
-        _setupListeners(currentUser.uid);
-      });
+      _setUserData(currentUser.uid);
+      _setupListeners(currentUser.uid);
+    }
+  }
+
+  // Helper to set all user data from Firestore
+  Future<void> _setUserData(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        _totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
+        _isDataLoaded = true;
+      }
+      final txSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('transactions')
+          .orderBy('timestamp', descending: true)
+          .get();
+      _loadTransactionsFromSnapshot(txSnapshot);
+      await _loadCategories(userId);
+      notifyListeners();
+    } catch (e) {
+      _clearState();
+      throw Exception('Error setting user data: $e');
     }
   }
 
@@ -43,9 +66,8 @@ class DataService extends ChangeNotifier {
       if (user == null) {
         _clearState();
       } else {
-        _loadCategories(user.uid).then((_) {
-          _setupListeners(user.uid);
-        });
+        _setUserData(user.uid);
+        _setupListeners(user.uid);
       }
     });
   }
@@ -81,8 +103,7 @@ class DataService extends ChangeNotifier {
         notifyListeners();
       }
     }, onError: (e) {
-      _isDataLoaded = false;
-      notifyListeners();
+      _clearState();
     });
 
     _transactionSubscription = _firestore
@@ -93,44 +114,38 @@ class DataService extends ChangeNotifier {
         .snapshots()
         .listen((snapshot) {
       _loadTransactionsFromSnapshot(snapshot);
-    }, onError: (e) {
-      _totalExpense = 0.0;
-      _totalIncome = 0.0;
-      _transactions = [];
-      _categoryBreakdown.clear();
       notifyListeners();
+    }, onError: (e) {
+      _clearState();
     });
   }
 
+  // Only call _setUserData for refresh
+  Future<void> refreshData(String userId) async {
+    await _setUserData(userId);
+  }
+
+  // Remove redundant notifyListeners in _loadTransactionsFromSnapshot and _loadCategories
   void _loadTransactionsFromSnapshot(QuerySnapshot snapshot) {
     _totalExpense = 0.0;
     _totalIncome = 0.0;
     _categoryBreakdown.clear();
     _transactions = [];
     _lastTransactionUpdate = DateTime.now();
-
     for (var doc in snapshot.docs) {
       try {
         final transaction = TransactionModel.fromFirestore(doc);
         _transactions.add(transaction);
-
-        // Update totals and category breakdown
         if (transaction.isExpense) {
           _totalExpense += transaction.absoluteAmount;
-
-          // Update category breakdown
           final category = transaction.category;
           _categoryBreakdown[category] = (_categoryBreakdown[category] ?? 0.0) +
               transaction.absoluteAmount;
         } else if (transaction.isIncome) {
           _totalIncome += transaction.amount;
         }
-      } catch (e) {
-        // Skip invalid transactions
-      }
+      } catch (e) {}
     }
-
-    notifyListeners();
   }
 
   Future<void> _loadCategories(String userId) async {
@@ -139,7 +154,6 @@ class DataService extends ChangeNotifier {
         .doc(userId)
         .collection('categories')
         .get();
-
     _categoryIcons.clear();
     for (var doc in snapshot.docs) {
       final label = doc['label'];
@@ -147,33 +161,6 @@ class DataService extends ChangeNotifier {
       if (label is String && icon is String) {
         _categoryIcons[label] = icon;
       }
-    }
-    notifyListeners();
-  }
-
-  // Method to refresh data from Firestore
-  Future<void> refreshData(String userId) async {
-    try {
-      // Refresh user data (balance)
-      final userDoc = await _firestore.collection('users').doc(userId).get();
-
-      if (userDoc.exists) {
-        final userData = userDoc.data() as Map<String, dynamic>;
-        _totalBalance = (userData['balance'] as num?)?.toDouble() ?? 0.0;
-        _isDataLoaded = true;
-      }
-
-      // Refresh transactions
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('transactions')
-          .orderBy('timestamp', descending: true)
-          .get();
-
-      _loadTransactionsFromSnapshot(snapshot);
-    } catch (e) {
-      throw Exception('Error refreshing data: $e');
     }
   }
 
@@ -201,20 +188,11 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .doc();
-
-      // Create a copy with the generated ID
       final transactionWithId = transaction.copyWith(id: transactionRef.id);
-
-      // Add to Firestore
       await transactionRef.set(transactionWithId.toFirestore());
-
-      // Update balance
       await updateBalance(
           userId, transaction.absoluteAmount, transaction.isExpense);
-
-      // Refresh local data
-      await refreshData(userId);
-
+      await _setUserData(userId);
       return transactionRef.id;
     } catch (e) {
       throw Exception('Error adding transaction: $e');
@@ -230,36 +208,22 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .doc(newTransaction.id);
-
-      // Update the transaction in Firestore
       await transactionRef.update(newTransaction.toFirestore());
-
-      // Handle balance adjustment
       if (oldTransaction.type != newTransaction.type) {
-        // Transaction type changed (expense to income or vice versa)
-
-        // Reverse old transaction effect
         await updateBalance(
             userId, oldTransaction.absoluteAmount, !oldTransaction.isExpense);
-
-        // Apply new transaction effect
         await updateBalance(
             userId, newTransaction.absoluteAmount, newTransaction.isExpense);
       } else {
-        // Same transaction type, calculate the amount difference
         final amountDifference = oldTransaction.isExpense
             ? oldTransaction.absoluteAmount - newTransaction.absoluteAmount
             : newTransaction.amount - oldTransaction.amount;
-
         final addToBalance = amountDifference > 0;
-
         if (amountDifference != 0) {
           await updateBalance(userId, amountDifference.abs(), !addToBalance);
         }
       }
-
-      // Refresh local data
-      await refreshData(userId);
+      await _setUserData(userId);
     } catch (e) {
       throw Exception('Error updating transaction: $e');
     }
@@ -274,28 +238,17 @@ class DataService extends ChangeNotifier {
           .doc(userId)
           .collection('transactions')
           .doc(transaction.id);
-
-      // First check if the document exists
       final docSnapshot = await transactionRef.get();
-
       if (!docSnapshot.exists) {
-        return; // Transaction not found, nothing to delete
+        return;
       }
-
-      // Delete the transaction
       await transactionRef.delete();
-
-      // Adjust balance by reversing the transaction effect
       if (transaction.isExpense) {
-        await updateBalance(
-            userId, transaction.absoluteAmount, false); // Add the amount back
+        await updateBalance(userId, transaction.absoluteAmount, false);
       } else {
-        await updateBalance(
-            userId, transaction.amount, true); // Subtract the amount
+        await updateBalance(userId, transaction.amount, true);
       }
-
-      // Refresh local data
-      await refreshData(userId);
+      await _setUserData(userId);
     } catch (e) {
       throw Exception('Error deleting transaction: $e');
     }
@@ -304,17 +257,13 @@ class DataService extends ChangeNotifier {
   // Recalculate balance from all transactions
   Future<void> recalculateBalance(String userId) async {
     try {
-      // Get all transactions
       final snapshot = await _firestore
           .collection('users')
           .doc(userId)
           .collection('transactions')
           .get();
-
-      // Calculate balance from transactions
       double totalIncome = 0.0;
       double totalExpense = 0.0;
-
       for (var doc in snapshot.docs) {
         final transaction = TransactionModel.fromFirestore(doc);
         if (transaction.isIncome) {
@@ -323,17 +272,12 @@ class DataService extends ChangeNotifier {
           totalExpense += transaction.absoluteAmount;
         }
       }
-
       final calculatedBalance = totalIncome - totalExpense;
-
-      // Update the balance in Firestore
       await _firestore
           .collection('users')
           .doc(userId)
           .update({'balance': calculatedBalance});
-
-      // Refresh local data
-      await refreshData(userId);
+      await _setUserData(userId);
     } catch (e) {
       throw Exception('Error recalculating balance: $e');
     }

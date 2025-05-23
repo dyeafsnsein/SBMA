@@ -293,14 +293,6 @@ class LoginPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            /* IconButton(
-              icon: Image.asset(
-                'lib/assets/Facebook.png',
-                width: 32.71,
-                height: 32.65,
-              ),
-              onPressed: () {},
-            ),*/
             const SizedBox(width: 16),
             IconButton(
               icon: Image.asset(

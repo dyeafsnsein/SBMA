@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../Controllers/savings_controller.dart';
 import '../../Models/savings_goal.dart';
 
@@ -84,7 +82,6 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
         icon: widget.iconPath,
         targetAmount: 0.0,
         currentAmount: 0.0,
-        deadline: null,
         isActive: false,
       ),
     );
@@ -239,7 +236,7 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'April',
+                          'Deposits list',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 18,
@@ -250,15 +247,8 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(FirebaseAuth.instance.currentUser?.uid)
-                          .collection('savings_goals')
-                          .doc(widget.goalId)
-                          .collection('deposits')
-                          .orderBy('timestamp', descending: true)
-                          .snapshots(),
+                    StreamBuilder<List<Deposit>>(
+                      stream: controller.depositsStream(widget.goalId),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -269,14 +259,10 @@ class _SavingsAnalysisPageState extends State<SavingsAnalysisPage> {
                           return const Center(
                               child: Text('Error loading deposits'));
                         }
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        final deposits = snapshot.data ?? [];
+                        if (deposits.isEmpty) {
                           return const Center(child: Text('No deposits yet'));
                         }
-
-                        final deposits = snapshot.data!.docs
-                            .map((doc) => Deposit.fromFirestore(doc))
-                            .toList();
-
                         return ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),

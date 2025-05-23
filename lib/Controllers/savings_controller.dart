@@ -104,7 +104,6 @@ class SavingsController extends ChangeNotifier {
     required String name,
     required String icon,
     required double targetAmount,
-    DateTime? deadline,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -125,7 +124,7 @@ class SavingsController extends ChangeNotifier {
         icon: icon,
         targetAmount: targetAmount,
         currentAmount: 0.0,
-        deadline: deadline,
+
         isActive: _savingsGoals.isEmpty, // Set as active if first goal
       );
 
@@ -154,7 +153,6 @@ class SavingsController extends ChangeNotifier {
     String? name,
     String? icon,
     double? targetAmount,
-    DateTime? deadline,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -178,7 +176,6 @@ class SavingsController extends ChangeNotifier {
       if (name != null) updates['name'] = name;
       if (icon != null) updates['icon'] = icon;
       if (targetAmount != null) updates['targetAmount'] = targetAmount;
-      if (deadline != null) updates['deadline'] = Timestamp.fromDate(deadline);
 
       await goalRef.update(updates);
     } catch (e) {
@@ -303,6 +300,24 @@ class SavingsController extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Stream<List<Deposit>> depositsStream(String goalId) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Return an empty stream if not authenticated
+      return const Stream<List<Deposit>>.empty();
+    }
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('savings_goals')
+        .doc(goalId)
+        .collection('deposits')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Deposit.fromFirestore(doc)).toList());
   }
 
   @override

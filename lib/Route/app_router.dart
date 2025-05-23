@@ -17,8 +17,6 @@ import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
 import '../Screens/set_balance/views/set_balance.dart';
 import '../Services/auth_service.dart';
-import '../Screens/transactions/views/add_expenses_page.dart';
-import '../Screens/transactions/views/add_income_page.dart';
 import '../Screens/Auth/views/LaunchPage.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,28 +95,7 @@ final router = GoRouter(
         GoRoute(
           path: '/transactions',
           builder: (context, state) => const TransactionsPage(),
-          routes: [
-            GoRoute(
-              path: 'add-expense',
-              builder: (context, state) {
-                final addNewExpense =
-                    state.extra as Function(Map<String, String>);
-                return TransactionAddExpensePage(
-                  onSave: addNewExpense,
-                );
-              },
-            ),
-            GoRoute(
-              path: 'add-income',
-              builder: (context, state) {
-                final addNewIncome =
-                    state.extra as Function(Map<String, String>);
-                return TransactionAddIncomePage(
-                  onSave: addNewIncome,
-                );
-              },
-            ),
-          ],
+          routes: [],
         ),
 
         // Categories section and its sub-routes

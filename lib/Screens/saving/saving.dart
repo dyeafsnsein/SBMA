@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../Controllers/home_controller.dart';
 import '../../Controllers/savings_controller.dart';
 import '../../Models/savings_goal.dart'; // Import the SavingsGoal model
 
@@ -171,10 +170,9 @@ class SavingsPageState extends State<SavingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final homeController = Provider.of<HomeController>(context);
     final savingsController = Provider.of<SavingsController>(context);
     final Size screenSize = MediaQuery.of(context).size;
-    final double paddingTop = MediaQuery.of(context).padding.top;
+
     final double height = screenSize.height;
     final double width = screenSize.width;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -239,7 +237,6 @@ class SavingsPageState extends State<SavingsPage> {
                             children: [
                               GestureDetector(
                                 onTap: () => context.go('/'),
-
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
@@ -282,7 +279,8 @@ class SavingsPageState extends State<SavingsPage> {
                                   height: width * 0.08,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF050505),
-                                    borderRadius: BorderRadius.circular(width * 0.04),
+                                    borderRadius:
+                                        BorderRadius.circular(width * 0.04),
                                   ),
                                   child: Center(
                                     child: Icon(
@@ -354,7 +352,8 @@ class SavingsPageState extends State<SavingsPage> {
                           left: horizontalPadding,
                           right: horizontalPadding,
                           top: verticalPadding,
-                          bottom: bottomPadding, // Add bottom padding to account for system navigation
+                          bottom:
+                              bottomPadding, // Add bottom padding to account for system navigation
                         ),
                         child: Column(
                           children: [
@@ -421,7 +420,8 @@ class SavingsPageState extends State<SavingsPage> {
                                           const AlwaysScrollableScrollPhysics(),
                                       padding: EdgeInsets.only(
                                         top: height * 0.02,
-                                        bottom: height * 0.02, // Reduced to avoid extra space
+                                        bottom: height *
+                                            0.02, // Reduced to avoid extra space
                                       ),
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(

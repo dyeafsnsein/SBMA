@@ -42,7 +42,7 @@ class CategoryModel {
       type: TYPE_EXPENSE,
     );
   }
-  
+
   factory CategoryModel.income({
     required String id,
     required String label,

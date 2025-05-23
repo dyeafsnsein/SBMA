@@ -6,7 +6,7 @@ class SavingsGoal {
   final String icon;
   final double targetAmount;
   final double currentAmount;
-  final DateTime? deadline;
+
   final bool isActive;
 
   SavingsGoal({
@@ -15,7 +15,6 @@ class SavingsGoal {
     required this.icon,
     required this.targetAmount,
     required this.currentAmount,
-    this.deadline,
     this.isActive = false,
   });
 
@@ -27,7 +26,6 @@ class SavingsGoal {
       icon: data['icon'] as String,
       targetAmount: (data['targetAmount'] as num).toDouble(),
       currentAmount: (data['currentAmount'] as num).toDouble(),
-      deadline: (data['deadline'] as Timestamp?)?.toDate(),
       isActive: data['isActive'] as bool? ?? false,
     );
   }
@@ -38,7 +36,6 @@ class SavingsGoal {
       'icon': icon,
       'targetAmount': targetAmount,
       'currentAmount': currentAmount,
-      'deadline': deadline,
       'isActive': isActive,
     };
   }

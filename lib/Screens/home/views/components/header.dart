@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../Controllers/auth_controller.dart';
-import '../../../../Controllers/home_controller.dart';
 
 class Header extends StatelessWidget {
   final VoidCallback? onNotificationTap;
@@ -19,19 +18,18 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     // Listen to auth controller changes to update when user data changes
     final authController = Provider.of<AuthController>(context);
-    final homeController = Provider.of<HomeController>(context, listen: false);
-    
+
     // Get username from auth controller
     String userName = authController.userModel.name;
-    
+
     // Force refresh user data if name is empty
     if (userName.isEmpty) {
       Future.microtask(() => authController.loadCurrentUser());
     }
-    
+
     // For debugging purposes
     debugPrint('Header widget - User name: $userName');
-    
+
     // Get time of day to display appropriate greeting
     final hour = DateTime.now().hour;
     String greeting = 'Good Morning';
@@ -40,7 +38,7 @@ class Header extends StatelessWidget {
     } else if (hour >= 17) {
       greeting = 'Good Evening';
     }
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
