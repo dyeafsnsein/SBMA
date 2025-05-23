@@ -37,7 +37,7 @@ class PasswordField extends StatelessWidget {
             suffixIcon: IconButton(
               icon: Icon(
                 isVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.black.withOpacity(0.45),
+                color: Colors.black.withAlpha((0.45 * 255).toInt()),
               ),
               onPressed: () => onVisibilityChanged(!isVisible),
             ),

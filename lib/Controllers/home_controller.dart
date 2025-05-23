@@ -11,7 +11,7 @@ class HomeController extends ChangeNotifier {
   double _topCategoryAmountLastWeek = 0.0;
   String _topCategoryIconLastWeek = '';
   List<TransactionModel> _filteredTransactions = [];
-  int _selectedPeriodIndex = 2;
+  final int _selectedPeriodIndex = 2;
   String? _errorMessage;
 
   HomeController(this._dataService) {
@@ -37,7 +37,7 @@ class HomeController extends ChangeNotifier {
       }
     });
   }
-  
+
   void _clearState() {
     _totalExpense = 0.0;
     _revenueLastWeek = 0.0;
@@ -48,30 +48,31 @@ class HomeController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
-  
+
   void _setupDataListener() {
     _dataService.addListener(_onDataServiceChanged);
     _onDataServiceChanged();
   }
-  
+
   void _onDataServiceChanged() {
     final metrics = _dataService.calculateLastWeekMetrics();
     _revenueLastWeek = metrics['revenueLastWeek'];
     _topCategoryLastWeek = metrics['topCategory'];
     _topCategoryAmountLastWeek = metrics['topAmount'];
     _topCategoryIconLastWeek = metrics['topIcon'];
-    
+
     _totalExpense = _dataService.totalExpense;
-    _filteredTransactions = _dataService.getFilteredTransactions(_selectedPeriodIndex);
-    
+    _filteredTransactions =
+        _dataService.getFilteredTransactions(_selectedPeriodIndex);
+
     _errorMessage = null;
     notifyListeners();
   }
-  
+
   Future<void> refreshData() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
-    
+
     try {
       await _dataService.refreshData(userId);
       _onDataServiceChanged();

@@ -40,7 +40,7 @@ class FlBarChart extends StatelessWidget {
         borderRadius: BorderRadius.circular(screenWidth * 0.08),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((0.1 * 255).toInt()),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -87,7 +87,9 @@ class FlBarChart extends StatelessWidget {
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       String type = rodIndex == 0 ? 'Expense' : 'Income';
                       double value = rod.toY;
-                      String displayValue = value >= 1000 ? '${(value/1000).toStringAsFixed(1)}k' : value.toStringAsFixed(0);
+                      String displayValue = value >= 1000
+                          ? '${(value / 1000).toStringAsFixed(1)}k'
+                          : value.toStringAsFixed(0);
                       return BarTooltipItem(
                         '$type: $displayValue',
                         TextStyle(
@@ -134,7 +136,9 @@ class FlBarChart extends StatelessWidget {
                       getTitlesWidget: (value, meta) {
                         if (value == 0) return const SizedBox();
                         if (value > adjustedMaxValue) return const SizedBox();
-                        String displayValue = value >= 1000 ? '${(value/1000).toStringAsFixed(0)}k' : value.toStringAsFixed(0);
+                        String displayValue = value >= 1000
+                            ? '${(value / 1000).toStringAsFixed(0)}k'
+                            : value.toStringAsFixed(0);
                         return Padding(
                           padding: EdgeInsets.only(right: screenWidth * 0.01),
                           child: Text(
@@ -161,7 +165,7 @@ class FlBarChart extends StatelessWidget {
                   horizontalInterval: interval,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withAlpha((0.1 * 255).toInt()),
                     strokeWidth: 1,
                   ),
                   checkToShowHorizontalLine: (value) => value != 0,
@@ -190,7 +194,7 @@ class FlBarChart extends StatelessWidget {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: adjustedMaxValue,
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha((0.1 * 255).toInt()),
                         ),
                       ),
                       BarChartRodData(
@@ -203,7 +207,7 @@ class FlBarChart extends StatelessWidget {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: adjustedMaxValue,
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha((0.1 * 255).toInt()),
                         ),
                       ),
                     ],

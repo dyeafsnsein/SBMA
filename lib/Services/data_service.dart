@@ -189,7 +189,10 @@ class DataService extends ChangeNotifier {
         } else if (transaction.isIncome) {
           _totalIncome += transaction.amount;
         }
-      } catch (e) {}
+      } catch (e) {
+        // ignore: avoid_print
+        print('Error parsing transaction: $e');
+      }
     }
     _saveToLocal();
   }

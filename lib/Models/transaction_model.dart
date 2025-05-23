@@ -11,9 +11,9 @@ class TransactionModel {
   final String categoryId;
   final String icon;
 
-  static const String TYPE_INCOME = 'income';
-  static const String TYPE_EXPENSE = 'expense';
-  static const List<String> VALID_TYPES = [TYPE_INCOME, TYPE_EXPENSE];
+  static const String typeIncome = 'income';
+  static const String typeExpense = 'expense';
+  static const List<String> validTypes = [typeIncome, typeExpense];
 
   /// Creates a new transaction with the given parameters
   TransactionModel({
@@ -50,7 +50,7 @@ class TransactionModel {
   }) {
     return TransactionModel(
       id: id,
-      type: TYPE_EXPENSE,
+      type: typeExpense,
       // Store expense amount as negative
       amount: -amount.abs(),
       date: date,
@@ -73,7 +73,7 @@ class TransactionModel {
   }) {
     return TransactionModel(
       id: id,
-      type: TYPE_INCOME,
+      type: typeIncome,
       // Store income amount as positive
       amount: amount.abs(),
       date: date,
@@ -92,7 +92,7 @@ class TransactionModel {
     }
 
     final timestamp = data['timestamp'] as Timestamp?;
-    final type = data['type'] as String? ?? TYPE_EXPENSE;
+    final type = data['type'] as String? ?? typeExpense;
     final amountRaw = data['amount'] as num?;
     final amount = amountRaw?.toDouble() ?? 0.0;
     final category = data['category'] as String? ?? 'Unknown';
@@ -104,7 +104,7 @@ class TransactionModel {
 
     return TransactionModel(
       id: doc.id,
-      type: VALID_TYPES.contains(type) ? type : TYPE_EXPENSE,
+      type: validTypes.contains(type) ? type : typeExpense,
       amount: amount.isNaN || amount.isInfinite ? 0.0 : amount,
       date: timestamp != null ? timestamp.toDate().toLocal() : DateTime.now(),
       description: data['description'] as String? ?? '',
@@ -116,7 +116,7 @@ class TransactionModel {
 
   /// Creates a transaction model from a local Map (for shared_preferences)
   static TransactionModel fromLocal(Map<String, dynamic> data) {
-    final type = data['type'] as String? ?? TYPE_EXPENSE;
+    final type = data['type'] as String? ?? typeExpense;
     final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
     final dateRaw = data['timestamp'];
     DateTime date;
@@ -131,7 +131,7 @@ class TransactionModel {
     }
     return TransactionModel(
       id: data['id'] as String? ?? '',
-      type: VALID_TYPES.contains(type) ? type : TYPE_EXPENSE,
+      type: validTypes.contains(type) ? type : typeExpense,
       amount: amount.isNaN || amount.isInfinite ? 0.0 : amount,
       date: date,
       description: data['description'] as String? ?? '',
@@ -181,10 +181,10 @@ class TransactionModel {
   double get absoluteAmount => amount.abs();
 
   /// Returns true if this is an expense transaction
-  bool get isExpense => type == TYPE_EXPENSE;
+  bool get isExpense => type == typeExpense;
 
   /// Returns true if this is an income transaction
-  bool get isIncome => type == TYPE_INCOME;
+  bool get isIncome => type == typeIncome;
 
   /// Formats the transaction date using the specified format (defaults to MM/dd/yyyy)
   String formatDate([String format = 'MM/dd/yyyy']) {
@@ -216,7 +216,7 @@ class TransactionModel {
 
   /// Validates if the transaction has all required fields properly filled
   bool isValid() {
-    return VALID_TYPES.contains(type) &&
+    return validTypes.contains(type) &&
         amount.isFinite &&
         description.isNotEmpty &&
         category.isNotEmpty;

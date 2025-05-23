@@ -93,7 +93,7 @@ class ForgotPasswordPage extends StatelessWidget {
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
                                     color: const Color(0xFF202422)
-                                        .withOpacity(0.7),
+                                        .withAlpha((0.7 * 255).toInt()),
                                     fontFamily: 'League Spartan',
                                   ),
                                 ),
@@ -119,7 +119,8 @@ class ForgotPasswordPage extends StatelessWidget {
                                       fontSize: 15,
                                     ),
                                     hintStyle: TextStyle(
-                                      color: Colors.black.withOpacity(0.45),
+                                      color: Colors.black
+                                          .withAlpha((0.45 * 255).toInt()),
                                       fontSize: 16,
                                       fontFamily: 'Poppins',
                                     ),

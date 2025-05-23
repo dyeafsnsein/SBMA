@@ -71,7 +71,7 @@ class TargetsSection extends StatelessWidget {
                 height: screenWidth * 0.25,
                 child: CircularProgressIndicator(
                   value: progress,
-                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundColor: Colors.white.withAlpha((0.2 * 255).toInt()),
                   valueColor:
                       const AlwaysStoppedAnimation<Color>(Color(0xFF00FF94)),
                   strokeWidth: 8,

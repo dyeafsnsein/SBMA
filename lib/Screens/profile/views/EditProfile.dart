@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/profile_controller.dart';
+import '../../../Controllers/auth_controller.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -125,12 +126,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                           padding: EdgeInsets.all(
                                               screenWidth * 0.03),
                                           decoration: BoxDecoration(
-                                            color: Colors.blue.withOpacity(0.1),
+                                            color: Colors.blue
+                                                .withAlpha((0.1 * 255).toInt()),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                             border: Border.all(
-                                                color: Colors.blue
-                                                    .withOpacity(0.3)),
+                                                color: Colors.blue.withAlpha(
+                                                    (0.3 * 255).toInt())),
                                           ),
                                           child: Row(
                                             children: [
@@ -159,147 +161,53 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                                     SizedBox(height: screenHeight * 0.015),
                                     // Username Field
-                                    TextField(
-                                      style:
-                                          const TextStyle(color: Colors.black),
+                                    _buildTextField(
                                       controller: controller.usernameController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Username',
-                                        hintText: 'John Smith',
-                                        errorText:
-                                            controller.usernameErrorMessage,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(18),
-                                        ),
-                                        filled: true,
-                                        fillColor: const Color.fromARGB(
-                                            255, 255, 255, 255),
-                                        labelStyle: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                        ),
-                                        hintStyle: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          color:
-                                              Color.fromRGBO(148, 146, 146, 1),
-                                        ),
-                                      ),
+                                      labelText: 'Username',
+                                      hintText: 'John Smith',
+                                      errorText: controller.usernameErrorMessage,
                                     ),
                                     SizedBox(height: screenHeight * 0.015),
                                     // Email Address Field
-                                    TextField(
-                                      style:
-                                          const TextStyle(color: Colors.black),
+                                    _buildTextField(
                                       controller: controller.emailController,
+                                      labelText: 'Email Address',
+                                      hintText: 'example@example.com',
+                                      errorText: controller.emailErrorMessage,
                                       enabled: !controller.isGoogleUser,
-                                      decoration: InputDecoration(
-                                        labelText: 'Email Address',
-                                        hintText: 'example@example.com',
-                                        errorText: controller.emailErrorMessage,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(18),
-                                        ),
-                                        filled: true,
-                                        fillColor: controller.isGoogleUser
-                                            ? Colors.grey[200]
-                                            : const Color.fromARGB(
-                                                255, 255, 255, 255),
-                                        labelStyle: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                          color: controller.isGoogleUser
-                                              ? Colors.grey[600]
-                                              : null,
-                                        ),
-                                        hintStyle: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          color:
-                                              Color.fromRGBO(148, 146, 146, 1),
-                                        ),
-                                        suffixIcon: controller.isGoogleUser
-                                            ? Icon(Icons.lock,
-                                                color: Colors.grey[600])
-                                            : null,
+                                      fillColor: controller.isGoogleUser
+                                          ? Colors.grey[200]
+                                          : const Color.fromARGB(255, 255, 255, 255),
+                                      labelStyle: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        color: controller.isGoogleUser ? Colors.grey[600] : null,
                                       ),
+                                      suffixIcon: controller.isGoogleUser
+                                          ? Icon(Icons.lock, color: Colors.grey[600])
+                                          : null,
                                     ),
 
                                     // Only show password fields for email/password users
                                     if (!controller.isGoogleUser) ...[
                                       SizedBox(height: screenHeight * 0.015),
                                       // Password Field
-                                      TextField(
-                                        style: const TextStyle(
-                                            color: Colors.black),
-                                        controller:
-                                            controller.passwordController,
+                                      _buildTextField(
+                                        controller: controller.passwordController,
+                                        labelText: 'New Password',
+                                        hintText: '••••••••',
+                                        errorText: controller.passwordErrorMessage,
                                         obscureText: true,
-                                        decoration: InputDecoration(
-                                          labelText: 'New Password',
-                                          hintText: '••••••••',
-                                          errorText:
-                                              controller.passwordErrorMessage,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18),
-                                          ),
-                                          filled: true,
-                                          fillColor: const Color.fromARGB(
-                                              255, 255, 255, 255),
-                                          labelStyle: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 15,
-                                          ),
-                                          hintStyle: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromRGBO(
-                                                148, 146, 146, 1),
-                                          ),
-                                        ),
                                       ),
                                       SizedBox(height: screenHeight * 0.015),
                                       // Confirm Password Field
-                                      TextField(
-                                        style: const TextStyle(
-                                            color: Colors.black),
-                                        controller: controller
-                                            .confirmPasswordController,
+                                      _buildTextField(
+                                        controller: controller.confirmPasswordController,
+                                        labelText: 'Confirm Password',
+                                        hintText: '••••••••',
+                                        errorText: controller.confirmPasswordErrorMessage,
                                         obscureText: true,
-                                        decoration: InputDecoration(
-                                          labelText: 'Confirm Password',
-                                          hintText: '••••••••',
-                                          errorText: controller
-                                              .confirmPasswordErrorMessage,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18),
-                                          ),
-                                          filled: true,
-                                          fillColor: const Color.fromARGB(
-                                              255, 255, 255, 255),
-                                          labelStyle: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 15,
-                                          ),
-                                          hintStyle: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromRGBO(
-                                                148, 146, 146, 1),
-                                          ),
-                                        ),
                                       ),
                                     ],
                                     if (controller.errorMessage != null)
@@ -321,8 +229,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       child: ElevatedButton(
                                         onPressed: controller.isLoading
                                             ? null
-                                            : () => controller
-                                                .updateProfile(context),
+                                            : () async {
+                                                final updated = await controller.updateProfile(context);
+                                                if (updated) {
+                                                  // Refresh AuthController so Home page header updates immediately
+                                                  final authController = Provider.of<AuthController>(context, listen: false);
+                                                  await authController.loadCurrentUser();
+                                                  if (mounted) Navigator.pop(context);
+                                                }
+                                              },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
                                               const Color(0xFF202422),
@@ -367,6 +282,48 @@ class _EditProfilePageState extends State<EditProfilePage> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    String? errorText,
+    bool enabled = true,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    Color? fillColor,
+    TextStyle? labelStyle,
+    TextStyle? hintStyle,
+  }) {
+    return TextField(
+      style: const TextStyle(color: Colors.black),
+      controller: controller,
+      enabled: enabled,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        errorText: errorText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        filled: true,
+        fillColor: fillColor ?? const Color.fromARGB(255, 255, 255, 255),
+        labelStyle: labelStyle ?? const TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+        ),
+        hintStyle: hintStyle ?? const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: Color.fromRGBO(148, 146, 146, 1),
+        ),
+        suffixIcon: suffixIcon,
       ),
     );
   }

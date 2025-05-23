@@ -25,7 +25,8 @@ class NotificationPage extends StatelessWidget {
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             // Check notification permissions
             if (context.mounted) {
-              await NotificationPermissionService.showEnableNotificationsDialog(context);
+              await NotificationPermissionService.showEnableNotificationsDialog(
+                  context);
             }
           });
 
@@ -62,17 +63,17 @@ class NotificationPage extends StatelessWidget {
                       horizontal: screenWidth * 0.06,
                       vertical: screenHeight * 0.02,
                     ),
-                    child: Card(
-                      color: const Color(0xFF2A2E2C),
+                    child: const Card(
+                      color: Color(0xFF2A2E2C),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Transaction Reminders',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
@@ -81,8 +82,8 @@ class NotificationPage extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            const Text(
+                            SizedBox(height: 8),
+                            Text(
                               'Reminders are enabled and will notify you every 8 hours to update your transactions',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
@@ -95,7 +96,7 @@ class NotificationPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // Debug button for testing notifications on physical devices
                   Padding(
                     padding: EdgeInsets.symmetric(
@@ -114,7 +115,8 @@ class NotificationPage extends StatelessWidget {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Debug notification sent. Check your notification shade.'),
+                                  content: Text(
+                                      'Debug notification sent. Check your notification shade.'),
                                   duration: Duration(seconds: 3),
                                 ),
                               );
@@ -123,7 +125,8 @@ class NotificationPage extends StatelessWidget {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Error sending notification: $e'),
+                                  content:
+                                      Text('Error sending notification: $e'),
                                   duration: const Duration(seconds: 3),
                                 ),
                               );
@@ -155,7 +158,7 @@ class NotificationPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // Notifications List
                   Expanded(
                     child: Padding(
@@ -190,21 +193,26 @@ class NotificationPage extends StatelessWidget {
                                 : ListView.builder(
                                     itemCount: controller.notifications.length,
                                     itemBuilder: (context, index) {
-                                      final notification = controller.notifications[index];
+                                      final notification =
+                                          controller.notifications[index];
                                       return Card(
                                         color: const Color(0xFF2A2E2C),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
-                                        margin: const EdgeInsets.symmetric(vertical: 8),
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 8),
                                         child: ListTile(
-                                          contentPadding: const EdgeInsets.all(16),
+                                          contentPadding:
+                                              const EdgeInsets.all(16),
                                           leading: Image.asset(
                                             notification['icon'] ??
                                                 'lib/assets/Notification.png',
                                             width: 24,
                                             height: 24,
-                                            errorBuilder: (context, error, stackTrace) {
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
                                               return const Icon(
                                                 Icons.notifications,
                                                 color: Colors.white70,
@@ -234,7 +242,8 @@ class NotificationPage extends StatelessWidget {
                                             icon: const Icon(Icons.delete,
                                                 color: Colors.white70),
                                             onPressed: () async {
-                                              await controller.markTipAsDeleted(notification);
+                                              await controller.markTipAsDeleted(
+                                                  notification);
                                             },
                                           ),
                                         ),
@@ -254,10 +263,11 @@ class NotificationPage extends StatelessWidget {
                   ? null
                   : () async {
                       try {
-                        final success = await controller.generateAndAddBudgetTip(context);
-                        
+                        final success =
+                            await controller.generateAndAddBudgetTip(context);
+
                         if (!context.mounted) return;
-                        
+
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('AI tip added')),

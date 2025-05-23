@@ -36,7 +36,7 @@ class FormField extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Colors.black.withOpacity(0.45),
+              color: Colors.black.withAlpha((0.45 * 255).toInt()),
             ),
           ),
         ),

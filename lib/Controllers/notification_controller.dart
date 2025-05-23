@@ -50,7 +50,7 @@ class NotificationController extends ChangeNotifier {
     try {
       // Schedule reminders every 8 hours
       await _notificationService.scheduleRepeatingReminder(
-        hours: 8, 
+        hours: 8,
         title: 'Transaction Reminder',
         body: 'Remember to record your recent transactions',
       );
@@ -88,7 +88,7 @@ class NotificationController extends ChangeNotifier {
 
   void _setupListeners(String userId) {
     _transactionSubscription?.cancel(); // Prevent duplicate listeners
-    
+
     _transactionSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -96,33 +96,35 @@ class NotificationController extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snapshot) {
-          _transactions = snapshot.docs
-              .map((doc) => TransactionModel.fromFirestore(doc))
-              .toList();
-          notifyListeners();
-        }, onError: (e) {
-          debugPrint('Error listening to transactions: $e');
-        });
+      _transactions = snapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
+      notifyListeners();
+    }, onError: (e) {
+      debugPrint('Error listening to transactions: $e');
+    });
   }
-    
+
   /// Add a new notification
-  Future<void> addNotification(String icon, String title, String message, String time) async {
+  Future<void> addNotification(
+      String icon, String title, String message, String time) async {
     try {
       // Check for duplicates in local list first
       final exists = model.notifications
           .any((n) => n['title'] == title && n['message'] == message);
-          
+
       if (exists) return;
-      
+
       final id = DateTime.now().millisecondsSinceEpoch.toString();
-      final notification = model.createNotificationObject(id, icon, title, message, time);
-      
+      final notification =
+          model.createNotificationObject(id, icon, title, message, time);
+
       // Add to local model
       model.addNotification(notification);
-      
+
       // Save to service (handles persistence)
       await _notificationService.saveNotification(notification);
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding notification: $e');
@@ -134,32 +136,32 @@ class NotificationController extends ChangeNotifier {
     try {
       // Remove from local model
       model.removeNotification(id);
-      
+
       // Remove via service
       await _notificationService.removeNotification(id);
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error removing notification: $e');
     }
   }
-  
+
   /// Clear all notifications
   Future<void> clearNotifications() async {
     try {
       // Clear local model
       model.clearNotifications();
-      
+
       // Clear via service
       await _notificationService.clearAllNotifications();
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error clearing notifications: $e');
     }
   }
-  
-  /// Mark a notification as deleted 
+
+  /// Mark a notification as deleted
   Future<void> markTipAsDeleted(Map<String, dynamic> notification) async {
     try {
       await _notificationService.markTipAsDeleted(notification);
@@ -176,7 +178,7 @@ class NotificationController extends ChangeNotifier {
   }) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
-      final errorTips = ['You need to be logged in to generate budget tips.'];
+      const errorTips = ['You need to be logged in to generate budget tips.'];
       if (context != null) {
         await _notificationService.showBudgetTips(context, errorTips);
       }
@@ -191,45 +193,40 @@ class NotificationController extends ChangeNotifier {
     final balance = _dataService.totalBalance;
     final expenses = _calculateTotalExpenses();
     final categories = _calculateCategoryBreakdown();
-    
+    final BuildContext? safeContext = context;
     if (_isAnalyzingTips) return [];
-    
     _isAnalyzingTips = true;
     _tipErrorMessage = null;
     notifyListeners();
-
     try {
       if (_transactions.isEmpty || (expenses <= 0 && categories.isEmpty)) {
-        final tips = [
+        const tips = [
           'No spending data to generate a tip.',
           'Add expense transactions to get personalized advice.',
         ];
-        if (context != null) {
-          await _notificationService.showBudgetTips(context, tips);
+        if (safeContext != null) {
+          await _notificationService.showBudgetTips(safeContext, tips);
         }
         return tips;
       }
-      
       final tips = await _aiService.generateBudgetTips(
         income: balance,
         expenses: expenses,
         categories: categories,
         timestamp: timestamp ?? DateFormat('d MMMM').format(DateTime.now()),
       );
-      
       if (tips.isEmpty) {
-        final fallbackTips = [
+        const fallbackTips = [
           'No specific tip generated.',
           'Review your spending patterns for savings opportunities.',
         ];
-        if (context != null) {
-          await _notificationService.showBudgetTips(context, fallbackTips);
+        if (safeContext != null) {
+          await _notificationService.showBudgetTips(safeContext, fallbackTips);
         }
         return fallbackTips;
       }
-      
-      if (context != null) {
-        await _notificationService.showBudgetTips(context, tips);
+      if (safeContext != null) {
+        await _notificationService.showBudgetTips(safeContext, tips);
       }
       return tips;
     } catch (e) {
@@ -238,8 +235,8 @@ class NotificationController extends ChangeNotifier {
         errorMessage = 'AI service not initialized. Please try again later.';
       }
       final errorTips = [errorMessage];
-      if (context != null) {
-        await _notificationService.showBudgetTips(context, errorTips);
+      if (safeContext != null) {
+        await _notificationService.showBudgetTips(safeContext, errorTips);
       }
       _tipErrorMessage = errorMessage;
       return errorTips;
@@ -253,25 +250,27 @@ class NotificationController extends ChangeNotifier {
   /// Returns true if successful, false otherwise
   Future<bool> generateAndAddBudgetTip(BuildContext? context) async {
     final timestamp = DateFormat('d MMMM').format(DateTime.now());
-    
+
     try {
       // Clear cached tips
       await _notificationService.clearCachedTips();
       clearNotifications();
-      
+
       // Generate tips
-      final tips = await generateBudgetTips(
+      final generatedTips = await generateBudgetTips(
         context: context,
         timestamp: timestamp,
       );
 
-      if (tips.isNotEmpty && !tips.contains('No spending data')) {
+      if (generatedTips.isNotEmpty &&
+          !generatedTips.contains('No spending data')) {
         final title = 'AI Budget Tip';
-        final message = tips[0].replaceAll('\n', ' ');
-        
+        final message = generatedTips[0].replaceAll('\n', ' ');
+
         // Check if this tip already exists in the notifications
-        final exists = notifications.any((n) => n['title'] == title && n['message'] == message);
-            
+        final exists = notifications
+            .any((n) => n['title'] == title && n['message'] == message);
+
         if (!exists) {
           // Add to notifications list in the model/database
           addNotification(
@@ -280,10 +279,10 @@ class NotificationController extends ChangeNotifier {
             message,
             timestamp,
           );
-          
+
           // Cache the tip
           await _notificationService.cacheTip(title, message);
-          
+
           return true;
         } else {
           return false;
@@ -324,12 +323,13 @@ class NotificationController extends ChangeNotifier {
     for (var transaction in _transactions) {
       if (transaction.type == 'expense') {
         final category = transaction.category;
-        breakdown[category] = (breakdown[category] ?? 0.0) + transaction.amount.abs();
+        breakdown[category] =
+            (breakdown[category] ?? 0.0) + transaction.amount.abs();
       }
     }
     return breakdown;
   }
-  
+
   @override
   void dispose() {
     _transactionSubscription?.cancel();

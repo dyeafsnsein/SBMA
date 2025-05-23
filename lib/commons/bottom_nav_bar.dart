@@ -16,7 +16,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF202422),
@@ -58,7 +58,9 @@ class BottomNavBar extends StatelessWidget {
                 iconPaths[index],
                 width: screenHeight * 0.032,
                 height: screenHeight * 0.032,
-                color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                color: isSelected
+                    ? Colors.white
+                    : Colors.white.withAlpha((0.7 * 255).toInt()),
               ),
             ),
           );

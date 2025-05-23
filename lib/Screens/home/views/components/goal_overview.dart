@@ -27,13 +27,13 @@ class GoalOverview extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final progress = goalAmount > 0 ? (currentBalance / goalAmount).clamp(0.0, 1.0) : 0.0;
+    final progress =
+        goalAmount > 0 ? (currentBalance / goalAmount).clamp(0.0, 1.0) : 0.0;
     final progressPercentage = (progress * 100).toStringAsFixed(0);
-    
+
     // Text to show based on whether there's an active goal
-    final statusText = hasActiveGoal 
-        ? '$progressPercentage% Achieved' 
-        : 'No active goal set';
+    final statusText =
+        hasActiveGoal ? '$progressPercentage% Achieved' : 'No active goal set';
 
     return GestureDetector(
       onTap: onTap,
@@ -48,7 +48,7 @@ class GoalOverview extends StatelessWidget {
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha((0.2 * 255).toInt()),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -68,8 +68,10 @@ class GoalOverview extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 3.25,
-                        backgroundColor: const Color(0xFF6DB6FE).withOpacity(0.2),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6DB6FE)),
+                        backgroundColor: const Color(0xFF6DB6FE)
+                            .withAlpha((0.2 * 255).toInt()),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF6DB6FE)),
                       ),
                     ),
                     Image.asset(
@@ -79,7 +81,8 @@ class GoalOverview extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),                Text(
+                const SizedBox(height: 8),
+                Text(
                   goalText,
                   style: const TextStyle(
                     fontFamily: 'Poppins',
@@ -95,7 +98,9 @@ class GoalOverview extends StatelessWidget {
                     fontFamily: 'Poppins',
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    color: hasActiveGoal ? const Color(0xFFFCFCFC) : const Color(0xFFFF9800),
+                    color: hasActiveGoal
+                        ? const Color(0xFFFCFCFC)
+                        : const Color(0xFFFF9800),
                   ),
                 ),
               ],
@@ -103,7 +108,8 @@ class GoalOverview extends StatelessWidget {
             Container(
               width: 80,
               height: 120,
-              color: const Color.fromARGB(0, 255, 255, 255).withOpacity(0),
+              color: const Color.fromARGB(0, 255, 255, 255)
+                  .withAlpha((0 * 255).toInt()),
             ),
             Expanded(
               child: Padding(
@@ -152,7 +158,8 @@ class GoalOverview extends StatelessWidget {
                           topCategoryIconLastWeek,
                           width: 31,
                           height: 28,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
                             Icons.category,
                             color: Color(0xFFFCFCFC),
                             size: 28,
