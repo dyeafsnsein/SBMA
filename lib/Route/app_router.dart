@@ -16,7 +16,6 @@ import '../Screens/profile/views/editprofile.dart';
 import '../Screens/saving/saving.dart';
 import '../Screens/saving/saving_analysis.dart';
 import '../Screens/set_balance/views/set_balance.dart';
-import '../Services/auth_service.dart';
 import '../Screens/Auth/views/LaunchPage.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -25,11 +24,13 @@ final GlobalKey<NavigatorState> _shellNavigatorKey =
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/', // Set LaunchPage as the initial page
+  initialLocation: '/', // LaunchPage is at root path '/'
   routes: [
     // Auth routes (outside shell, no bottom nav)
     GoRoute(
-        path: '/launchPage', builder: (context, state) => const LaunchPage()),
+      path: '/',
+      builder: (context, state) => const LaunchPage(),
+    ),
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
@@ -54,10 +55,9 @@ final router = GoRouter(
       builder: (context, state, child) {
         return MainContainerPage(child: child);
       },
-      routes: [
-        // Home and its sub-routes
+      routes: [        // Home and its sub-routes
         GoRoute(
-          path: '/',
+          path: '/home',
           builder: (context, state) => const HomePage(),
           routes: [
             GoRoute(
@@ -125,85 +125,45 @@ final router = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const NotificationPage(),
     ),
-  ],
-
-  // Global redirect for auth and balance setup
+  ],  // Global redirect for auth and balance setup
   redirect: (BuildContext context, GoRouterState state) async {
+    // Current location for debugging
+    debugPrint("Router: Current route: ${state.matchedLocation}");
+    
     // Define routes that don't require authentication checks
-    final bool isOnAuthRoute = state.matchedLocation == '/Login' ||
+    final bool isOnAuthRoute = state.matchedLocation == '/login' ||
         state.matchedLocation == '/signup' ||
         state.matchedLocation == '/forgot-password' ||
-        state.matchedLocation == '/LaunchPage';
-    final bool isOnSetBalanceRoute = state.matchedLocation == '/set-balance';
-    final bool isOnSuccessRoute = state.matchedLocation == '/success3';
+        state.matchedLocation == '/';
 
-    // Allow navigation to success route without interference
-    if (isOnSuccessRoute) {
-      debugPrint('Redirect: Allowing navigation to /success3');
-      return null;
-    }
+    final bool isOnSetBalanceRoute = state.matchedLocation == '/set-balance';
 
     // Check authentication state
     User? user = FirebaseAuth.instance.currentUser;
     bool isLoggedIn = user != null;
-
-    debugPrint('Redirect: Checking auth state - isLoggedIn=$isLoggedIn, '
-        'location=${state.matchedLocation}, '
-        'isOnAuthRoute=$isOnAuthRoute, '
-        'isOnSetBalanceRoute=$isOnSetBalanceRoute');
-
-    // If not logged in and not on an auth route, redirect to login
-    if (!isLoggedIn && !isOnAuthRoute) {
-      debugPrint(
-          'Redirect: Not logged in and not on auth route, redirecting to /login');
-      return '/LaunchPage'; // Redirect to login page
+    
+    debugPrint("Router: User logged in: $isLoggedIn, userId: ${user?.uid}");
+    
+    // CRITICAL: Skip all redirects for set-balance page to ensure the navigation flow works
+    if (isOnSetBalanceRoute) {
+      debugPrint("Router: Allowing direct access to set-balance page");
+      return null; // Allow direct access without redirect
     }
-
-    // If logged in and on an auth route, redirect to root
-    if (isLoggedIn && isOnAuthRoute) {
-      debugPrint('Redirect: Logged in and on auth route, redirecting to /');
+    
+    // If not logged in and not on an auth route, redirect to root/launch page
+    if (!isLoggedIn && !isOnAuthRoute) {
+      debugPrint("Router: Redirecting unauthenticated user to / (launch page)");
       return '/';
     }
-
-    // Only check for balance setup if user is logged in and not on an auth route
-    if (isLoggedIn && !isOnAuthRoute) {
-      final authService = AuthService();
-
-      // Fetch user data
-      Map<String, dynamic>? userData;
-      try {
-        userData = await authService.getUserData(user.uid);
-      } catch (e) {
-        debugPrint('Redirect: Error fetching user data: $e');
-        // Sign out and redirect to login if there's an error
-        await FirebaseAuth.instance.signOut();
-        await authService.signOut();
-        debugPrint('Redirect: Signed out due to error, redirecting to /login');
-        return '/login';
-      }
-
-      // If user data is null, sign out and redirect to login
-      if (userData == null) {
-        debugPrint(
-            'Redirect: User data is null, signing out and redirecting to /login');
-        await FirebaseAuth.instance.signOut();
-        await authService.signOut();
-        debugPrint('Redirect: Signed out, redirecting to /login');
-        return '/login';
-      }
-
-      final hasSetBalance = userData['hasSetBalance'] ?? false;
-
-      // If balance not set and not on set-balance route, redirect to set-balance
-      if (!hasSetBalance && !isOnSetBalanceRoute) {
-        debugPrint('Redirect: Balance not set, redirecting to /set-balance');
-        return '/set-balance';
-      }
+    
+    // If logged in and on an auth route, redirect to home
+    if (isLoggedIn && isOnAuthRoute) {
+      debugPrint("Router: Redirecting authenticated user to /home");
+      return '/home';
     }
 
     // Default case: no redirect needed
-    debugPrint(
-        'Redirect: No redirect needed, proceeding to ${state.matchedLocation}');
+    debugPrint("Router: No redirection needed for ${state.matchedLocation}");
     return null;
   },
 );

@@ -6,6 +6,7 @@ class UserModel {
   String? confirmPassword;
   String dateOfBirth;
   String mobileNumber;
+  double balance;
 
   UserModel({
     this.id,
@@ -15,8 +16,8 @@ class UserModel {
     this.confirmPassword,
     this.dateOfBirth = '',
     this.mobileNumber = '',
+    this.balance = 0.0,
   });
-
   factory UserModel.fromMap(Map<String, dynamic> map, {String? id}) {
     return UserModel(
       id: id,
@@ -25,6 +26,7 @@ class UserModel {
       password: map['password'] ?? '',
       dateOfBirth: map['dateOfBirth'] ?? '',
       mobileNumber: map['mobileNumber'] ?? '',
+      balance: (map['balance'] ?? 0.0).toDouble(),
     );
   }
 
@@ -34,6 +36,7 @@ class UserModel {
       'email': email,
       'dateOfBirth': dateOfBirth,
       'mobileNumber': mobileNumber,
+      'balance': balance,
     };
   }
 

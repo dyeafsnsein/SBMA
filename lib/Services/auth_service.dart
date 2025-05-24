@@ -7,7 +7,6 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-
   Future<UserCredential> signUp({
     required String name,
     required String email,
@@ -16,11 +15,23 @@ class AuthService {
     required String mobileNumber,
   }) async {
     try {
+      // Step 1: Create the user authentication account
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      // Step 2: Store additional user data in Firestore if account creation is successful
+      if (userCredential.user != null) {
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'name': name,          'email': email,
+          'dateOfBirth': dateOfBirth,
+          'mobileNumber': mobileNumber,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+      
       return userCredential;
     } catch (e) {
       rethrow;
@@ -80,17 +91,37 @@ class AuthService {
       rethrow;
     }
   }
-
   Future<void> updateBalance(String uid, double balance) async {
     try {
-      await _firestore.collection('users').doc(uid).update({
-        'balance': balance,
-      });
+      debugPrint("AuthService: Updating balance to $balance for user $uid");
+      
+      // First, check if the user document exists
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+      
+      if (userDoc.exists) {
+        // Update existing user's balance
+        await _firestore.collection('users').doc(uid).update({
+          'balance': balance,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+        debugPrint("AuthService: Updated existing user's balance");
+      } else {
+        // Create new user document with balance if it doesn't exist
+        // This should not normally happen but is a safety measure
+        await _firestore.collection('users').doc(uid).set({
+          'balance': balance,
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastUpdated': FieldValue.serverTimestamp(),
+          'email': FirebaseAuth.instance.currentUser?.email ?? '',
+          'name': FirebaseAuth.instance.currentUser?.displayName ?? 'User',
+        }, SetOptions(merge: true));
+        debugPrint("AuthService: Created new user document with balance");
+      }
     } catch (e) {
+      debugPrint("AuthService: Error updating balance: $e");
       rethrow;
     }
   }
-
   Future<void> updateUserData(String uid, Map<String, dynamic> data) async {
     try {
       await _firestore.collection('users').doc(uid).update(data);
@@ -99,17 +130,70 @@ class AuthService {
     }
   }
 
-  Future<void> addNotification(String uid, String title, String message) async {
+  Future<Map<String, dynamic>> signInAndGetUserData({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('notifications')
-          .add({
-        'title': title,
-        'message': message,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+      // Step 1: Authenticate with Firebase
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Step 2: Get user data from Firestore
+      String uid = userCredential.user!.uid;
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+        Map<String, dynamic>? userData = doc.exists ? doc.data() as Map<String, dynamic>? : null;
+      // Always direct new users to set balance page
+      bool isFirstTimeUser = !doc.exists;
+
+      // Return combined data (both auth result and user data)
+      return {
+        'userCredential': userCredential,
+        'userData': userData,
+        'isFirstTimeUser': isFirstTimeUser,
+      };
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Similarly for Google Sign-In
+  Future<Map<String, dynamic>?> signInWithGoogleAndGetUserData() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return null;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Step 1: Authenticate with Firebase
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+
+      // Step 2: Get user data or create new user document if it doesn't exist
+      String uid = userCredential.user!.uid;
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();      Map<String, dynamic>? userData = doc.exists ? doc.data() as Map<String, dynamic>? : null;
+      bool isFirstTimeUser = !doc.exists;      // Create new user document if first time
+      if (!doc.exists && userCredential.user != null) {        userData = {
+          'email': userCredential.user!.email,
+          'name': userCredential.user!.displayName ?? 'User',
+          'createdAt': FieldValue.serverTimestamp(),
+        };
+
+        await _firestore.collection('users').doc(uid).set(userData);
+      }
+
+      return {
+        'userCredential': userCredential,
+        'userData': userData,
+        'isFirstTimeUser': isFirstTimeUser,
+      };
     } catch (e) {
       rethrow;
     }

@@ -169,9 +169,7 @@ class AuthController extends ChangeNotifier {
     }
 
     isLoading = true;
-    notifyListeners();
-
-    try {
+    notifyListeners();    try {
       // Update UserModel with form data
       userModel.name = nameController.text.trim();
       userModel.email = emailController.text.trim();
@@ -179,32 +177,25 @@ class AuthController extends ChangeNotifier {
       userModel.dateOfBirth = dateOfBirthController.text.trim();
       userModel.mobileNumber = mobileNumberController.text.trim();
 
-      // Sign up using AuthService
+      // Sign up using AuthService - this now handles both account creation and data storage
       UserCredential userCredential = await _authService.signUp(
         name: userModel.name,
         email: userModel.email,
         password: userModel.password,
         dateOfBirth: userModel.dateOfBirth,
         mobileNumber: userModel.mobileNumber,
-      );
-
-      // Set the user's UID
+      );      // Set the user's UID in the model
       userModel.id = userCredential.user?.uid;
-
-      // Store user data in Firestore only if sign-up succeeds
-      if (userModel.id != null) {
-        await _firestore.collection('users').doc(userModel.id).set({
-          ...userModel.toMap(),
-          'hasSetBalance': false, // Explicitly set to false
-        });
-      }
-
-      // Sign out the user after successful signup
-      await _auth.signOut();
-      await _authService.signOut();
-
+      
+      // Add debug print
+      debugPrint("Successfully signed up user with ID: ${userModel.id}");
+      debugPrint("User is logged in: ${FirebaseAuth.instance.currentUser != null}");
+      
+      // Keep the user logged in and redirect to set-balance page
       if (context.mounted) {
-        context.go('/login');
+        // Use GoRouter directly for navigation to ensure consistent behavior
+        debugPrint("Navigating to /set-balance");
+        context.go('/set-balance');
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
@@ -243,42 +234,29 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Update UserModel with form data
-      userModel.email = emailController.text.trim();
-      userModel.password = passwordController.text.trim();
-
-      // Sign in using AuthService
-      UserCredential userCredential = await _authService.signIn(
-        email: userModel.email,
-        password: userModel.password,
+      Map<String, dynamic> result = await _authService.signInAndGetUserData(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
-      if (userCredential.user != null) {
-        debugPrint(
-            'User signed in successfully with UID: ${userCredential.user!.uid}');
+      UserCredential userCredential = result['userCredential'];
+      Map<String, dynamic>? userData = result['userData'];
+      bool isFirstTimeUser = result['isFirstTimeUser'];
 
-        // Load user data from Firestore
-        final userData = await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .get();
+      // Update user model
+      userModel.id = userCredential.user!.uid;
+      if (userData != null) {
+        userModel = UserModel.fromMap(userData, id: userModel.id);
+      }
 
-        debugPrint('Firestore user data: ${userData.data()}');
-        if (userData.exists) {
-          userModel = UserModel.fromMap(userData.data() as Map<String, dynamic>,
-              id: userCredential.user!.uid);
-          debugPrint('UserModel updated with name: ${userModel.name}');
+      // Navigate based on isFirstTimeUser flag
+      if (context.mounted) {
+        if (isFirstTimeUser) {
+          context.go('/set-balance');
         } else {
-          debugPrint('No user data found in Firestore');
-        }
-
-        if (context.mounted) {
-          context.go('/');
+          context.go('/home');
         }
       }
-    } on FirebaseAuthException catch (e) {
-      errorMessage = _getErrorMessage(e.code);
-      notifyListeners();
     } catch (e) {
       errorMessage = 'Sign-in failed: $e';
       notifyListeners();
@@ -294,35 +272,30 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      UserCredential? userCredential = await _authService.signInWithGoogle();
-      if (userCredential == null) {
+      Map<String, dynamic>? result = await _authService.signInWithGoogleAndGetUserData();
+      if (result == null) {
         errorMessage = 'Google Sign-In was canceled';
         notifyListeners();
         return;
       }
-
-      // Fetch or create user data in Firestore
-      User? user = userCredential.user;
-      if (user != null) {
-        userModel.id = user.uid;
-        userModel.email = user.email ?? '';
-        userModel.name = user.displayName ?? '';
-        // Default values for other fields if signing in with Google
-        userModel.dateOfBirth = userModel.dateOfBirth.isEmpty
-            ? '01/01/2000'
-            : userModel.dateOfBirth;
-        userModel.mobileNumber = userModel.mobileNumber.isEmpty
-            ? '+21612345678'
-            : userModel.mobileNumber;
-
-        await _firestore
-            .collection('users')
-            .doc(userModel.id)
-            .set(userModel.toMap(), SetOptions(merge: true));
+      
+      UserCredential userCredential = result['userCredential'];
+      Map<String, dynamic>? userData = result['userData'];
+      bool isFirstTimeUser = result['isFirstTimeUser'];
+      
+      // Update user model
+      userModel.id = userCredential.user!.uid;
+      if (userData != null) {
+        userModel = UserModel.fromMap(userData, id: userModel.id);
       }
-
+      
+      // Navigate based on isFirstTimeUser flag
       if (context.mounted) {
-        context.go('/');
+        if (isFirstTimeUser) {
+          context.go('/set-balance');
+        } else {
+          context.go('/home');
+        }
       }
     } catch (e) {
       errorMessage = 'Google Sign-In failed: $e';
@@ -340,7 +313,6 @@ class AuthController extends ChangeNotifier {
     clearForm();
     notifyListeners();
   }
-
   // Add this method to AuthController
   Future<bool> setInitialBalance(double balance) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -357,9 +329,6 @@ class AuthController extends ChangeNotifier {
       // Update balance in Firestore
       await _authService.updateBalance(user.uid, balance);
 
-      // Mark that user has set their balance
-      await _authService.updateUserData(user.uid, {'hasSetBalance': true});
-
       isLoading = false;
       notifyListeners();
       return true;
@@ -368,6 +337,55 @@ class AuthController extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(BuildContext context) async {
+    errorMessage = null;
+    notifyListeners();
+    
+    // Validate email first
+    _validateEmailRealTime();
+    
+    if (emailErrorMessage != null) {
+      errorMessage = 'Please enter a valid email address';
+      notifyListeners();
+      return;
+    }
+
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      await _auth.sendPasswordResetEmail(email: emailController.text.trim());
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset link sent!')),
+        );
+      }
+      
+      // Optional: Navigate back to login page
+
+    } on FirebaseAuthException catch (e) {
+      errorMessage = _getErrorMessage(e.code);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage ?? 'Failed to send reset link')),
+        );
+      }
+    } catch (e) {
+      errorMessage = 'An unexpected error occurred: $e';
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage ?? 'Failed to send reset link')),
+        );
+      }
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 

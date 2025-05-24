@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/Screens/Auth/views/Login.dart';
-import 'package:test_app/Screens/Auth/views/Signup.dart';
+import 'package:go_router/go_router.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({Key? key}) : super(key: key);
@@ -55,16 +54,12 @@ class _LaunchPageState extends State<LaunchPage> {
                   setState(() {
                     _isLoginPressed = true;
                   });
-                },
-                onTapUp: (_) {
+                },                onTapUp: (_) {
                   setState(() {
                     _isLoginPressed = false;
                   });
-                  // Navigate to the LoginPage
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
+                  // Navigate to the LoginPage using GoRouter
+                  context.go('/login');
                 },
                 onTapCancel: () {
                   setState(() {
@@ -97,16 +92,12 @@ class _LaunchPageState extends State<LaunchPage> {
                   setState(() {
                     _isSignUpPressed = true;
                   });
-                },
-                onTapUp: (_) {
+                },                onTapUp: (_) {
                   setState(() {
                     _isSignUpPressed = false;
                   });
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignupPage()),
-                  );
-                  // Add your signup functionality here
+                  // Navigate to the SignupPage using GoRouter
+                  context.go('/signup');
                 },
                 onTapCancel: () {
                   setState(() {

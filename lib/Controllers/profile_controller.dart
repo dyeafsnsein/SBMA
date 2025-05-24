@@ -30,28 +30,28 @@ class EditProfileController extends ChangeNotifier {
     loadUserData();
   }
 
+  // When loading user data, use the more efficient combined method if the user is already authenticated
   Future<void> loadUserData() async {
     isLoading = true;
     notifyListeners();
 
     try {
+      if (_auth.currentUser != null) {
+        final userData = await _authService.getUserData(_auth.currentUser!.uid);
+        if (userData != null) {
+          usernameController.text = userData['name'] ?? '';
+          emailController.text = _auth.currentUser!.email ?? '';
+        } else {
+          usernameController.text = _auth.currentUser!.displayName ?? '';
+          emailController.text = _auth.currentUser!.email ?? '';
+        }
+      }
+
       final User? currentUser = _auth.currentUser;
       if (currentUser != null) {
         // Check if user signed in with Google
         _isGoogleUser = currentUser.providerData
             .any((userInfo) => userInfo.providerId == 'google.com');
-
-        // Load user data from Firestore
-        final Map<String, dynamic>? userData =
-            await _authService.getUserData(currentUser.uid);
-
-        if (userData != null) {
-          usernameController.text = userData['name'] ?? '';
-          emailController.text = currentUser.email ?? '';
-        } else {
-          usernameController.text = currentUser.displayName ?? '';
-          emailController.text = currentUser.email ?? '';
-        }
 
         debugPrint(
             'User authentication providers: ${currentUser.providerData.map((p) => p.providerId).toList()}');

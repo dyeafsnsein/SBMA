@@ -18,7 +18,6 @@ class _SetBalancePageState extends State<SetBalancePage> {
   String? _errorMessage;
   bool _isLoading = false;
   bool _isFetchingBalance = false;
-
   Future<void> _setBalance() async {
     final balanceText = _balanceController.text.trim();
 
@@ -40,26 +39,31 @@ class _SetBalancePageState extends State<SetBalancePage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-    });
-
-    try {
+    });    try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
+        debugPrint("SetBalancePage: User not authenticated");
         setState(() {
           _errorMessage = 'User not authenticated';
           _isLoading = false;
         });
         return;
       }
-
+      
+      debugPrint("SetBalancePage: Setting balance to $balance for user ${user.uid}");
+      
       // Update balance directly through AuthService
       await _authService.updateBalance(user.uid, balance);
-      await _authService.updateUserData(user.uid, {'hasSetBalance': true});
+      
+      debugPrint("SetBalancePage: Balance updated successfully, navigating to /home");
       
       if (context.mounted) {
-        context.go('/'); // Navigate to root (HomePage)
+        // Navigate to home after successful balance setup
+        debugPrint("SetBalancePage: Navigating to /home");
+        context.go('/home'); 
       }
     } catch (e) {
+      debugPrint("SetBalancePage: Error setting balance: $e");
       setState(() {
         _errorMessage = 'Failed to set balance: $e';
       });

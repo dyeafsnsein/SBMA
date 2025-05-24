@@ -5,18 +5,21 @@ import '../../../Controllers/auth_controller.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthController(),
+    // Use the existing AuthController from the ancestor widget
+    final authController = Provider.of<AuthController>(context);
+    
+    return ChangeNotifierProvider.value(
+      value: authController,
       child: Consumer<AuthController>(
         builder: (context, controller, child) {
-          return Scaffold(
-            backgroundColor: const Color(0xFF202422),
-            body: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF202422),
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
                   return SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
                     keyboardDismissBehavior:
@@ -438,9 +441,8 @@ class SignupPage extends StatelessWidget {
     );
   }
   Widget _buildLoginLink(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        context.go('/');
+    return TextButton(      onPressed: () {
+        context.go('/login');
       },
       child: const Text(
         'Already have an account? Log In',
