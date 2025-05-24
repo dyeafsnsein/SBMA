@@ -60,13 +60,13 @@ final router = GoRouter(
           path: '/home',
           builder: (context, state) => const HomePage(),
           routes: [
-            GoRoute(
-              path: 'analysis',
-              builder: (context, state) => const AnalysisPage(),
-            ),
+         
           ],
         ),
-
+   GoRoute(
+              path: '/analysis',
+              builder: (context, state) => const AnalysisPage(),
+            ),
         // Savings section
         GoRoute(
           path: '/savings',
