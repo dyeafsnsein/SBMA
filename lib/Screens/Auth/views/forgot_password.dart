@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
 import 'Login.dart';
+import '../../../commons/form_validators.dart';
 
 @RoutePage()
 class ForgotPasswordPage extends StatefulWidget {
@@ -13,6 +14,7 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  String? emailError;
   bool _isEmailValid = true;
 
   @override
@@ -36,10 +38,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void _validateEmail() {
     final authController = Provider.of<AuthController>(context, listen: false);
-    // We'll use the controller's validation - just need to update our local state
+    final value = authController.emailController.text;
     setState(() {
-      _isEmailValid = authController.emailController.text.isNotEmpty && 
-                     authController.emailErrorMessage == null;
+      emailError = FormValidators.validateEmail(value);
+      _isEmailValid = value.isNotEmpty && emailError == null;
     });
   }
 
@@ -137,23 +139,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                         ),
                                         contentPadding: const EdgeInsets.symmetric(
                                             horizontal: 20),
-                                        // Use the controller's error message
-                                        errorText: authController.emailController.text.isNotEmpty && 
-                                                  authController.emailErrorMessage != null
-                                            ? authController.emailErrorMessage
-                                            : null,
-                                        // Show check icon when email is valid
+                                        errorText: emailError,
                                         suffixIcon: authController.emailController.text.isNotEmpty
                                             ? Icon(
-                                                authController.emailErrorMessage == null
+                                                emailError == null
                                                     ? Icons.check_circle
                                                     : Icons.error,
-                                                color: authController.emailErrorMessage == null
+                                                color: emailError == null
                                                     ? Colors.green
                                                     : Colors.red,
                                               )
                                             : null,
                                       ),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          emailError = FormValidators.validateEmail(value);
+                                          _isEmailValid = value.isNotEmpty && emailError == null;
+                                        });
+                                      },
                                     ),
                                     const SizedBox(height: 45),
                                     Center(

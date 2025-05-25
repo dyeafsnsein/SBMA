@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Models/user_model.dart';
 import '../Services/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import '../commons/form_validators.dart';
+import '../commons/error_handler.dart' as app_errors;
 
 class AuthController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -32,15 +34,7 @@ class AuthController extends ChangeNotifier {
   final TextEditingController mobileNumberController = TextEditingController();
 
   AuthController() {
-    // Add listeners for real-time validation
-    nameController.addListener(_validateNameRealTime);
-    emailController.addListener(_validateEmailRealTime);
-    passwordController.addListener(_validatePasswordRealTime);
-    confirmPasswordController.addListener(_validateConfirmPasswordRealTime);
-    dateOfBirthController.addListener(_validateDateOfBirthRealTime);
-    mobileNumberController.addListener(_validateMobileNumberRealTime);
-
-    // Load current user data when controller is initialized
+    // No more real-time validation listeners here; use FormValidators in the UI or in submit methods.
     loadCurrentUser();
 
     // Listen for auth state changes
@@ -51,95 +45,6 @@ class AuthController extends ChangeNotifier {
         userModel = UserModel();
       }
     });
-  }
-
-  void _validateNameRealTime() {
-    final namePattern = RegExp(r'^[a-zA-Z\s]+$');
-    if (nameController.text.trim().isEmpty) {
-      nameErrorMessage = 'Full name is required';
-    } else if (!namePattern.hasMatch(nameController.text.trim())) {
-      nameErrorMessage = 'Full name should contain only alphabets and spaces';
-    } else {
-      nameErrorMessage = null;
-    }
-    notifyListeners();
-  }
-
-  void _validateEmailRealTime() {
-    final emailPattern = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (emailController.text.trim().isEmpty) {
-      emailErrorMessage = 'Email is required';
-    } else if (!emailPattern.hasMatch(emailController.text.trim())) {
-      emailErrorMessage = 'Please enter a valid email (e.g., test@test.test)';
-    } else {
-      emailErrorMessage = null;
-    }
-    notifyListeners();
-  }
-
-  void _validatePasswordRealTime() {
-    final passwordPattern =
-        RegExp(r'^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#\$%^&*]).{6,}$');
-    if (passwordController.text.trim().isEmpty) {
-      passwordErrorMessage = 'Password is required';
-    } else if (!passwordPattern.hasMatch(passwordController.text.trim())) {
-      passwordErrorMessage =
-          'Password must contain at least one number, one uppercase letter, one lowercase letter, and one special character';
-    } else {
-      passwordErrorMessage = null;
-    }
-    _validateConfirmPasswordRealTime(); // Re-validate confirm password if password changes
-    notifyListeners();
-  }
-
-  void _validateConfirmPasswordRealTime() {
-    if (confirmPasswordController.text.trim().isEmpty) {
-      confirmPasswordErrorMessage = 'Confirm password is required';
-    } else if (passwordController.text.trim() !=
-        confirmPasswordController.text.trim()) {
-      confirmPasswordErrorMessage = 'Passwords do not match';
-    } else {
-      confirmPasswordErrorMessage = null;
-    }
-    notifyListeners();
-  }
-
-  void _validateDateOfBirthRealTime() {
-    final datePattern = RegExp(r'^\d{2}/\d{2}/\d{4}$');
-    if (dateOfBirthController.text.trim().isEmpty) {
-      dateOfBirthErrorMessage = 'Date of birth is required';
-    } else if (!datePattern.hasMatch(dateOfBirthController.text.trim())) {
-      dateOfBirthErrorMessage =
-          'Please enter a valid date of birth (DD/MM/YYYY)';
-    } else {
-      final dobParts = dateOfBirthController.text.trim().split('/');
-      final dob = DateTime(
-        int.parse(dobParts[2]), // Year
-        int.parse(dobParts[1]), // Month
-        int.parse(dobParts[0]), // Day
-      );
-      final currentDate = DateTime(2025, 4, 17); // Current date
-      final age = currentDate.difference(dob).inDays ~/ 365;
-      if (age < 18) {
-        dateOfBirthErrorMessage = 'You must be at least 18 years old';
-      } else {
-        dateOfBirthErrorMessage = null;
-      }
-    }
-    notifyListeners();
-  }
-
-  void _validateMobileNumberRealTime() {
-    final mobilePattern = RegExp(r'^\+216\d{8}$');
-    if (mobileNumberController.text.trim().isEmpty) {
-      mobileNumberErrorMessage = 'Mobile number is required';
-    } else if (!mobilePattern.hasMatch(mobileNumberController.text.trim())) {
-      mobileNumberErrorMessage =
-          'Please enter a valid Tunisian mobile number (e.g., +21612345678)';
-    } else {
-      mobileNumberErrorMessage = null;
-    }
-    notifyListeners();
   }
 
   void togglePasswordVisibility() {
@@ -156,7 +61,14 @@ class AuthController extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
 
-    // Check if there are any real-time errors
+    // Use FormValidators for validation
+    nameErrorMessage = FormValidators.validateName(nameController.text);
+    emailErrorMessage = FormValidators.validateEmail(emailController.text);
+    passwordErrorMessage = FormValidators.validatePassword(passwordController.text);
+    confirmPasswordErrorMessage = FormValidators.validateConfirmPassword(passwordController.text, confirmPasswordController.text);
+    dateOfBirthErrorMessage = FormValidators.validateDateOfBirth(dateOfBirthController.text);
+    mobileNumberErrorMessage = FormValidators.validateMobileNumber(mobileNumberController.text);
+
     if (nameErrorMessage != null ||
         emailErrorMessage != null ||
         passwordErrorMessage != null ||
@@ -169,7 +81,8 @@ class AuthController extends ChangeNotifier {
     }
 
     isLoading = true;
-    notifyListeners();    try {
+    notifyListeners();
+    try {
       // Update UserModel with form data
       userModel.name = nameController.text.trim();
       userModel.email = emailController.text.trim();
@@ -198,17 +111,13 @@ class AuthController extends ChangeNotifier {
         context.go('/set-balance');
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        errorMessage = 'This email is already in use. Please log in instead.';
-        if (context.mounted) {
-          context.go('/login'); // Redirect to login page
-        }
-      } else {
-        errorMessage = _getErrorMessage(e.code);
+      errorMessage = app_errors.ErrorHandler.firebaseAuthError(e);
+      if (e.code == 'email-already-in-use' && context.mounted) {
+        context.go('/login');
       }
       notifyListeners();
     } catch (e) {
-      errorMessage = 'Sign-up failed: $e';
+      errorMessage = app_errors.ErrorHandler.generalError(e);
       notifyListeners();
     } finally {
       isLoading = false;
@@ -220,9 +129,9 @@ class AuthController extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
 
-    // Validate email and password for login
-    _validateEmailRealTime();
-    _validatePasswordRealTime();
+    // Use FormValidators for validation
+    emailErrorMessage = FormValidators.validateEmail(emailController.text);
+    passwordErrorMessage = FormValidators.validatePassword(passwordController.text);
 
     if (emailErrorMessage != null || passwordErrorMessage != null) {
       errorMessage = 'Please fix the errors in the form';
@@ -257,8 +166,11 @@ class AuthController extends ChangeNotifier {
           context.go('/home');
         }
       }
+    } on FirebaseAuthException catch (e) {
+      errorMessage = app_errors.ErrorHandler.firebaseAuthError(e);
+      notifyListeners();
     } catch (e) {
-      errorMessage = 'Sign-in failed: $e';
+      errorMessage = app_errors.ErrorHandler.generalError(e);
       notifyListeners();
     } finally {
       isLoading = false;
@@ -297,8 +209,11 @@ class AuthController extends ChangeNotifier {
           context.go('/home');
         }
       }
+    } on FirebaseAuthException catch (e) {
+      errorMessage = app_errors.ErrorHandler.firebaseAuthError(e);
+      notifyListeners();
     } catch (e) {
-      errorMessage = 'Google Sign-In failed: $e';
+      errorMessage = app_errors.ErrorHandler.generalError(e);
       notifyListeners();
     } finally {
       isLoading = false;
@@ -321,10 +236,8 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-
     isLoading = true;
     notifyListeners();
-
     try {
       // Update balance in Firestore
       await _authService.updateBalance(user.uid, balance);
@@ -333,7 +246,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      errorMessage = 'Failed to set initial balance: $e';
+      errorMessage = app_errors.ErrorHandler.generalError(e);
       isLoading = false;
       notifyListeners();
       return false;
@@ -343,10 +256,8 @@ class AuthController extends ChangeNotifier {
   Future<void> sendPasswordResetEmail(BuildContext context) async {
     errorMessage = null;
     notifyListeners();
-    
-    // Validate email first
-    _validateEmailRealTime();
-    
+    // Use FormValidators for validation
+    emailErrorMessage = FormValidators.validateEmail(emailController.text);
     if (emailErrorMessage != null) {
       errorMessage = 'Please enter a valid email address';
       notifyListeners();
@@ -368,7 +279,7 @@ class AuthController extends ChangeNotifier {
       // Optional: Navigate back to login page
 
     } on FirebaseAuthException catch (e) {
-      errorMessage = _getErrorMessage(e.code);
+      errorMessage = app_errors.ErrorHandler.firebaseAuthError(e);
       
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -376,7 +287,7 @@ class AuthController extends ChangeNotifier {
         );
       }
     } catch (e) {
-      errorMessage = 'An unexpected error occurred: $e';
+      errorMessage = app_errors.ErrorHandler.generalError(e);
       
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -386,21 +297,6 @@ class AuthController extends ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
-    }
-  }
-
-  String _getErrorMessage(String code) {
-    switch (code) {
-      case 'user-not-found':
-        return 'No user found with this email.';
-      case 'wrong-password':
-        return 'Wrong password provided.';
-      case 'invalid-email':
-        return 'The email address is invalid.';
-      case 'user-disabled':
-        return 'This user has been disabled.';
-      default:
-        return 'An error occurred. Please try again.';
     }
   }
 

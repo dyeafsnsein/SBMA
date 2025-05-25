@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Services/auth_service.dart';
+import '../commons/form_validators.dart';
 
 class EditProfileController extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -28,6 +29,7 @@ class EditProfileController extends ChangeNotifier {
 
   EditProfileController() {
     loadUserData();
+    // No more local validation listeners; use FormValidators in the UI or in submit methods.
   }
 
   // When loading user data, use the more efficient combined method if the user is already authenticated
@@ -91,48 +93,6 @@ class EditProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool validateInputs() {
-    bool isValid = true;
-    clearErrors();
-
-    // Validate username
-    if (usernameController.text.trim().isEmpty) {
-      usernameErrorMessage = 'Username cannot be empty';
-      isValid = false;
-    }
-
-    // Only validate email and password for non-Google users
-    if (!_isGoogleUser) {
-      // Validate email
-      if (emailController.text.trim().isEmpty) {
-        emailErrorMessage = 'Email cannot be empty';
-        isValid = false;
-      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-          .hasMatch(emailController.text)) {
-        emailErrorMessage = 'Please enter a valid email address';
-        isValid = false;
-      }
-
-      // Validate passwords only if provided
-      if (passwordController.text.isNotEmpty) {
-        // Check password complexity
-        if (passwordController.text.length < 6) {
-          passwordErrorMessage = 'Password must be at least 6 characters';
-          isValid = false;
-        }
-
-        // Confirm passwords match
-        if (passwordController.text != confirmPasswordController.text) {
-          confirmPasswordErrorMessage = 'Passwords do not match';
-          isValid = false;
-        }
-      }
-    }
-
-    notifyListeners();
-    return isValid;
-  }
-
   Future<bool> reauthenticateUser(String email, String password) async {
     try {
       final user = _auth.currentUser!;
@@ -150,7 +110,22 @@ class EditProfileController extends ChangeNotifier {
   }
 
   Future<bool> updateProfile(BuildContext context) async {
-    if (!validateInputs()) {
+    // Use FormValidators for validation
+    usernameErrorMessage = FormValidators.validateName(usernameController.text);
+    emailErrorMessage = !_isGoogleUser ? FormValidators.validateEmail(emailController.text) : null;
+    passwordErrorMessage = (!_isGoogleUser && passwordController.text.isNotEmpty)
+      ? FormValidators.validatePassword(passwordController.text)
+      : null;
+    confirmPasswordErrorMessage = (!_isGoogleUser && passwordController.text.isNotEmpty)
+      ? FormValidators.validateConfirmPassword(passwordController.text, confirmPasswordController.text)
+      : null;
+
+    if (usernameErrorMessage != null ||
+        (!_isGoogleUser && (
+          emailErrorMessage != null ||
+          (passwordController.text.isNotEmpty && (passwordErrorMessage != null || confirmPasswordErrorMessage != null))
+        ))) {
+      notifyListeners();
       return false;
     }
 
@@ -246,7 +221,7 @@ class EditProfileController extends ChangeNotifier {
         case 'weak-password':
           return 'The password is too weak.';
         default:
-          return 'An error occurred: ${e.message}';
+          return 'An error occurred: e.message';
       }
     }
     return 'An unexpected error occurred: $e';

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/profile_controller.dart';
 import '../../../Controllers/auth_controller.dart';
+import '../../../commons/form_validators.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -12,12 +13,16 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  String? usernameError;
+  String? emailError;
+  String? passwordError;
+  String? confirmPasswordError;
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
@@ -63,7 +68,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ],
                       ),
                     ),
-
                     if (controller.isLoading)
                       const Expanded(
                         child: Center(
@@ -165,7 +169,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       controller: controller.usernameController,
                                       labelText: 'Username',
                                       hintText: 'John Smith',
-                                      errorText: controller.usernameErrorMessage,
+                                      errorText: usernameError,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          usernameError = FormValidators.validateName(value);
+                                        });
+                                      },
                                     ),
                                     SizedBox(height: screenHeight * 0.015),
                                     // Email Address Field
@@ -173,7 +182,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       controller: controller.emailController,
                                       labelText: 'Email Address',
                                       hintText: 'example@example.com',
-                                      errorText: controller.emailErrorMessage,
+                                      errorText: emailError,
                                       enabled: !controller.isGoogleUser,
                                       fillColor: controller.isGoogleUser
                                           ? Colors.grey[200]
@@ -187,6 +196,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       suffixIcon: controller.isGoogleUser
                                           ? Icon(Icons.lock, color: Colors.grey[600])
                                           : null,
+                                      onChanged: (value) {
+                                        if (!controller.isGoogleUser) {
+                                          setState(() {
+                                            emailError = FormValidators.validateEmail(value);
+                                          });
+                                        }
+                                      },
                                     ),
 
                                     // Only show password fields for email/password users
@@ -197,8 +213,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         controller: controller.passwordController,
                                         labelText: 'New Password',
                                         hintText: '••••••••',
-                                        errorText: controller.passwordErrorMessage,
+                                        errorText: passwordError,
                                         obscureText: true,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            passwordError = FormValidators.validatePassword(value);
+                                            confirmPasswordError = FormValidators.validateConfirmPassword(
+                                              value, controller.confirmPasswordController.text);
+                                          });
+                                        },
                                       ),
                                       SizedBox(height: screenHeight * 0.015),
                                       // Confirm Password Field
@@ -206,8 +229,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         controller: controller.confirmPasswordController,
                                         labelText: 'Confirm Password',
                                         hintText: '••••••••',
-                                        errorText: controller.confirmPasswordErrorMessage,
+                                        errorText: confirmPasswordError,
                                         obscureText: true,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            confirmPasswordError = FormValidators.validateConfirmPassword(
+                                              controller.passwordController.text, value);
+                                          });
+                                        },
                                       ),
                                     ],
                                     if (controller.errorMessage != null)
@@ -297,6 +326,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     Color? fillColor,
     TextStyle? labelStyle,
     TextStyle? hintStyle,
+    ValueChanged<String>? onChanged,
   }) {
     return TextField(
       style: const TextStyle(color: Colors.black),
@@ -325,6 +355,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         suffixIcon: suffixIcon,
       ),
+      onChanged: onChanged,
     );
   }
 }

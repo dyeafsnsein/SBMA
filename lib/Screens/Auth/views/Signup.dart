@@ -2,105 +2,104 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
+import '../../../commons/form_validators.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
-    // Use the existing AuthController from the ancestor widget
     final authController = Provider.of<AuthController>(context);
-    
     return ChangeNotifierProvider.value(
       value: authController,
-      child: Consumer<AuthController>(
-        builder: (context, controller, child) {
-        return Scaffold(
-          backgroundColor: const Color(0xFF202422),
-          body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          children: [
-                            // Header Section
-                            _buildHeader(),
-                            // Form Section
-                            Expanded(
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(40),
-                                    topRight: Radius.circular(40),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const SizedBox(height: 60),
-                                      // Name Field
-                                      _buildNameField(controller),
-                                      const SizedBox(height: 20),
-                                      // Email Field
-                                      _buildEmailField(controller),
-                                      const SizedBox(height: 20),
-                                      // Password Field
-                                      _buildPasswordField(controller),
-                                      const SizedBox(height: 20),
-                                      // Confirm Password Field
-                                      _buildConfirmPasswordField(controller),
-                                      const SizedBox(height: 20),
-                                      // Date of Birth Field
-                                      _buildDateOfBirthField(
-                                          controller, context),
-                                      const SizedBox(height: 20),
-                                      // Mobile Number Field
-                                      _buildMobileNumberField(controller),
-                                      const SizedBox(height: 30),
-                                      // Error Message
-                                      if (controller.errorMessage != null) ...[
-                                        Text(
-                                          controller.errorMessage!,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontFamily: 'Poppins',
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                      ],
-                                      // Sign Up Button
-                                      _buildSignUpButton(controller, context),
-                                      const SizedBox(height: 20),
-                                      // Login Link
-                                      _buildLoginLink(context),
-                                    ],
-                                  ),
-                                ),
-                              ),
+      child: _SignupForm(),
+    );
+  }
+}
+
+class _SignupForm extends StatefulWidget {
+  @override
+  State<_SignupForm> createState() => _SignupFormState();
+}
+
+class _SignupFormState extends State<_SignupForm> {
+  String? nameError;
+  String? emailError;
+  String? passwordError;
+  String? confirmPasswordError;
+  String? dobError;
+  String? mobileError;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Provider.of<AuthController>(context);
+    return Scaffold(
+      backgroundColor: const Color(0xFF202422),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      Expanded(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(40),
+                              topRight: Radius.circular(40),
                             ),
-                          ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 60),
+                                _buildNameField(controller),
+                                const SizedBox(height: 20),
+                                _buildEmailField(controller),
+                                const SizedBox(height: 20),
+                                _buildPasswordField(controller),
+                                const SizedBox(height: 20),
+                                _buildConfirmPasswordField(controller),
+                                const SizedBox(height: 20),
+                                _buildDateOfBirthField(controller, context),
+                                const SizedBox(height: 20),
+                                _buildMobileNumberField(controller),
+                                const SizedBox(height: 30),
+                                if (controller.errorMessage != null) ...[
+                                  Text(
+                                    controller.errorMessage!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
+                                _buildSignUpButton(controller, context),
+                                const SizedBox(height: 20),
+                                _buildLoginLink(context),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -146,20 +145,14 @@ class SignupPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(148, 146, 146, 1),
             ),
+            errorText: nameError,
           ),
+          onChanged: (value) {
+            setState(() {
+              nameError = FormValidators.validateName(value);
+            });
+          },
         ),
-        if (controller.nameErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.nameErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -190,20 +183,14 @@ class SignupPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(148, 146, 146, 1),
             ),
+            errorText: emailError,
           ),
+          onChanged: (value) {
+            setState(() {
+              emailError = FormValidators.validateEmail(value);
+            });
+          },
         ),
-        if (controller.emailErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.emailErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -238,20 +225,17 @@ class SignupPage extends StatelessWidget {
               ),
               onPressed: controller.togglePasswordVisibility,
             ),
+            errorText: passwordError,
           ),
+          onChanged: (value) {
+            setState(() {
+              passwordError = FormValidators.validatePassword(value);
+              // Also update confirm password error if needed
+              confirmPasswordError = FormValidators.validateConfirmPassword(
+                value, controller.confirmPasswordController.text);
+            });
+          },
         ),
-        if (controller.passwordErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.passwordErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -286,33 +270,27 @@ class SignupPage extends StatelessWidget {
               ),
               onPressed: controller.toggleConfirmPasswordVisibility,
             ),
+            errorText: confirmPasswordError,
           ),
+          onChanged: (value) {
+            setState(() {
+              confirmPasswordError = FormValidators.validateConfirmPassword(
+                controller.passwordController.text, value);
+            });
+          },
         ),
-        if (controller.confirmPasswordErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.confirmPasswordErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
 
-  Widget _buildDateOfBirthField(
-      AuthController controller, BuildContext context) {
+  Widget _buildDateOfBirthField(AuthController controller, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
           style: const TextStyle(color: Colors.black),
           controller: controller.dateOfBirthController,
-          readOnly: true, // Make it read-only to use the date picker
+          readOnly: true,
           decoration: InputDecoration(
             labelText: 'Date of Birth',
             hintText: 'DD/MM/YYYY',
@@ -332,6 +310,7 @@ class SignupPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(148, 146, 146, 1),
             ),
+            errorText: dobError,
             suffixIcon: IconButton(
               icon: const Icon(
                 Icons.calendar_today,
@@ -348,23 +327,19 @@ class SignupPage extends StatelessWidget {
                   String formattedDate =
                       '${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}';
                   controller.dateOfBirthController.text = formattedDate;
+                  setState(() {
+                    dobError = FormValidators.validateDateOfBirth(formattedDate);
+                  });
                 }
               },
             ),
           ),
+          onChanged: (value) {
+            setState(() {
+              dobError = FormValidators.validateDateOfBirth(value);
+            });
+          },
         ),
-        if (controller.dateOfBirthErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.dateOfBirthErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -396,20 +371,14 @@ class SignupPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(148, 146, 146, 1),
             ),
+            errorText: mobileError,
           ),
+          onChanged: (value) {
+            setState(() {
+              mobileError = FormValidators.validateMobileNumber(value);
+            });
+          },
         ),
-        if (controller.mobileNumberErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.mobileNumberErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -440,8 +409,10 @@ class SignupPage extends StatelessWidget {
             ),
     );
   }
+
   Widget _buildLoginLink(BuildContext context) {
-    return TextButton(      onPressed: () {
+    return TextButton(
+      onPressed: () {
         context.go('/login');
       },
       child: const Text(

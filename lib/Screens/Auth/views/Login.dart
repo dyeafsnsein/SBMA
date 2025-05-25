@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../Controllers/auth_controller.dart';
+import '../../../commons/form_validators.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -10,90 +11,102 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AuthController(),
-      child: Consumer<AuthController>(
-        builder: (context, controller, child) {
-          return Scaffold(
-            backgroundColor: const Color(0xFF202422),
-            body: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          children: [
-                            // Header Section
-                            _buildHeader(),
-                            // Form Section
-                            Expanded(
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(40),
-                                    topRight: Radius.circular(40),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const SizedBox(height: 90),
-                                      // Email Field
-                                      _buildEmailField(controller),
-                                      const SizedBox(height: 20),
-                                      // Password Field
-                                      _buildPasswordField(controller),
-                                      const SizedBox(height: 30),
-                                      // Error Message
-                                      if (controller.errorMessage != null)
-                                        Text(
-                                          controller.errorMessage!,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontFamily: 'Poppins',
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      const SizedBox(height: 10),
-                                      // Login Button
-                                      _buildLoginButton(controller, context),
-                                      const SizedBox(height: 10),
-                                      // Forgot Password Link
-                                      _buildForgotPasswordLink(context),
-                                      const SizedBox(height: 10),
-                                      // Sign Up Button
-                                      _buildSignUpButton(context),
-                                      const SizedBox(height: 20),
-                                      // Fingerprint Access Text
+      child: _LoginForm(),
+    );
+  }
+}
 
-                                      const SizedBox(height: 20),
-                                      // Social Login Section (with Google Login)
-                                      _buildSocialLoginSection(
-                                          controller, context),
-                                    ],
-                                  ),
-                                ),
-                              ),
+class _LoginForm extends StatefulWidget {
+  @override
+  State<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<_LoginForm> {
+  String? emailError;
+  String? passwordError;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Provider.of<AuthController>(context);
+    return Scaffold(
+      backgroundColor: const Color(0xFF202422),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      // Header Section
+                      _buildHeader(),
+                      // Form Section
+                      Expanded(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(40),
+                              topRight: Radius.circular(40),
                             ),
-                          ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 90),
+                                // Email Field
+                                _buildEmailField(controller),
+                                const SizedBox(height: 20),
+                                // Password Field
+                                _buildPasswordField(controller),
+                                const SizedBox(height: 30),
+                                // Error Message
+                                if (controller.errorMessage != null)
+                                  Text(
+                                    controller.errorMessage!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                const SizedBox(height: 10),
+                                // Login Button
+                                _buildLoginButton(controller, context),
+                                const SizedBox(height: 10),
+                                // Forgot Password Link
+                                _buildForgotPasswordLink(context),
+                                const SizedBox(height: 10),
+                                // Sign Up Button
+                                _buildSignUpButton(context),
+                                const SizedBox(height: 20),
+                                // Fingerprint Access Text
+
+                                const SizedBox(height: 20),
+                                // Social Login Section (with Google Login)
+                                _buildSocialLoginSection(
+                                    controller, context),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -121,7 +134,7 @@ class LoginPage extends StatelessWidget {
           style: const TextStyle(color: Colors.black),
           controller: controller.emailController,
           decoration: InputDecoration(
-            labelText: 'Username or Email',
+            labelText: 'Email',
             hintText: 'example@example.com',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
@@ -139,20 +152,14 @@ class LoginPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: Color.fromRGBO(101, 96, 96, 1),
             ),
+            errorText: emailError,
           ),
+          onChanged: (value) {
+            setState(() {
+              emailError = FormValidators.validateEmail(value);
+            });
+          },
         ),
-        if (controller.emailErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.emailErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -187,20 +194,14 @@ class LoginPage extends StatelessWidget {
               ),
               onPressed: () => controller.togglePasswordVisibility(),
             ),
+            errorText: passwordError,
           ),
+          onChanged: (value) {
+            setState(() {
+              passwordError = FormValidators.validatePassword(value);
+            });
+          },
         ),
-        if (controller.passwordErrorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              controller.passwordErrorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontFamily: 'Poppins',
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }

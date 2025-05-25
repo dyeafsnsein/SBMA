@@ -77,55 +77,60 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 8,
-                        spreadRadius: 1,
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await homeController.refreshData();
+                  },
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: screenWidth * 0.06,
-                        right: screenWidth * 0.06,
-                        top: screenWidth * 0.06,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
                       ),
-                      child: Column(
-                        children: [
-                          GoalOverview(
-                            goalIcon: savingsController.activeGoal?.icon ?? 'lib/assets/More.png',
-                            goalText: savingsController.activeGoal?.name ?? 'No Active Goal',
-                            revenueLastWeek: homeController.revenueLastWeek,
-                            topCategoryLastWeek: homeController.topCategoryLastWeek,
-                            topCategoryAmountLastWeek: homeController.topCategoryAmountLastWeek,
-                            topCategoryIconLastWeek: homeController.topCategoryIconLastWeek,
-                            goalAmount: savingsController.activeGoal?.targetAmount ?? 0.0,
-                            currentBalance: savingsController.activeGoal?.currentAmount ?? 0.0,
-                            onTap: () => context.push('/analysis'),
-                            hasActiveGoal: savingsController.activeGoal != null && 
-                                        savingsController.activeGoal!.id != 'none',
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Expanded(
-                            child: TransactionList(
-                              transactions: homeController.transactions,
-                              isHomePage: true,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: screenWidth * 0.06,
+                          right: screenWidth * 0.06,
+                          top: screenWidth * 0.06,
+                        ),
+                        child: Column(
+                          children: [
+                            GoalOverview(
+                              goalIcon: savingsController.activeGoal?.icon ?? 'lib/assets/More.png',
+                              goalText: savingsController.activeGoal?.name ?? 'No Active Goal',
+                              revenueLastWeek: homeController.revenueLastWeek,
+                              topCategoryLastWeek: homeController.topCategoryLastWeek,
+                              topCategoryAmountLastWeek: homeController.topCategoryAmountLastWeek,
+                              topCategoryIconLastWeek: homeController.topCategoryIconLastWeek,
+                              goalAmount: savingsController.activeGoal?.targetAmount ?? 0.0,
+                              currentBalance: savingsController.activeGoal?.currentAmount ?? 0.0,
+                              onTap: () => context.push('/analysis'),
+                              hasActiveGoal: savingsController.activeGoal != null && 
+                                          savingsController.activeGoal!.id != 'none',
                             ),
-                          ),
-                        ],
+                            SizedBox(height: screenHeight * 0.02),
+                            Expanded(
+                              child: TransactionList(
+                                transactions: homeController.transactions,
+                                isHomePage: true,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
